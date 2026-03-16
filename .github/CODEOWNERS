@@ -1,0 +1,14 @@
+# Scrum Master: Oversight geral e processos
+* @victorlcrd
+
+# Arquiteto: Documentação e arquitetura
+/docs/ @Victor3294
+
+# Arquiteto e Engenheiro de Qualidade: Código fonte
+/src/ @Victor3294 @lucaslrc01
+
+# Infra/DevOps: Workflows e infraestrutura
+/.github/ @JPIFSC
+
+# Engenheiro de Qualidade: Testes
+/tests/ @lucaslrc01
