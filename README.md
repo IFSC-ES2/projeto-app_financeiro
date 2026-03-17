@@ -67,7 +67,32 @@ O sistema permitirá que o usuário centralize suas movimentações financeiras 
 * **Multiusuário/Contas Conjuntas:** O MVP será focado apenas no uso individual (uma conta, um CPF).
 * **Suporte a moedas estrangeiras:** O sistema operará exclusivamente em Real (BRL).
 
----
+
+## Fluxo de Trabalho com Git
+
+Adotamos uma estratégia de branches clara e semântica para manter a organização do projeto:
+
+```
+feature/nome-da-funcionalidade
+    ↓ (Pull Request + Code Review)
+   main (versão estável e protegida)
+```
+
+### Tipos de Branches
+
+| Branch | Propósito | Exemplo |
+|:---|:---|:---|
+| **`feature/`** | Nova funcionalidade | `feature/autenticacao-usuario` |
+| **`fix/`** | Correção de bug | `fix/erro-no-login` |
+| **`docs/`** | Apenas documentação | `docs/guia-contribuicao` |
+| **`chore/`** | Configuração, infra, dependências | `chore/atualizar-dependencias` |
+
+### Regras
+**Todas as mudanças** entram via Pull Request  
+Commits devem ser aprovados pela equipe antes de mesclar  
+Branch `main` está sempre protegida e funcional  
+Nomes de branches em **lowercase** com hífens (kebab-case)
+
 
 
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/aY1Nu9LV)
