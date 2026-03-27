@@ -2,97 +2,51 @@
 
 Projeto proposto pelo Clayrton em Extensão II:
 
-Desenvolvimento de um gerenciador financeiro pessoal que permita a integração de notas fiscais (NF-e), extratos bancários (xml, csv, txt), extratos de cartão (xml, csv, txt), e que permita gerenciar as contas do usuário de modo a prover relatórios de gastos e despesas mensais por categorias (habitação, saúde, serviços, lazer, manutenção, transportes, etc.).
+> Desenvolvimento de um gerenciador financeiro pessoal que permita a integração de notas fiscais (NF-e), extratos bancários (xml, csv, txt), extratos de cartão (xml, csv, txt), e que permita gerenciar as contas do usuário de modo a prover relatórios de gastos e despesas mensais por categorias (habitação, saúde, serviços, lazer, manutenção, transportes, etc.).
+
+## 1. Equipe Formada
+
+- João Pedro Callegaro -> DevOPS / Infra
+- Lucas de Leon Rodrigues -> Engenheiro de Qualidade
+- Victor Blum -> Arquiteto de Software
+- Victor Gabriel Lacerda -> Scrum Master
+
+## 2. Tema Definido
+
+### a) qual problema o sistema pretende resolver?
+
+O sistema pretende resolver a falta de organização financeira e a falta de controle sobre o pŕoprio dinheiro do usuario. Um possível usuário pode usar diferentes bancos, diferentes cartões de crédito, mas falta um sistema central, que una e mostre os seus gastos totais em todos os aspectos da sua vida, com o SmartBudget o usuário vai poder organizar e visualizar melhor sua vida financeira.
+
+### b) quem são os usuários?
+
+O sistema é focado em pessoas físicas, não empresas. Os usuários são pessoas que querem ter um maior controle de gastos, pode ser uma pessoa que usa muito cartão de crédito e quer informações mais práticas dos gastos, ou um chefe de família que quer ver em quais aspectos da sua vida o dinheiro está sendo mais utilizado (lazer, alimentação, saúde e entre outros).
+
+### c) qual a proposta do sistema para resolver esse problema?
+
+A proposta é ser um assistente financeiro prático e inteligente que elimina o trabalho de anotar gastos na mão, sendo necessário apenas enviar extratos bancários e notas fiscais para leitura automática. Ele resolve a falta de controle e vizualização de gastos centralizando tudo em um único lugar, separando despesas por categoria e criando um 'extrato futuro', que avisa com antecedência o valor das faturas do cartão e o vencimento de boletos.
+
+## 3. MVP
+
+### a) o que o MVP fará?
+
+O sistema vai permitir a leitura de extratos bancários e notas fiscais (.xml, .csv, .txt), separando os gastos em categorias (automaticamente, ou manualmente se necessário). Informará o 'extrato futuro', baseando-se nos extratos bancários enviados (irá considerar vencimento de boletos, parcelamentos, financiamentos e entre outros).
+
+### b) quais são as funcionalidades principais?
+
+1. Criação de perfil pessoal, com autenticação;
+1. Leitura de extratos bancários e notas fiscais (xml, csv, txt);
+1. Adicionar gastos manualmente;
+1. Categorizar os gastos em subdivisões (lazer, alimentação etc);
+1. Categorizar os gastos a partir de como o dinheiro foi utilizado (cartão, pix, dinheiro, boleto);
+1. Categorizar os gastos a partir do cartão e banco utilizado;
+1. Visualização de gastos do mês em texto, gráficos e dashboards;
+1. Visualição do extrato dos próximos meses em texto, gráficos e dashboards;
 
 
-## Equipe
-| Nome | Função |
-| :--- | :--- |
-| João Pedro | DevOPS |
-| Lucas de Leon | Eng. Qualidade |
-| Victor Lacerda | Scrum Master |
-| Victor Blum | Arquiteto de Software |
+### c) o que ficará fora do escopo no momento
 
-## 2. Respostas ao Questionário
+1. Integração direta com a conta bancária;
+1. Inteligência Artificial para organizar a categorização;
+1. Investimentos e Criptomoedas;
+1. Conversão para outras moedas (dólar, euro, libras etc), será apenas o Real.
 
-### (a) Qual problema o sistema pretende resolver?
-O sistema busca solucionar a **fragmentação de informações financeiras** e a **falta de previsibilidade**. Atualmente, o usuário médio possui contas em diferentes bancos e diversos cartões de crédito, o que gera:
-* **Dificuldade de previsão:** Incerteza sobre o valor real comprometido nos meses futuros devido a parcelamentos.
-* **Esquecimento de prazos:** Pagamento de multas e juros por falta de alertas centralizados de vencimento.
-* **Fadiga de dados:** Desistência do controle financeiro pelo esforço manual de digitar cada gasto ou nota fiscal.
-
-### (b) Quem são os usuários?
-* **Pessoas Físicas:** Indivíduos que utilizam múltiplos métodos de pagamento (PIX, cartões, dinheiro) e precisam de uma visão consolidada.
-* **Gestores Domésticos:** Pessoas que precisam categorizar gastos familiares (Habitação, Saúde, Lazer) para otimizar o orçamento.
-* **Usuários de Crédito:** Consumidores que realizam compras parceladas e precisam visualizar o impacto dessas parcelas no saldo dos meses seguintes.
-
-### (c) Qual é a proposta do sistema para resolver o problema?
-A solução baseia-se em três pilares principais:
-1.  **Automação e Integração:** Elimina o preenchimento manual através da importação de arquivos bancários e leitura de QR Code de Notas Fiscais (NF-e), garantindo precisão nos dados.
-2.  **Visão Preditiva (Extrato Futuro):** Diferente de apps comuns, o sistema projeta o saldo das contas considerando as faturas de cartão de crédito e lançamentos futuros.
-3.  **Comunicação Ativa:** Utiliza notificações em tempo real (push e e-mail) para avisar sobre vencimentos iminentes, garantindo que o usuário mantenha sua saúde financeira sem precisar abrir o app o tempo todo.
-
-## Definição de MVP
-
-### (a) O que o MVP fará
-O sistema permitirá que o usuário centralize suas movimentações financeiras através do upload de arquivos de extrato e notas fiscais. Ele consolidará esses dados em um dashboard único, separando gastos por categoria e, principalmente, projetando o saldo disponível para os meses seguintes com base nas parcelas de cartão de crédito e contas fixas cadastradas.
-
-
-
-### (b) Funcionalidades Principais (Incluso)
-
-### 1. Autenticação e Perfil
-* Criação de conta com login/senha e recuperação de acesso.
-* Cadastro de múltiplas "Contas" (Ex: Banco X, Banco Y, Carteira).
-
-### 2. Importação e Integração de Dados
-* **Upload de Extratos:** Processamento de arquivos .CSV e .XML de bancos e cartões.
-* **Leitor de NF-e:** Campo para inserir a chave de acesso ou upload do XML da nota fiscal para detalhamento automático de itens de compra.
-* **Lançamento Manual:** Registro de gastos em dinheiro ou PIX que não constam em extratos importados.
-
-### 3. Gestão e Categorização
-* Categorização automática baseada em palavras-chave do extrato (ex: "Posto" -> Transporte).
-* Interface para edição manual de categorias e nomes de lançamentos.
-
-### 4. Visão de Futuro e Alertas
-* **Dashboard de Extrato Futuro:** Gráfico de linha mostrando a previsão de saldo para os próximos 3 a 6 meses.
-* **Notificações:** Alertas simples no sistema e envio de e-mail lembrando de vencimentos de faturas cadastradas.
-
-
-### (c) Fora do Escopo (Não incluso neste momento)
-
-* **Conexão Direta via Open Banking:** Não haverá login direto em contas bancárias (leitura será feita apenas via arquivos exportados pelo usuário).
-* **Investimentos e Corretoras:** O sistema não fará gestão de carteira de ações ou criptoativos.
-* **Leitura de PDF:** Devido à falta de padronização, extratos em PDF não serão suportados (apenas CSV/XML).
-* **Multiusuário/Contas Conjuntas:** O MVP será focado apenas no uso individual (uma conta, um CPF).
-* **Suporte a moedas estrangeiras:** O sistema operará exclusivamente em Real (BRL).
-
-
-## Fluxo de Trabalho com Git
-
-Adotamos uma estratégia de branches clara e semântica para manter a organização do projeto:
-
-```
-feature/nome-da-funcionalidade
-    ↓ (Pull Request + Code Review)
-   main (versão estável e protegida)
-```
-
-### Tipos de Branches
-
-| Branch | Propósito | Exemplo |
-|:---|:---|:---|
-| **`feature/`** | Nova funcionalidade | `feature/autenticacao-usuario` |
-| **`fix/`** | Correção de bug | `fix/erro-no-login` |
-| **`docs/`** | Apenas documentação | `docs/guia-contribuicao` |
-| **`chore/`** | Configuração, infra, dependências | `chore/atualizar-dependencias` |
-
-### Regras
-**Todas as mudanças** entram via Pull Request  
-Commits devem ser aprovados pela equipe antes de mesclar  
-Branch `main` está sempre protegida e funcional  
-Nomes de branches em **lowercase** com hífens (kebab-case)
-
-
-
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/aY1Nu9LV)
