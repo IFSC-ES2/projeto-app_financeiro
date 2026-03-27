@@ -1,7 +1,7 @@
 # ADR-0004 — Estratégia de arquitetura e camadas
 
 ## Status
-Em espera
+Aceito
 
 ## Contexto
 O projeto precisa de uma estratégia de arquitetura para organizar o desenvolvimento do projeto, visando agilidade e organização entre os membros.

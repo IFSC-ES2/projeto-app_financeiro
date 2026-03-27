@@ -1,7 +1,7 @@
 # ADR-0003 — Abordagem de persistência de dados
 
 ## Status
-Em espera
+Aceito
 
 ## Contexto
 O projeto precisa de uma maneira de persistir os dados que permita a equipe guardar os dados dos usuários e de definições do funcionamento do projeto.
