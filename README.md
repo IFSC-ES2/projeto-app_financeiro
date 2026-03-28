@@ -50,3 +50,14 @@ O sistema vai permitir a leitura de extratos bancários e notas fiscais (.xml, .
 1. Investimentos e Criptomoedas;
 1. Conversão para outras moedas (dólar, euro, libras etc), será apenas o Real.
 
+-------
+### Documentos 
+
+- [Visão do Produto e MVP](docs/inception.md) 
+- [Definition of Done](docs/dod.md) 
+- [ADR-0001 — Stack Frontend](docs/adrs/ADR-0001-stack-frontend.md) 
+- [ADR-0002 — Stack Backend](docs/adrs/ADR-0002-stack-backend.md) 
+- [ADR-0003 — Banco de Dados](docs/adrs/ADR-0003-banco-de-dados.md) 
+- [ADR-0004 — Arquitetura Geral](docs/adrs/ADR-0004-arquitetura-geral.md)
+- [Board](https://github.com/orgs/IFSC-ES2/projects/20)
+- [Backlog](https://github.com/IFSC-ES2/projeto-app_financeiro/issues)
