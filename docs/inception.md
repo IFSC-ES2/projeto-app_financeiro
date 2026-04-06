@@ -24,11 +24,11 @@ O SmartBudget é um gerenciador financeiro pessoal que centraliza movimentaçõe
  
 As funcionalidades abaixo foram consideradas essenciais por comporem o fluxo mínimo que entrega valor ao usuário — sem qualquer uma delas o produto não resolve o problema central:
  
-1. **Autenticação e perfil pessoal** — pré-requisito técnico para qualquer dado ser persistido com segurança por usuário.
-2. **Importação de extratos (CSV/XML)** — é o diferencial central do produto; sem ela o usuário volta ao registro manual, que é exatamente o que o SmartBudget se propõe a eliminar.
-3. **Categorização de gastos** — sem categorias, os dados importados não geram insight. É o que transforma um extrato bruto em informação útil.
-4. **Dashboard de gastos do mês** — é a entrega de valor visível ao usuário; sem visualização, os dados existem mas não são consumíveis.
-5. **Extrato futuro (projeção de parcelas e vencimentos)** — é o diferencial competitivo frente a todas as soluções existentes no mercado; sua ausência torna o produto equivalente a concorrentes já estabelecidos.
+1. **Autenticação e perfil pessoal** pré-requisito técnico para qualquer dado ser persistido com segurança por usuário.
+2. **Importação de extratos (CSV/XML)** é o diferencial central do produto; sem ela o usuário volta ao registro manual, que é exatamente o que o SmartBudget se propõe a eliminar.
+3. **Categorização de gastos** sem categorias, os dados importados não geram insight. É o que transforma um extrato bruto em informação útil.
+4. **Dashboard de gastos do mês** é a entrega de valor visível ao usuário; sem visualização, os dados existem mas não são consumíveis.
+5. **Extrato futuro (projeção de parcelas e vencimentos)** é o diferencial competitivo frente a todas as soluções existentes no mercado; sua ausência torna o produto equivalente a concorrentes já estabelecidos.
  
 ### Viabilidade para o semestre
  
