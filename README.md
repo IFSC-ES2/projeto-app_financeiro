@@ -6,6 +6,7 @@ Projeto proposto pelo Clayrton em Extensão II:
 
 ## 1. Equipe Formada
 
+- Alexandre Pereira Villela -> DevOPS / Infra
 - João Pedro Callegaro -> DevOPS / Infra
 - Lucas de Leon Rodrigues -> Engenheiro de Qualidade
 - Victor Blum -> Arquiteto de Software
