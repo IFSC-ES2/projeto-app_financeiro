@@ -62,3 +62,6 @@ O sistema vai permitir a leitura de extratos bancários e notas fiscais (.xml, .
 - [ADR-0004 — Arquitetura Geral](docs/adrs/ADR-0004-Estrategia-de-arquiteturas-e-camadas.md)
 - [Board](https://github.com/orgs/IFSC-ES2/projects/20)
 - [Backlog](https://github.com/IFSC-ES2/projeto-app_financeiro/issues)
+- [Estimativas](docs\estimativas.md)
+- [Metricas](docs/metricas.md)
+- [Metricas](docs/baseline.md)
