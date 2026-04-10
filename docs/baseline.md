@@ -52,11 +52,11 @@ A unidade adotada foi de horas de trabalho efetivo.
 - #18. Configuração do React com TypeScript (M, 4h, responsável: **João Pedro**)
 - #19. Modelagem do banco de dados (ER) (M, 5h, responsável: **Victor Blum**)
 - #20. Criação de diagrama UML (M, 4h, responsável: **Victor Blum**)
-- #21. Configuração do banco de dados (M, 4h, responsável: **João Pedro**)
+- #21. Configuração do banco de dados (G, 8h, responsável: **João Pedro**)
 - #22. Configuração de CORS entre frontend e backend (M, 3h, responsável: **João Pedro**)
-- #25. Cadastro e autenticação de usuário (G, 8h, responsável: A definir)
+- #25. Cadastro e autenticação de usuário (GG, 10h, responsável: Alexandre)
 - #26. Tela de login (M, 4h, responsável: A definir)
-- #27. Tela de cadastro (M, 4h, responsável: A definir)
+- #27. Tela de cadastro (M, 4h, responsável: Alexandre)
 - #13. Criação da Home com relatório resumido (G, 8h, responsável: A definir)
 - Total estimado: 50h
 
@@ -70,14 +70,14 @@ A unidade adotada foi de horas de trabalho efetivo.
 - Lucas de Leon Rodrigues: Engenheiro de Qualidade (5h/semana, 10h por sprint)
 - Victor Blum: Arquiteto de Software (3h/semana, 6h por sprint)
 - João Pedro Callegaro: DevOps / Infra (5h/semana, 10h por sprint)
-- Alexandre Vilela: DevOps / Infra (a definir)
+- Alexandre Vilela: DevOps / Infra (7h/semana, 14h por sprint)
 
-### Capacidade total por sprint (4 membros confirmados)
+### Capacidade total por sprint (5 membros confirmados)
 
 - Sprint 1 (08/04 – 22/04/2026): 32h
-- Sprint 2 (23/04 – 07/05/2026): 32h
+- Sprint 2 (23/04 – 07/05/2026): 46h
 
-Capacidade calculada com base nos 4 membros com disponibilidade confirmada. Alexandre será incluído no cálculo a partir da Sprint 1 assim que sua disponibilidade for registrada, por ter entrado depois no grupo.
+Capacidade calculada com base nos 5 membros com disponibilidade confirmada. 
 
 ### Restrições 
 
