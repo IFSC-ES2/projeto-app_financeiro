@@ -54,10 +54,14 @@ Este template garante:
 - checklist básico
 
 ---
-
 ##  Revisão de Código
 
 - Todo PR deve ser revisado por pelo menos um membro da equipe
+- A aprovação deve ser feita preferencialmente pelo Scrum Master (Victor Gabriel Lacerda)
+- É necessária no mínimo uma aprovação para o merge
+
+- Em casos onde o PR é do próprio Scrum Master, outro membro da equipe deve realizar a revisão
+
 - A revisão garante:
   - consistência do código
   - aderência ao padrão do projeto
@@ -80,10 +84,5 @@ Esses PRs demonstram:
 - revisão antes de merge
 - histórico de contribuições
 
----
 
-##  Considerações
 
-- O fluxo adotado é simples e adequado ao contexto acadêmico do projeto
-- Prioriza organização, rastreabilidade e colaboração
-- Pode evoluir conforme a complexidade do projeto aumentar
