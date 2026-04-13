@@ -15,7 +15,20 @@
 - Relação com os riscos:
 - Métricas:
 
-## 4. Manutenbilidade
+## 4. Manutenibilidade
 - Justificativas: Como se trata de um MVP o projeto tende a evoluir rapidamente com feedback de usuários e mudanças nos requisitos, com um código bem organizado o trabalho em equipe é facilitado no desenvolvimento e a implementação de novas funcionalidades tem uma chance menor de ser acompanhada de erros, a manutembilidade ainda favorece a correção desses possíveis erros.
 - Relação com os riscos:
 - Métricas:
+
+## Influência dos Atributos nas Decisões
+
+#### 1. Confiabilidade
+ A confiabilidade guiará decisões relacionadas ao tratamento de falhas, validação de operações e garantia de consistência dos dados, especialmente em operações críticas do sistema.
+
+#### 2. Segurança
+ A segurança orientará decisões relacionadas á autenticação, autorização e proteção de dados, garantindo que apenas usuários autorizados acessem informações sensíveis e que as operações sejam realizadas de forma segura.
+
+#### 3. Desempenho
+
+
+#### 4. Manutenibilidade
