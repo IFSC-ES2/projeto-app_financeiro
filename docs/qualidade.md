@@ -2,7 +2,7 @@
 
 ## 1. Confiabilidade
 - Justificativa: Como o sistema trabalha com movimentações financeiras, precisa apresentar confiabilidade para o usuário, devemos evitar inconsistências nos extratos devido a falhas, inconsistência nos calculos de custos e previsibilidade de gastos devido a lentidão ou falhas de rede.
-- Relação com riscos:
+- Relação com riscos: **R05 - Falha na integração entre frontend e backend** A integração entre as camadas é o ponto mais frágil em termos de comportamento esperado do sistema. Medir a taxa de erros nas chamadas de API e a disponibilidade dos endpoints ao longo do tempo reflete diretamente se o sistema está se comportando de forma estável e previsível para o usuário.
 - Métricas:
     * Taxa de erro
         * Critério de aceitação: <= 10% de requisições com erro
@@ -16,7 +16,7 @@
 
 ## 2. Segurança
 - Justificativas: Devido o dinheiro ser uma informação sensível do usuário, nosso sistema deve garantir segurança máxima para o usuário, evitando possíveis invasões em bancos de dados e vazamentos de dados.
-- Relação com os riscos:
+- Relação com os riscos: **R07 - Vulnerabilidade de segurança nos dados financeiros** Dados financeiros pessoais exigem atenção redobrada. Medir cobertura de autenticação nos endpoints protegidos, presença de validações de entrada e ausência de dados sensíveis expostos em logs ou respostas da API são indicadores diretos do nível de segurança implementado.
 - Métrica:
     * Proteção de dados sensíveis
         * Critério de aceitação: >= 80% dos dados sensíveis protegidos
@@ -30,7 +30,8 @@
 
 ## 3. Desempenho
 - Justificativas: Nosso sistema trabalha com calculos complexos e leitura de arquivos/extratos, devemos garantir que esses procedimentos ocorram com o melhor desempenho para evitar frustação dos usuários.
-- Relação com os riscos:
+- Relação com os riscos: **R01 - Parser de extratos com formatos incompatíveis** O parser é o coração do sistema e será executado com frequência. Medir o tempo de processamento de uploads e a taxa de sucesso na leitura dos formatos suportados é essencial para garantir que o sistema responde de forma ágil e confiável nessa operação crítica.
+
 - Métrica:
      * Tempo de resposta
         * Critério de aceitação: <= 3 segundos
@@ -44,7 +45,7 @@
 
 ## 4. Manutenibilidade
 - Justificativas: Como se trata de um MVP o projeto tende a evoluir rapidamente com feedback de usuários e mudanças nos requisitos, com um código bem organizado o trabalho em equipe é facilitado no desenvolvimento e a implementação de novas funcionalidades tem uma chance menor de ser acompanhada de erros, a manutembilidade ainda favorece a correção desses possíveis erros.
-- Relação com os riscos:
+- Relação com os riscos: **R04 - Escopo crescendo além da capacidade da equipe** Quando o escopo cresce sem controle, o código tende a acumular dívida técnica rapidamente. Medir cobertura de testes e complexidade ciclomática das classes principais indica se o código está em condições de receber novas funcionalidades sem degradar a qualidade existente.
 - Métricas:
     * Cobertura de testes
         * Critério de aceitação: >= 60%
