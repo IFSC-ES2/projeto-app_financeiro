@@ -76,7 +76,7 @@ Baseado em probabilidade × impacto em níveis de prioridade
 - **Prioridade:** Alta
 - **Estratégia de mitigação:** Tratar as issues #16, #17, #18 e #21 como prioridade máxima da Sprint 1. João Pedro e Alexandre ficam responsáveis por garantir que o ambiente esteja funcional e documentado até o fim da primeira sprint. Utilizar Docker Compose para padronizar o ambiente entre todos os membros.
 - **Plano de contingência:** Caso surjam bloqueios técnicos, o Arquiteto assume a triagem e define um ambiente mínimo viável para desbloquear o restante da equipe.
-- **Responsável:** João Pedro Callegaro e Alexandre (DevOps / Infra)
+- **Responsável:** João Pedro Callegaro 
 
 ---
 
@@ -121,7 +121,7 @@ Baseado em probabilidade × impacto em níveis de prioridade
 - **Prioridade:** Média
 - **Estratégia de mitigação:** Definir o contrato da API (endpoints, formatos de requisição e resposta) antes de iniciar o desenvolvimento paralelo. A issue #22 (CORS) deve ser validada na Sprint 1. O Arquiteto revisa os contratos antes da implementação.
 - **Plano de contingência:** Reservar ao menos 1 sprint para testes de integração antes da entrega final do MVP.
-- **Responsável:** Victor Blum (Arquiteto de Software)
+- **Responsável:** Alexandre Vilela (DevOps / Infra)
 
 ---
 
