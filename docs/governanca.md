@@ -57,4 +57,4 @@ Com base na divisão de papéis da equipe, as responsabilidades são as seguinte
 ## Versionamento
 - Seguir SemVer para releases.
 - Tags automáticas via CI/CD.
-- Releases aprovados pelo Scrum Master.z
+- Releases aprovados pelo Scrum Master.
