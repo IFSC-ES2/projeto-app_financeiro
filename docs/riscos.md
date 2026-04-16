@@ -153,7 +153,6 @@ Baseado em probabilidade × impacto em níveis de prioridade
 - **Plano de contingência:** Realizar revisão de segurança dedicada antes da entrega final, com foco nas rotas de autenticação e no armazenamento de dados do usuário.
 - **Responsável:** Lucas de Leon Rodrigues (Engenheiro de Qualidade)
 
----
 
 ## 4. Riscos críticos no momento
 
@@ -163,3 +162,75 @@ Os riscos **R01** e **R02** são os mais críticos no estado atual do projeto:
 - **R02** porque sem ambiente local configurado nenhum desenvolvimento pode avançar, e o prazo já está em curso.
 
 Ambos devem ser os primeiros a receber ação concreta na Sprint 1.
+
+## 5. Relação entre Riscos e Atributos de Qualidade
+
+Esta seção conecta cada risco com os atributos de qualidade que ele ameaça, e indica como a mitigação protege esses atributos.
+
+### R01 — Parser de extratos com formatos incompatíveis
+
+Atributos afetados: Desempenho, Confiabilidade
+
+Um parser que falha para certos bancos gera dados incompletos ou incorretos, comprometendo a confiabilidade. Processar formatos variados sem uma estrutura adequada também tende a ser mais lento, afetando o desempenho.
+
+A camada de adaptadores nos permite isolar os formatos entre si, protegendo a estabilidade e facilitando otimizações independentes.
+
+---
+
+### R02 — Atraso no setup do ambiente de desenvolvimento
+
+Atributos afetados: Manutenibilidade
+
+Sem um ambiente padronizado, cada membro trabalha em condições diferentes, o que dificulta rodar testes e identificar problemas. Isso compromete diretamente a manutenibilidade.
+
+O Docker Compose resolve isso: todos passam a trabalhar no mesmo ambiente, o que torna os testes mais confiáveis e o desenvolvimento mais consistente.
+
+---
+
+### R03 — Sobrecarga dos membros com outras disciplinas
+
+Atributos afetados: Manutenibilidade, Confiabilidade
+
+Com menos tempo disponível, testes são deixados de lado e o código é entregue com menos cuidado, reduzindo a cobertura e aumentando a chance de falhas não tratadas.
+
+Revisando a capacidade no início de cada sprint e mantendo o foco nas funcionalidades mais críticas, conseguimos preservar a qualidade do que é entregue mesmo nos períodos de menor disponibilidade.
+
+---
+
+### R04 — Escopo crescendo além da capacidade da equipe
+
+Atributos afetados: Manutenibilidade, Confiabilidade, Desempenho
+
+Funcionalidades adicionadas sem planejamento tendem a ser implementadas com pressa, acumulando dívida técnica e aumentando a chance de regressões e problemas de desempenho.
+
+Por isso filtramos novas funcionalidades antes de entrarem no backlog ativo, evitando que o código cresça além da nossa capacidade de manutenção e teste.
+
+---
+
+### R05 — Falha na integração entre frontend e backend
+
+Atributos afetados: Confiabilidade
+
+Problemas de integração como contratos de API divergentes ou autenticação mal implementada elevam a taxa de erros e reduzem a disponibilidade do sistema, afetando diretamente a confiabilidade.
+
+Definir o contrato da API antes do desenvolvimento paralelo alinha as expectativas das duas camadas desde o início, e é o que nos protege dessas falhas de comunicação.
+
+---
+
+### R06 — Saída ou inatividade de membro da equipe
+
+Atributos afetados: Manutenibilidade
+
+A saída de um membro sem documentação adequada torna difícil para os demais assumirem suas tarefas, aumentando o tempo de correção de bugs e reduzindo a capacidade de manutenção.
+
+Manter o código e as decisões técnicas bem documentados reduz essa dependência de conhecimento individual e garante que qualquer membro consiga assumir uma área sem partir do zero.
+
+---
+
+### R07 — Vulnerabilidade de segurança nos dados financeiros
+
+Atributos afetados: Segurança, Confiabilidade
+
+Falhas como senhas sem hash ou tokens sem expiração expõem dados financeiros dos usuários e comprometem a confiança no sistema, afetando tanto a segurança quanto a confiabilidade percebida.
+
+Incluir esses requisitos no DoD e validar nos PRs faz com que a segurança seja tratada como parte do fluxo normal de entrega, e não como uma etapa deixada para o final.
