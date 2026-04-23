@@ -4,8 +4,9 @@
 | ------- | ------- | -------- | -------- | ---- | ---- |
 | 1       | c83abb3 | 16/03/26 | 20/03/26 | 9,8  | 2    |
 | 2       | e428721 | 27/03/26 | 29/03/26 | 7    | 2    |
+| 3       | 96b6f65 | 09/04/26 | 22/04/26 | 9,4  | 3    |
 
-**nota:** 8,4
+**nota parcial:** 8,8
 
 ## Comentários
 
@@ -33,3 +34,17 @@
 4. Definition of Done (DoD): atendido
 5. ADRs iniciais: atendido
 6. Atualização do README: atendido
+
+### Entrega 3
+
+1. Planejamento inicial e baseline: parcialmente
+   - T-shirt size é uma técnica de estimativa relativa, onde se avalia o esforço demandado por cada uma das tarefas/funcionalidades em comparação às outras; por isso, não faz sentido limitar cada um dos tamanhos em horas, o que a tornaria uma estimativa absoluta.
+   - A priorização deve estar também no acompanhamento do projeto do Github, não apenas na descrição das _issues_
+   - Informar a data de registro do baseline
+2. Registro da abordagem de estimativa: atendido
+3. Capacidade planejada da equipe: atendido
+4. Definição das métricas que serão acompanhadas: atendido
+5. Ficha de cada métrica: parcialmente atendido
+   - Separar as fichas de cada métrica em arquivos diferentes
+     - Em cada uma adicionar data do acompanhamento e valor coletado
+   - Numerar métricas para facilitar a referenciação
