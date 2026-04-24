@@ -19,6 +19,11 @@ classDiagram
     +String banco
     +TipoConta tipo
     +String descricao
+  }
+ 
+  class CartaoCredito {
+    <<entity>>
+    +UUID id
     +Integer diaFechamento
     +Integer diaVencimento
   }
@@ -128,6 +133,13 @@ classDiagram
     +listarPorUsuario(usuarioId) List~Conta~
     +calcularSaldo(contaId) BigDecimal
     +remover(contaId)
+  }
+ 
+  class CartaoCreditoService {
+    <<service>>
+    +associar(contaId, dto) CartaoCredito
+    +buscarPorConta(contaId) CartaoCredito
+    +atualizar(cartaoId, dto) CartaoCredito
   }
  
   class FaturaService {
@@ -255,6 +267,10 @@ classDiagram
     +StatusFatura status
   }
  
+  %% CONTROLLER
+  %% Nota: contaId, faturaId etc. representam path variables
+  %% Na implementacao Spring Boot usam @PathVariable com anotacao {id}
+ 
   class AuthController {
     <<controller>>
     +POST /auth/register(dto) TokenDTO
@@ -266,6 +282,8 @@ classDiagram
     +GET /contas() List~Conta~
     +POST /contas(dto) Conta
     +DELETE /contas/contaId()
+    +POST /contas/contaId/cartao(dto) CartaoCredito
+    +GET /contas/contaId/cartao() CartaoCredito
   }
  
   class FaturaController {
@@ -303,6 +321,7 @@ classDiagram
   Usuario "1" --> "0..*" Conta : possui
   Usuario "1" --> "0..*" Importacao : realiza
   Usuario "1" --> "0..*" Categoria : personaliza
+  Conta "1" --> "0..1" CartaoCredito : especializa
   Conta "1" --> "0..*" Transacao : registra
   Conta "1" --> "0..*" Fatura : gera
   Fatura "1" --> "0..*" Transacao : agrupa
@@ -324,8 +343,11 @@ classDiagram
   TransacaoService --> Transacao : gerencia
   TransacaoService --> Categoria : consulta
   ContaService --> Conta : gerencia
+  CartaoCreditoService --> CartaoCredito : gerencia
+  CartaoCreditoService --> Conta : consulta
   FaturaService --> Fatura : gerencia
   FaturaService --> Transacao : consulta
+  FaturaService --> CartaoCredito : consulta
   FaturaService --> FaturaResumoDTO : retorna
   UsuarioService --> Usuario : gerencia
   CategoriaService --> Categoria : gerencia
@@ -340,6 +362,7 @@ classDiagram
  
   AuthController --> UsuarioService : usa
   ContaController --> ContaService : usa
+  ContaController --> CartaoCreditoService : usa
   FaturaController --> FaturaService : usa
   TransacaoController --> TransacaoService : usa
   ImportacaoController --> ImportacaoService : usa
