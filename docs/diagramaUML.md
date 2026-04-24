@@ -113,6 +113,7 @@ classDiagram
     FECHADA
     PAGA
   }
+ 
   class UsuarioService {
     <<service>>
     +registrar(dto) Usuario
@@ -264,27 +265,27 @@ classDiagram
     <<controller>>
     +GET /contas() List~Conta~
     +POST /contas(dto) Conta
-    +DELETE /contas/{id}()
+    +DELETE /contas/contaId()
   }
  
   class FaturaController {
     <<controller>>
-    +GET /contas/{id}/faturas() List~Fatura~
-    +GET /faturas/{id}() Fatura
-    +PATCH /faturas/{id}/pagar()
+    +GET /contas/contaId/faturas() List~Fatura~
+    +GET /faturas/faturaId() Fatura
+    +PATCH /faturas/faturaId/pagar()
   }
  
   class TransacaoController {
     <<controller>>
     +GET /transacoes(mes) List~Transacao~
     +POST /transacoes(dto) Transacao
-    +PATCH /transacoes/{id}/categoria(dto)
+    +PATCH /transacoes/transacaoId/categoria(dto)
   }
  
   class ImportacaoController {
     <<controller>>
     +POST /importacoes(arquivo, contaId) Importacao
-    +GET /importacoes/{id}/status() StatusImportacao
+    +GET /importacoes/importacaoId/status() StatusImportacao
   }
  
   class ResumoController {
@@ -345,3 +346,4 @@ classDiagram
   ResumoController --> ResumoService : usa
   ExtratoFuturoController --> ExtratoFuturoService : usa
   ExtratoFuturoController --> FaturaService : usa
+```
