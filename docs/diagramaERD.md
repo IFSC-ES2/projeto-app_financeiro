@@ -26,6 +26,8 @@ erDiagram
     INT          dia_vencimento
   }
  
+    %%O campo decimal tem uma limitação (10,2)
+
   faturas {
     CHAR(36)     id              PK
     CHAR(36)     conta_id        FK
@@ -44,6 +46,10 @@ erDiagram
     BOOLEAN      padrao
   }
  
+    %%O fatura_id não é obrigatório nessa tabela, ou seja ele pode ser null
+
+    %%O campo decimal tem uma delimitação (10,2)
+
   transacoes {
     CHAR(36)     id              PK
     CHAR(36)     conta_id        FK
