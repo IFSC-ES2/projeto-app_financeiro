@@ -5,7 +5,7 @@ classDiagram
  
   class Usuario {
     <<entity>>
-    +long id
+    +UUID id
     +String nome
     +String email
     +String senhaHash
@@ -15,7 +15,7 @@ classDiagram
  
   class Conta {
     <<entity>>
-    +long id
+    +UUID id
     +String nome
     +String banco
     +TipoConta tipo
@@ -24,7 +24,7 @@ classDiagram
  
   class Transacao {
     <<entity>>
-    +long id
+    +UUID id
     +BigDecimal valor
     +LocalDate data
     +String descricao
@@ -36,7 +36,7 @@ classDiagram
  
   class Categoria {
     <<entity>>
-    +long id
+    +UUID id
     +String nome
     +String icone
     +String cor
@@ -45,7 +45,7 @@ classDiagram
  
   class Importacao {
     <<entity>>
-    +long id
+    +UUID id
     +String nomeArquivo
     +FormatoArquivo formato
     +StatusImportacao status
