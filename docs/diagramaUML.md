@@ -1,7 +1,6 @@
 ```mermaid
 classDiagram
   direction TB
-
  
   class Usuario {
     <<entity>>
@@ -20,6 +19,17 @@ classDiagram
     +String banco
     +TipoConta tipo
     +String descricao
+    +Integer diaFechamento
+    +Integer diaVencimento
+  }
+ 
+  class Fatura {
+    <<entity>>
+    +UUID id
+    +YearMonth mesReferencia
+    +LocalDate dataVencimento
+    +BigDecimal valorTotal
+    +StatusFatura status
   }
  
   class Transacao {
@@ -86,6 +96,7 @@ classDiagram
     CSV
     XML
     TXT
+    NFE
   }
  
   class StatusImportacao {
@@ -96,6 +107,12 @@ classDiagram
     ERRO
   }
  
+  class StatusFatura {
+    <<enumeration>>
+    ABERTA
+    FECHADA
+    PAGA
+  }
   class UsuarioService {
     <<service>>
     +registrar(dto) Usuario
@@ -110,6 +127,14 @@ classDiagram
     +listarPorUsuario(usuarioId) List~Conta~
     +calcularSaldo(contaId) BigDecimal
     +remover(contaId)
+  }
+ 
+  class FaturaService {
+    <<service>>
+    +gerarFatura(contaId, mes) Fatura
+    +buscarPorConta(contaId) List~Fatura~
+    +marcarComoPaga(faturaId)
+    +calcularTotal(faturaId) BigDecimal
   }
  
   class TransacaoService {
@@ -202,6 +227,14 @@ classDiagram
     +Double percentual
   }
  
+  class GrupoPagamentoDTO {
+    <<DTO>>
+    +TipoPagamento formaPagamento
+    +BigDecimal total
+    +Integer quantidadeTransacoes
+    +Double percentual
+  }
+ 
   class ProjecaoMensalDTO {
     <<DTO>>
     +YearMonth mes
@@ -209,8 +242,17 @@ classDiagram
     +BigDecimal totalDebitos
     +BigDecimal totalCreditos
     +Integer quantidadeVencimentos
+    +List~FaturaResumoDTO~ faturas
   }
  
+  class FaturaResumoDTO {
+    <<DTO>>
+    +UUID faturaId
+    +String nomeConta
+    +LocalDate dataVencimento
+    +BigDecimal valorTotal
+    +StatusFatura status
+  }
  
   class AuthController {
     <<controller>>
@@ -222,38 +264,47 @@ classDiagram
     <<controller>>
     +GET /contas() List~Conta~
     +POST /contas(dto) Conta
-    +DELETE /contas/id()
+    +DELETE /contas/{id}()
+  }
+ 
+  class FaturaController {
+    <<controller>>
+    +GET /contas/{id}/faturas() List~Fatura~
+    +GET /faturas/{id}() Fatura
+    +PATCH /faturas/{id}/pagar()
   }
  
   class TransacaoController {
     <<controller>>
     +GET /transacoes(mes) List~Transacao~
     +POST /transacoes(dto) Transacao
-    +PATCH /transacoes/id/categoria(dto)
+    +PATCH /transacoes/{id}/categoria(dto)
   }
  
   class ImportacaoController {
     <<controller>>
     +POST /importacoes(arquivo, contaId) Importacao
-    +GET /importacoes/id/status() StatusImportacao
+    +GET /importacoes/{id}/status() StatusImportacao
   }
  
   class ResumoController {
     <<controller>>
     +GET /resumo(mes) ResumoMensalDTO
     +GET /resumo/categorias(mes) List~GrupoCategoriaDTO~
+    +GET /resumo/pagamentos(mes) List~GrupoPagamentoDTO~
   }
  
   class ExtratoFuturoController {
     <<controller>>
     +GET /extrato-futuro(meses) List~ProjecaoMensalDTO~
   }
-
  
   Usuario "1" --> "0..*" Conta : possui
   Usuario "1" --> "0..*" Importacao : realiza
   Usuario "1" --> "0..*" Categoria : personaliza
   Conta "1" --> "0..*" Transacao : registra
+  Conta "1" --> "0..*" Fatura : gera
+  Fatura "1" --> "0..*" Transacao : agrupa
   Transacao "0..*" --> "1" Categoria : classificada em
   Importacao "1" --> "0..*" Transacao : gera
   Conta --> TipoConta
@@ -261,6 +312,7 @@ classDiagram
   Transacao --> TipoPagamento
   Importacao --> FormatoArquivo
   Importacao --> StatusImportacao
+  Fatura --> StatusFatura
  
   ImportacaoService --> ParserExtrato : delega
   ParserExtrato <|.. ParserCSV : implementa
@@ -271,19 +323,25 @@ classDiagram
   TransacaoService --> Transacao : gerencia
   TransacaoService --> Categoria : consulta
   ContaService --> Conta : gerencia
+  FaturaService --> Fatura : gerencia
+  FaturaService --> Transacao : consulta
+  FaturaService --> FaturaResumoDTO : retorna
   UsuarioService --> Usuario : gerencia
   CategoriaService --> Categoria : gerencia
   ResumoService --> Transacao : agrega
   ResumoService --> ResumoMensalDTO : retorna
   ResumoService --> GrupoCategoriaDTO : retorna
+  ResumoService --> GrupoPagamentoDTO : retorna
   ExtratoFuturoService --> Transacao : consulta
+  ExtratoFuturoService --> FaturaService : consulta
   ExtratoFuturoService --> ProjecaoMensalDTO : retorna
   UsuarioService --> TokenDTO : retorna
  
   AuthController --> UsuarioService : usa
   ContaController --> ContaService : usa
+  FaturaController --> FaturaService : usa
   TransacaoController --> TransacaoService : usa
   ImportacaoController --> ImportacaoService : usa
   ResumoController --> ResumoService : usa
   ExtratoFuturoController --> ExtratoFuturoService : usa
-```
+  ExtratoFuturoController --> FaturaService : usa
