@@ -18,12 +18,16 @@ erDiagram
     ENUM         tipo
     VARCHAR(255) descricao
   }
- 
+  
+  %%O campo decimal tem uma limitação (10,2)
+  %%O campo limite vai ficar como opcional no momento já que essa funcionalidade não está dentro do MVP e vai contra o risco R04.
+
   cartoes_credito {
     CHAR(36)     id              PK
     CHAR(36)     conta_id        FK
     INT          dia_fechamento
     INT          dia_vencimento
+    DECIMAL      limite
   }
  
     %%O campo decimal tem uma limitação (10,2)
@@ -77,13 +81,14 @@ erDiagram
     INT          falhas
   }
  
-  usuarios        ||--o{ contas          : "possui"
-  usuarios        ||--o{ categorias      : "personaliza"
-  usuarios        ||--o{ importacoes     : "realiza"
+  usuarios        ||--o{ contas           : "possui"
+  usuarios        ||--o{ categorias       : "personaliza"
+  usuarios        ||--o{ importacoes      : "realiza"
   contas          ||--o| cartoes_credito  : "especializa"
-  contas          ||--o{ transacoes      : "registra"
-  contas          ||--o{ faturas         : "gera"
-  faturas         ||--o{ transacoes      : "agrupa"
-  categorias      ||--o{ transacoes      : "classifica"
-  importacoes     ||--o{ transacoes      : "gera"
+  contas          ||--o{ transacoes       : "registra"
+  contas          ||--o{ faturas          : "gera"
+  faturas         ||--o{ transacoes       : "agrupa"
+  categorias      |o--o{ transacoes       : "classifica"
+  importacoes     ||--o{ transacoes       : "gera"
+
 ```
