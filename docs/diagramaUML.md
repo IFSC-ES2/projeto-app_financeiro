@@ -2,6 +2,8 @@
 classDiagram
   direction TB
  
+  %% MODEL - entidades persistidas
+ 
   class Usuario {
     <<entity>>
     +UUID id
@@ -26,6 +28,7 @@ classDiagram
     +UUID id
     +Integer diaFechamento
     +Integer diaVencimento
+    +BigDecimal limite
   }
  
   class Fatura {
@@ -69,6 +72,8 @@ classDiagram
     +Integer sucessos
     +Integer falhas
   }
+ 
+  %% ENUMERACOES
  
   class TipoConta {
     <<enumeration>>
@@ -118,6 +123,8 @@ classDiagram
     FECHADA
     PAGA
   }
+ 
+  %% SERVICE - regras de negocio
  
   class UsuarioService {
     <<service>>
@@ -187,6 +194,8 @@ classDiagram
     +calcularTotalPrevisto(usuarioId, mes) BigDecimal
   }
  
+  %% PARSER - strategy pattern
+ 
   class ParserExtrato {
     <<interface>>
     +aceita(formato) Boolean
@@ -213,6 +222,8 @@ classDiagram
     -validarChaveAcesso(chave) Boolean
     -extrairItens(nfe) List~Transacao~
   }
+ 
+  %% DTOs
  
   class TokenDTO {
     <<DTO>>
@@ -318,6 +329,9 @@ classDiagram
     +GET /extrato-futuro(meses) List~ProjecaoMensalDTO~
   }
  
+  %% RELACOES MODEL
+  %% v4: Transacao --> "0..1" Categoria (categoria e opcional)
+ 
   Usuario "1" --> "0..*" Conta : possui
   Usuario "1" --> "0..*" Importacao : realiza
   Usuario "1" --> "0..*" Categoria : personaliza
@@ -325,7 +339,7 @@ classDiagram
   Conta "1" --> "0..*" Transacao : registra
   Conta "1" --> "0..*" Fatura : gera
   Fatura "1" --> "0..*" Transacao : agrupa
-  Transacao "0..*" --> "1" Categoria : classificada em
+  Transacao "0..*" --> "0..1" Categoria : classificada em
   Importacao "1" --> "0..*" Transacao : gera
   Conta --> TipoConta
   Transacao --> TipoTransacao
@@ -333,6 +347,8 @@ classDiagram
   Importacao --> FormatoArquivo
   Importacao --> StatusImportacao
   Fatura --> StatusFatura
+ 
+  %% RELACOES SERVICE
  
   ImportacaoService --> ParserExtrato : delega
   ParserExtrato <|.. ParserCSV : implementa
@@ -360,6 +376,8 @@ classDiagram
   ExtratoFuturoService --> ProjecaoMensalDTO : retorna
   UsuarioService --> TokenDTO : retorna
  
+  %% RELACOES CONTROLLER para SERVICE
+ 
   AuthController --> UsuarioService : usa
   ContaController --> ContaService : usa
   ContaController --> CartaoCreditoService : usa
@@ -369,4 +387,5 @@ classDiagram
   ResumoController --> ResumoService : usa
   ExtratoFuturoController --> ExtratoFuturoService : usa
   ExtratoFuturoController --> FaturaService : usa
+
 ```
