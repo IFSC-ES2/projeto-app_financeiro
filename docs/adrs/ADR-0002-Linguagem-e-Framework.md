@@ -9,7 +9,7 @@ para uma boa organização do código e facilidade de colaboração entre os mem
 da equipe ao longo do semestre.
 
 ## Decisão
-A equipe decidiu utilizar Java com Spring Boot no backend e mySQL como banco de dados principal.
+A equipe decidiu utilizar Java com Spring Boot no backend e postgres como banco de dados principal.
 A equipe decidiu utilizar React e Typescript no frontend.
 
 ## Alternativas consideradas
