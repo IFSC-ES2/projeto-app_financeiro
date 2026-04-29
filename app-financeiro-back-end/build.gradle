@@ -19,22 +19,23 @@ repositories {
 }
 
 dependencies {
+    // Core Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.postgresql:postgresql:42.7.3'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    // Banco de Dados
+    implementation 'org.postgresql:postgresql:42.7.3'
+    // Documentação e Utilidades
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
     implementation 'com.opencsv:opencsv:5.9'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+    // Testes
+    testImplementation 'org.springframework.boot:spring-boot-starter-test' // Simplificado
     testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testCompileOnly 'org.projectlombok:lombok'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testAnnotationProcessor 'org.projectlombok:lombok'
-    runtimeOnly 'com.h2database:h2'
 }
 
 tasks.named('test') {
