@@ -17,6 +17,9 @@ public class Conta {
     @JoinColumn(name= "usuario_id", nullable = false)
     private Usuario usuario;
 
+    @OneToOne(mappedBy = "conta")
+    private CartaoCredito CartaoCredito;
+
     @Column(nullable = false)
     private String nome;
 
