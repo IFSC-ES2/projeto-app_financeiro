@@ -12,7 +12,7 @@ public class Categoria {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "usuario_id")
+    @JoinColumn(name = "usuario_id", nullable = true)
     private Usuario usuario;
 
     @Column(nullable = false)
