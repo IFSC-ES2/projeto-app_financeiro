@@ -2,11 +2,15 @@ package bcd.appfinanceirobackend.model;
 
 import bcd.appfinanceirobackend.model.enums.TipoConta;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.UUID;
 
 @Entity
 @Table(name="contas")
+@Getter
+@Setter
 public class Conta {
 
     @Id
