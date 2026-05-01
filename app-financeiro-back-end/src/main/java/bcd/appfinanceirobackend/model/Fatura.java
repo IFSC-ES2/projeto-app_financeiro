@@ -2,6 +2,8 @@ package bcd.appfinanceirobackend.model;
 
 import bcd.appfinanceirobackend.model.enums.StatusFatura;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -9,6 +11,8 @@ import java.time.YearMonth;
 import java.util.UUID;
 
 @Entity
+@Getter
+@Setter
 public class Fatura {
 
     @Id
