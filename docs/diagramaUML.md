@@ -10,7 +10,7 @@ classDiagram
     +String nome
     +String email
     +String senhaHash
-    +String cpf
+    +char[] cpf
     +LocalDateTime criadoEm
   }
  
