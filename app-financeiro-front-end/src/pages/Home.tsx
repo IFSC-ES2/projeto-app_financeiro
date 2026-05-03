@@ -1,3 +1,5 @@
 export function Home() {
-    return <></>; // Isso não renderiza nada na tela
-  }
+  return <h1>Home</h1>; 
+}
+
+export default Home; 
