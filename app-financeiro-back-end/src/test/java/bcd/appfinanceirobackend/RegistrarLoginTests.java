@@ -215,6 +215,54 @@ class RegistrarLoginTests {
 
             verify(usuarioRepository, never()).save(any());
         }
+
+        // R7 - CPF nulo → lança IllegalArgumentException
+        @Test
+        @DisplayName("R7 - CPF nulo → lança IllegalArgumentException")
+        void registrar_cpfNulo_lancaExcecao() {
+            dtoCadastro.setCpf(null);
+
+            assertThatThrownBy(() -> usuarioService.registrar(dtoCadastro))
+                    .isInstanceOf(IllegalArgumentException.class);
+
+            verify(usuarioRepository, never()).save(any());
+        }
+
+        // R7b - CPF em branco → lança IllegalArgumentException
+        @Test
+        @DisplayName("R7b - CPF em branco → lança IllegalArgumentException")
+        void registrar_cpfVazio_lancaExcecao() {
+            dtoCadastro.setCpf(new char[0]);
+
+            assertThatThrownBy(() -> usuarioService.registrar(dtoCadastro))
+                    .isInstanceOf(IllegalArgumentException.class);
+
+            verify(usuarioRepository, never()).save(any());
+        }
+
+        // R7c - CPF com formato inválido (menos de 11 dígitos) → lança IllegalArgumentException
+        @Test
+        @DisplayName("R7c - CPF com formato inválido → lança IllegalArgumentException")
+        void registrar_cpfFormatoInvalido_lancaExcecao() {
+            dtoCadastro.setCpf("1234".toCharArray());
+
+            assertThatThrownBy(() -> usuarioService.registrar(dtoCadastro))
+                    .isInstanceOf(IllegalArgumentException.class);
+
+            verify(usuarioRepository, never()).save(any());
+        }
+
+        // R8 - email com formato inválido (sem @) → lança IllegalArgumentException
+        @Test
+        @DisplayName("R8 - email com formato inválido → lança IllegalArgumentException")
+        void registrar_emailFormatoInvalido_lancaExcecao() {
+            dtoCadastro.setEmail("emailsemarroba.com");
+
+            assertThatThrownBy(() -> usuarioService.registrar(dtoCadastro))
+                    .isInstanceOf(IllegalArgumentException.class);
+
+            verify(usuarioRepository, never()).save(any());
+        }
     }
 
     @Nested
