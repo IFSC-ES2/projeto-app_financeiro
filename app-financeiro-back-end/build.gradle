@@ -1,6 +1,7 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '4.0.6'
+    id 'eclipse'
+    id 'org.springframework.boot' version '3.3.0'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -22,19 +23,25 @@ dependencies {
     // Core Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-web' 
+    
     // Banco de Dados
     implementation 'org.postgresql:postgresql:42.7.3'
+    
     // Documentação e Utilidades
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
+    // 3.x do springdoc puxa Spring Boot 4; manter 2.6.x alinhado ao Boot 3.3
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
     implementation 'com.opencsv:opencsv:5.9'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
+    
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    
     // Testes
-    testImplementation 'org.springframework.boot:spring-boot-starter-test' // Simplificado
-    testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // AQUI ESTÁ A CORREÇÃO FINAL DOS TESTES:
+    testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
