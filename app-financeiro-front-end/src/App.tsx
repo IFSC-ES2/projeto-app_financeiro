@@ -1,13 +1,29 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Home } from './pages/Home';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login';
+
+// criando um dashboard provisorio direto aqui pra nao dar erro de import faltando
+const DashboardFake = () => (
+  <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'Arial' }}>
+    <h2>Dashboard</h2>
+    <p>Login realizado com sucesso! (Tela oficial em construção)</p>
+  </div>
+);
 
 function App() {
+  // router em volta de tudo pra navegacao funcionar
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        {/* redireciona a raiz pro login logo de cara */}
+        <Route path="/" element={<Navigate to="/login" />} />
+        
+        {/* rota da nossa tela de login oficial */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* joga pro dashboard provisorio quando o login der certo */}
+        <Route path="/dashboard" element={<DashboardFake />} />
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 }
 
