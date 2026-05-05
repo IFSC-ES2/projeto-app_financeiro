@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
-class RegistrarLoginTests {
+class   RegistrarLoginTests {
 
     @Mock
     private UsuarioRepository usuarioRepository;
@@ -54,7 +54,7 @@ class RegistrarLoginTests {
         dtoCadastro.setNome("Maria Silva");
         dtoCadastro.setEmail("maria@email.com");
         dtoCadastro.setSenha("Senha@123");
-        dtoCadastro.setCpf("12345678901".toCharArray());
+        dtoCadastro.setCpf("12345678901");
 
         dtoLogin = new LoginRequestDTO();
         dtoLogin.setEmail("maria@email.com");
@@ -65,7 +65,7 @@ class RegistrarLoginTests {
         usuarioNoBanco.setNome("Maria Silva");
         usuarioNoBanco.setEmail("maria@email.com");
         usuarioNoBanco.setSenha("$2a$10$hashBcryptSimulado"); 
-        usuarioNoBanco.setCpf("12345678901".toCharArray());
+        usuarioNoBanco.setCpf("12345678901");
         usuarioNoBanco.setCreatedAt(LocalDateTime.now());
     }
 
@@ -232,7 +232,7 @@ class RegistrarLoginTests {
         @Test
         @DisplayName("R7b - CPF em branco → lança IllegalArgumentException")
         void registrar_cpfVazio_lancaExcecao() {
-            dtoCadastro.setCpf(new char[0]);
+            dtoCadastro.setCpf(""); // String vazia
 
             assertThatThrownBy(() -> usuarioService.registrar(dtoCadastro))
                     .isInstanceOf(IllegalArgumentException.class);
@@ -244,7 +244,7 @@ class RegistrarLoginTests {
         @Test
         @DisplayName("R7c - CPF com formato inválido → lança IllegalArgumentException")
         void registrar_cpfFormatoInvalido_lancaExcecao() {
-            dtoCadastro.setCpf("1234".toCharArray());
+            dtoCadastro.setCpf("1234"); // String com menos de 11 caracteres
 
             assertThatThrownBy(() -> usuarioService.registrar(dtoCadastro))
                     .isInstanceOf(IllegalArgumentException.class);
