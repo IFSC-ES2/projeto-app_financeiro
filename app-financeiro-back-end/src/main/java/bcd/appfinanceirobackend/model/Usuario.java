@@ -26,7 +26,7 @@ public class Usuario {
     private String senha;
 
     @Column(nullable = false, unique = true)
-    private char[] cpf;
+    private String cpf;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
