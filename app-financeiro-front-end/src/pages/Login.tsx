@@ -1,49 +1,40 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import api from '../services/api';
 import './Login.css';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [senha, setSenha] = useState('');
   const [error, setError] = useState('');
-  
-  // hook pra navegar entre as telas
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
-    // segura o reload da pagina no submit
-    e.preventDefault(); 
-    // zera os erros antes de tentar de novo
-    setError(''); 
+    e.preventDefault();
+    setError('');
 
-    // validacao basica pra nao mandar form vazio
-    if (!email || !password) {
+    if (!email || !senha) {
       setError('Por favor, preencha todos os campos.');
       return;
     }
 
+    setLoading(true);
     try {
-      // bate na api do backend pra logar
-      const response = await axios.post('http://localhost:8080/auth/login', {
-        email,
-        password
-      });
+      const { data } = await api.post('/auth/login', { email, senha });
 
-      // pegando o token que a api devolve
-      const token = response.data.token;
-
-      if (token) {
-        // joga o token no localstorage pra manter logado
-        localStorage.setItem('token', token);
-        
-        // manda o usuario pro dashboard
-        navigate('/dashboard'); 
+      if (data?.accessToken) {
+        localStorage.setItem('token', data.accessToken);
+        navigate('/dashboard');
+      } else {
+        setError('Resposta inesperada do servidor.');
       }
-    } catch (err) {
-      // deu ruim na senha ou email
-      setError('E-mail ou senha inválidos. Tente novamente.');
-      console.error('erro na api de login:', err);
+    } catch (err: any) {
+      const msg = err?.response?.data?.erro;
+      setError(msg || 'E-mail ou senha inválidos. Tente novamente.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -52,32 +43,40 @@ const Login: React.FC = () => {
       <form className="login-form" onSubmit={handleLogin}>
         <h2>SmartBudget</h2>
         <p>Faça login para continuar</p>
-        
+
         {error && <div className="error-message">{error}</div>}
-        
+
         <div className="input-group">
           <label htmlFor="email">E-mail</label>
-          <input 
-            type="email" 
-            id="email" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="Digite seu e-mail"
+            autoComplete="email"
           />
         </div>
 
         <div className="input-group">
-          <label htmlFor="password">Senha</label>
-          <input 
-            type="password" 
-            id="password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
+          <label htmlFor="senha">Senha</label>
+          <input
+            type="password"
+            id="senha"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
             placeholder="Digite sua senha"
+            autoComplete="current-password"
           />
         </div>
 
-        <button type="submit" className="btn-login">Entrar</button>
+        <button type="submit" className="btn-login" disabled={loading}>
+          {loading ? 'Entrando…' : 'Entrar'}
+        </button>
+
+        <p className="form-footer">
+          Ainda não tem conta? <Link to="/register">Criar conta</Link>
+        </p>
       </form>
     </div>
   );
