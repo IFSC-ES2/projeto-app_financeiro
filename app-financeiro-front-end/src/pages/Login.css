@@ -84,3 +84,25 @@
   .btn-login:hover {
     background-color: #0056b3;
   }
+
+  .btn-login:disabled {
+    background-color: #6ba6e0;
+    cursor: not-allowed;
+  }
+
+  .form-footer {
+    margin-top: 1.25rem;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    color: #555;
+  }
+
+  .form-footer a {
+    color: #007bff;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .form-footer a:hover {
+    text-decoration: underline;
+  }
