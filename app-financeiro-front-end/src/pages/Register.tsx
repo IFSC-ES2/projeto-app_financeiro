@@ -11,6 +11,21 @@ const formatCpf = (raw: string) => {
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
 };
 
+// Valida CPF pelos dois dígitos verificadores. Espera 11 dígitos, sem máscara.
+const isCpfValido = (cpf: string) => {
+  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+  const d = cpf.split('').map(Number);
+  let soma = 0;
+  for (let i = 0; i < 9; i++) soma += d[i] * (10 - i);
+  let resto = soma % 11;
+  const dv1 = resto < 2 ? 0 : 11 - resto;
+  soma = 0;
+  for (let i = 0; i < 10; i++) soma += d[i] * (11 - i);
+  resto = soma % 11;
+  const dv2 = resto < 2 ? 0 : 11 - resto;
+  return dv1 === d[9] && dv2 === d[10];
+};
+
 const Register: React.FC = () => {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -42,6 +57,10 @@ const Register: React.FC = () => {
     const cpfDigits = cpf.replace(/\D/g, '');
     if (cpfDigits.length !== 11) {
       setError('CPF deve conter 11 dígitos.');
+      return;
+    }
+    if (!isCpfValido(cpfDigits)) {
+      setError('CPF inválido. Verifique os dígitos.');
       return;
     }
 
