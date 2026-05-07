@@ -56,7 +56,7 @@ const Cadastro: React.FC = () => {
     try {
       const cpfSoDigitos = valores.cpf.replace(/\D/g, '');
       await cadastrar(valores.nome, valores.email, valores.senha, cpfSoDigitos);
-      navigate('/dashboard');
+      navigate('/login');
     } catch (err: any) {
       const status = err?.response?.status;
       const msg = err?.response?.data?.erro;
