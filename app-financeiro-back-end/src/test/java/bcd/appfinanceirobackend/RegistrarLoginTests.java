@@ -54,7 +54,7 @@ class   RegistrarLoginTests {
         dtoCadastro.setNome("Maria Silva");
         dtoCadastro.setEmail("maria@email.com");
         dtoCadastro.setSenha("Senha@123");
-        dtoCadastro.setCpf("12345678901");
+        dtoCadastro.setCpf("11144477735");
 
         dtoLogin = new LoginRequestDTO();
         dtoLogin.setEmail("maria@email.com");
@@ -65,7 +65,7 @@ class   RegistrarLoginTests {
         usuarioNoBanco.setNome("Maria Silva");
         usuarioNoBanco.setEmail("maria@email.com");
         usuarioNoBanco.setSenha("$2a$10$hashBcryptSimulado"); 
-        usuarioNoBanco.setCpf("12345678901");
+        usuarioNoBanco.setCpf("11144477735");
         usuarioNoBanco.setCreatedAt(LocalDateTime.now());
     }
 
@@ -257,6 +257,30 @@ class   RegistrarLoginTests {
         @DisplayName("R8 - email com formato inválido → lança IllegalArgumentException")
         void registrar_emailFormatoInvalido_lancaExcecao() {
             dtoCadastro.setEmail("emailsemarroba.com");
+
+            assertThatThrownBy(() -> usuarioService.registrar(dtoCadastro))
+                    .isInstanceOf(IllegalArgumentException.class);
+
+            verify(usuarioRepository, never()).save(any());
+        }
+
+        // R9 - CPF com 11 dígitos mas dígitos verificadores inválidos → lança IllegalArgumentException
+        @Test
+        @DisplayName("R9 - CPF com dígitos verificadores inválidos → lança IllegalArgumentException")
+        void registrar_cpfDigitosVerificadoresInvalidos_lancaExcecao() {
+            dtoCadastro.setCpf("12345678901");
+
+            assertThatThrownBy(() -> usuarioService.registrar(dtoCadastro))
+                    .isInstanceOf(IllegalArgumentException.class);
+
+            verify(usuarioRepository, never()).save(any());
+        }
+
+        // R9b - CPF com todos os dígitos iguais → lança IllegalArgumentException
+        @Test
+        @DisplayName("R9b - CPF com dígitos repetidos → lança IllegalArgumentException")
+        void registrar_cpfDigitosRepetidos_lancaExcecao() {
+            dtoCadastro.setCpf("11111111111");
 
             assertThatThrownBy(() -> usuarioService.registrar(dtoCadastro))
                     .isInstanceOf(IllegalArgumentException.class);

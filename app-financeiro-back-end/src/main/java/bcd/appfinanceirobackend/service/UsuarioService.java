@@ -47,6 +47,9 @@ public class UsuarioService {
         if (!CPF_REGEX.matcher(dto.getCpf().trim()).matches()) {
             throw new IllegalArgumentException("CPF deve conter 11 dígitos numéricos.");
         }
+        if (!isCpfValido(dto.getCpf().trim())) {
+            throw new IllegalArgumentException("CPF inválido.");
+        }
 
         if (usuarioRepository.existsByEmail(dto.getEmail())) {
             throw new DataIntegrityViolationException("E-mail já cadastrado.");
@@ -85,5 +88,31 @@ public class UsuarioService {
         if (valor == null || valor.trim().isEmpty()) {
             throw new IllegalArgumentException("Campo " + campo + " é obrigatório.");
         }
+    }
+
+    // Ref: https://www.dio.me/articles/formatacao-de-cpf-em-java
+    private static boolean isCpfValido(String cpf) {
+        if (cpf.matches("(\\d)\\1{10}")) {
+            return false;
+        }
+        int[] digitos = new int[11];
+        for (int i = 0; i < 11; i++) {
+            digitos[i] = cpf.charAt(i) - '0';
+        }
+        int soma = 0;
+        for (int i = 0; i < 9; i++) {
+            soma += digitos[i] * (10 - i);
+        }
+        int resto = soma % 11;
+        int dv1 = (resto < 2) ? 0 : (11 - resto);
+
+        soma = 0;
+        for (int i = 0; i < 10; i++) {
+            soma += digitos[i] * (11 - i);
+        }
+        resto = soma % 11;
+        int dv2 = (resto < 2) ? 0 : (11 - resto);
+
+        return dv1 == digitos[9] && dv2 == digitos[10];
     }
 }
