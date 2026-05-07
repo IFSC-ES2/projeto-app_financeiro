@@ -6,11 +6,17 @@
 */
 
 :root {
-  --sb-primary: #7c3fbd;
-  --sb-primary-dark: #5b2d8e;
-  --sb-primary-light: #9b5fd4;
-  --sb-accent: #b57fe8;
-  --sb-bg: #f7f8fc;
+  --sb-primary: #2FA98F;
+  --sb-primary-dark: #0E1624;
+  --sb-primary-mid: #162A3D;
+  --sb-primary-light: #6CC5B2;
+  --sb-accent: #FFC83D;
+  --sb-bg: #F2EFE6;
+  --sb-surface: #FFFFFF;
+  --sb-text: #0E1624;
+  --sb-text-muted: #2F4B63;
+  --sb-border: #E5E7EB;
+  --sb-gradient: linear-gradient(135deg, #0E1624, #2FA98F);
 }
 
 * {
@@ -21,13 +27,14 @@ body {
   margin: 0;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: var(--sb-bg);
+  color: var(--sb-text);
   -webkit-font-smoothing: antialiased;
 }
 
 /* Override Bootstrap focus rings to match brand color */
 .form-control:focus {
   border-color: var(--sb-primary-light) !important;
-  box-shadow: 0 0 0 0.2rem rgba(124, 63, 189, 0.2) !important;
+  box-shadow: 0 0 0 0.2rem rgba(47, 169, 143, 0.22) !important;
 }
 
 .form-check-input:checked {
@@ -52,14 +59,14 @@ body {
 /* Input border style */
 .form-control,
 .input-group-text {
-  border-color: #e2e4ea;
+  border-color: var(--sb-border);
 }
 
 .form-control {
   border-radius: 8px;
   padding: 0.55rem 0.85rem;
   font-size: 0.95rem;
-  color: #1a1a2e;
+  color: var(--sb-text);
 }
 
 .input-group > .form-control:not(:first-child),

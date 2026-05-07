@@ -10,7 +10,7 @@ const PainelAutenticacao: React.FC<PropsPainelAutenticacao> = ({ titulo, subtitu
     <div
       className="d-none d-lg-flex flex-column justify-content-center align-items-start p-5 position-relative overflow-hidden"
       style={{
-        background: 'linear-gradient(145deg, #5b2d8e 0%, #7c3fbd 40%, #9b5fd4 70%, #b57fe8 100%)',
+        background: 'linear-gradient(145deg, var(--sb-primary-dark) 0%, var(--sb-primary-mid) 42%, var(--sb-text-muted) 72%, var(--sb-primary) 100%)',
         minHeight: '100%',
         flex: '0 0 45%',
       }}
@@ -83,18 +83,13 @@ const PainelAutenticacao: React.FC<PropsPainelAutenticacao> = ({ titulo, subtitu
       {/* Logo da marca */}
       <div className="position-relative mb-auto" style={{ zIndex: 1, paddingTop: '1rem' }}>
         <div className="d-flex align-items-center gap-2 mb-2">
-          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-            <rect width="36" height="36" rx="10" fill="rgba(255,255,255,0.2)" />
-            <path
-              d="M10 24 L14 16 L18 20 L22 12 L26 18"
-              stroke="white"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-            />
-            <circle cx="26" cy="18" r="2" fill="white" />
-          </svg>
+          <img
+            src="/smartbudget-logo.png"
+            alt="SmartBudget"
+            width="40"
+            height="40"
+            style={{ objectFit: 'contain' }}
+          />
           <span
             className="fw-bold text-white"
             style={{ fontSize: '1.3rem', letterSpacing: '-0.02em', fontFamily: 'system-ui, sans-serif' }}

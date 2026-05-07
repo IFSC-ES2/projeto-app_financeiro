@@ -77,7 +77,7 @@ const Cadastro: React.FC = () => {
         {/* Logo visível apenas no mobile */}
         <div className="d-flex d-lg-none align-items-center gap-2 mb-4">
           <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
-            <rect width="36" height="36" rx="10" fill="#7c3fbd" />
+            <rect width="36" height="36" rx="10" fill="var(--sb-primary)" />
             <path
               d="M10 24 L14 16 L18 20 L22 12 L26 18"
               stroke="white"
@@ -88,12 +88,12 @@ const Cadastro: React.FC = () => {
             />
             <circle cx="26" cy="18" r="2" fill="white" />
           </svg>
-          <span className="fw-bold" style={{ fontSize: '1.2rem', color: '#5b2d8e' }}>
+          <span className="fw-bold" style={{ fontSize: '1.2rem', color: 'var(--sb-primary-dark)' }}>
             SmartBudget
           </span>
         </div>
 
-        <h2 className="fw-bold mb-1" style={{ color: '#1a1a2e', fontSize: '1.8rem' }}>
+        <h2 className="fw-bold mb-1" style={{ color: 'var(--sb-text)', fontSize: '1.8rem' }}>
           Criar conta
         </h2>
         <p className="text-muted small mb-0">Preencha seus dados para começar</p>
@@ -208,7 +208,7 @@ const Cadastro: React.FC = () => {
           textoCarregando="Criando conta..."
           className="w-100 py-2 fw-semibold mt-2"
           style={{
-            background: 'linear-gradient(135deg, #5b2d8e, #9b5fd4)',
+            background: 'var(--sb-gradient)',
             border: 'none',
             borderRadius: '8px',
             fontSize: '1rem',
@@ -219,7 +219,7 @@ const Cadastro: React.FC = () => {
 
         <p className="text-center text-muted small mt-4 mb-0">
           Já tem uma conta?{' '}
-          <Link to="/login" className="fw-semibold text-decoration-none" style={{ color: '#7c3fbd' }}>
+          <Link to="/login" className="fw-semibold text-decoration-none" style={{ color: 'var(--sb-primary)' }}>
             Entrar
           </Link>
         </p>
