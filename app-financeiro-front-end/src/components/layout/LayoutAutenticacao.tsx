@@ -11,7 +11,7 @@ const LayoutAutenticacao: React.FC<PropsLayoutAutenticacao> = ({ tituloPainel, s
   return (
     <div
       className="d-flex align-items-stretch"
-      style={{ minHeight: '100vh', background: '#f7f8fc' }}
+      style={{ minHeight: '100vh', background: 'var(--sb-bg)' }}
     >
       {/* Painel decorativo esquerdo */}
       <PainelAutenticacao titulo={tituloPainel} subtitulo={subtituloPainel} />
@@ -19,7 +19,7 @@ const LayoutAutenticacao: React.FC<PropsLayoutAutenticacao> = ({ tituloPainel, s
       {/* Área do formulário direito */}
       <div
         className="flex-grow-1 d-flex align-items-center justify-content-center p-4"
-        style={{ background: '#fff' }}
+        style={{ background: 'var(--sb-surface)' }}
       >
         <div style={{ width: '100%', maxWidth: '420px' }}>
           {children}
