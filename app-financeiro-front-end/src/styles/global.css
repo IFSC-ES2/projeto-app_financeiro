@@ -1,0 +1,86 @@
+/*
+  SmartBudget – Global Styles
+  Bootstrap é carregado via CDN no index.html ou instalado via npm.
+  Instale com: npm install bootstrap
+  E importe no main.tsx: import 'bootstrap/dist/css/bootstrap.min.css';
+*/
+
+:root {
+  --sb-primary: #2FA98F;
+  --sb-primary-dark: #0E1624;
+  --sb-primary-mid: #162A3D;
+  --sb-primary-light: #6CC5B2;
+  --sb-accent: #FFC83D;
+  --sb-bg: #F2EFE6;
+  --sb-surface: #FFFFFF;
+  --sb-text: #0E1624;
+  --sb-text-muted: #2F4B63;
+  --sb-border: #E5E7EB;
+  --sb-gradient: linear-gradient(135deg, #0E1624, #2FA98F);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--sb-bg);
+  color: var(--sb-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Override Bootstrap focus rings to match brand color */
+.form-control:focus {
+  border-color: var(--sb-primary-light) !important;
+  box-shadow: 0 0 0 0.2rem rgba(47, 169, 143, 0.22) !important;
+}
+
+.form-check-input:checked {
+  background-color: var(--sb-primary);
+  border-color: var(--sb-primary);
+}
+
+/* Smooth transition on buttons */
+.btn {
+  transition: opacity 0.18s ease, transform 0.1s ease;
+}
+
+.btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Input border style */
+.form-control,
+.input-group-text {
+  border-color: var(--sb-border);
+}
+
+.form-control {
+  border-radius: 8px;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.95rem;
+  color: var(--sb-text);
+}
+
+.input-group > .form-control:not(:first-child),
+.input-group > .input-group-text + .form-control {
+  border-radius: 0 8px 8px 0;
+}
+
+.input-group > .input-group-text:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+/* Auth panel transition on resize */
+@media (max-width: 991px) {
+  .auth-panel {
+    display: none;
+  }
+}
