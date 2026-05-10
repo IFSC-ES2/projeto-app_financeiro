@@ -10,7 +10,7 @@ A equipe primeiro classificou cada item por tamanho relativo e depois converteu 
 
 | Tamanho | Horas estimadas |
 |-|--|
-| P | até 2h |
+| P | até 2|
 | M | 3h a 5h |
 | G | 6h a 9h |
 | GG | 10h ou mais |

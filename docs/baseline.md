@@ -2,23 +2,18 @@
 
 ## 1. Recorte do backlog
 
-O backlog atual conta com 11 issues abertas. As issues fechadas (#1 ao #12) cobrem as entregas de kickoff, governança, EAP e ADRs.
+Visualização geral das implementações planejadas para o projeto ao decorrer do semestre.
 
-As issues selecionadas para o planejamento inicial são as que compõem o fluxo mínimo para que o desenvolvimento do MVP possa começar:
+1. Criação de perfil pessoal, com autenticação;
+2. Adicionar gastos manualmente;
+3. Leitura de extratos bancários e notas fiscais (xml, csv, txt);
+4. Categorizar os gastos em subdivisões (lazer, alimentação etc);
+5. Categorizar os gastos a partir de como o dinheiro foi utilizado (cartão, pix, dinheiro, boleto);
+6. Categorizar os gastos a partir do cartão e banco utilizado;
+7. Visualização de gastos do mês em texto, gráficos e dashboards;
+8. Visualição do extrato dos próximos meses em texto, gráficos e dashboards;
 
-- #16. Definir dependências do Spring Boot (Alta)
-- #17. Configuração do Spring Boot e estrutura de pastas (Alta)
-- #18. Configuração do React com TypeScript (Alta)
-- #19. Modelagem do banco de dados (ER) (Alta)
-- #20. Criação de diagrama UML (Alta)
-- #21. Configuração do banco de dados (Alta)
-- #22. Configuração de CORS entre frontend e backend (Alta)
-- #25. Cadastro e autenticação de usuário (Alta)
-- #26. Tela de login (Alta)
-- #27. Tela de cadastro (Alta)
-- #13. Criação da Home com um Relatório resumido das finanças do usuário (Baixa)
-
- **Critério de priorização:** as issues de alta prioridade formam a fundação técnica e o primeiro fluxo funcional do MVP. Sem autenticação funcionando, nenhuma outra funcionalidade pode ser desenvolvida com segurança. 
+Por ordem do que queremos implementar. Esse documento poderá ser alterado após decisão em conjunto dos membros para definir complexidade das funcionalidades em P, M, G ou GG,
 
 ---
 
@@ -28,10 +23,10 @@ T-shirt size com mapeamento para horas.
 
 A equipe optou pelo T-shirt size por ser uma técnica simples, rápida e adequada para um backlog ainda sem histórico de velocidade. O mapeamento adotado foi:
 
-- P: até 2h
-- M: 3h a 5h
-- G: 6h a 9h
-- GG: 10h ou mais
+- P
+- M
+- G
+- GG
 
 A unidade adotada foi de horas de trabalho efetivo.
 
@@ -47,18 +42,17 @@ A unidade adotada foi de horas de trabalho efetivo.
 
 ## 3. Estimativas dos itens priorizados
 
-- #16. Definir dependências do Spring Boot (P, 2h, responsável: **Victor Blum**)
-- #17. Configuração do Spring Boot e estrutura de pastas (M, 4h, responsável: **Victor Blum**)
-- #18. Configuração do React com TypeScript (M, 4h, responsável: **João Pedro**)
-- #19. Modelagem do banco de dados (ER) (M, 5h, responsável: **Victor Blum**)
-- #20. Criação de diagrama UML (M, 4h, responsável: **Victor Blum**)
-- #21. Configuração do banco de dados (G, 8h, responsável: **João Pedro**)
-- #22. Configuração de CORS entre frontend e backend (M, 3h, responsável: **João Pedro**)
-- #25. Cadastro e autenticação de usuário (GG, 10h, responsável: Alexandre)
-- #26. Tela de login (M, 4h, responsável: A definir)
-- #27. Tela de cadastro (M, 4h, responsável: Alexandre)
-- #13. Criação da Home com relatório resumido (G, 8h, responsável: A definir)
-- Total estimado: 50h
+- #16. Definir dependências do Spring Boot (P, responsável: **Victor Blum**)
+- #17. Configuração do Spring Boot e estrutura de pastas (M, responsável: **Victor Blum**)
+- #18. Configuração do React com TypeScript (M, responsável: **João Pedro**)
+- #19. Modelagem do banco de dados (ER) (M, responsável: **Victor Blum**)
+- #20. Criação de diagrama UML (M, responsável: **Victor Blum**)
+- #21. Configuração do banco de dados (G, responsável: **João Pedro**)
+- #22. Configuração de CORS entre frontend e backend (M, responsável: **João Pedro**)
+- #25. Cadastro e autenticação de usuário (GG, responsável: Alexandre)
+- #26. Tela de login (M, responsável: A definir)
+- #27. Tela de cadastro (M, responsável: Alexandre)
+- #13. Criação da Home com relatório resumido (G, responsável: A definir)
 
 ---
 
@@ -72,12 +66,6 @@ A unidade adotada foi de horas de trabalho efetivo.
 - João Pedro Callegaro: DevOps / Infra (5h/semana, 10h por sprint)
 - Alexandre Vilela: DevOps / Infra (7h/semana, 14h por sprint)
 
-### Capacidade total por sprint (5 membros confirmados)
-
-- Sprint 1 (08/04 – 22/04/2026): 32h
-- Sprint 2 (23/04 – 07/05/2026): 46h
-
-Capacidade calculada com base nos 5 membros com disponibilidade confirmada. 
 
 ### Restrições 
 
