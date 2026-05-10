@@ -36,9 +36,9 @@ As issues para essa sprint foram:
 
 Obs.: Essa foi a projeção e divisão inicial. Devido a atrasos de entrega, algumas issues foram repassadas para outras pessoas finalizarem.
 
-- #44, #26 e #27: Repassada para Victor Lacerda e Lucas de Leon
+- #44, #26 e #27: Repassada para Victor Lacerda e Lucas de Leon.
 
-
+Essas issues representam uma parcela muito significativa da funcionalidade escolhida e impactou na apresentação da Sprint 1. As demais foram feitas conforme definição inicial.
 
 
 ## Contribuições em Pull Requests (Reviews)
