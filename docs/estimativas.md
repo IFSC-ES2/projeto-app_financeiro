@@ -8,13 +8,10 @@ A técnica foi escolhida por ser simples, rápida e adequada para um backlog sem
 
 A equipe primeiro classificou cada item por tamanho relativo e depois converteu para horas usando uma tabela de referência.
 
-| Tamanho | Horas estimadas |
-|-|--|
-| P | até 2h |
-| M | 3h a 5h |
-| G | 6h a 9h |
-| GG | 10h ou mais |
-
+- P
+- M
+- G
+- GG
 
 ## 2. Quem participou
 
@@ -37,25 +34,7 @@ Cada item foi dimensionado considerando:
 - **Complexidade de configuração e validação**: itens que exigem configuração de ambiente, integração entre camadas ou testes específicos foram tratados como maiores
 
 
-## 4. Estimativas por item
-
-| Issue | Descrição | Tamanho | Estimativa | Responsável |
-|-------|-----------|---------|------------|-------------|
-| #16 | Definir dependências do Spring Boot | P | 2h | Victor Blum |
-| #17 | Configuração do Spring Boot e estrutura de pastas | P | 1h | Victor Blum |
-| #18 | Configuração do React com TypeScript | P | 1h | João Pedro Callegaro |
-| #19 | Modelagem do banco de dados (ER) | M | 5h | Victor Blum |
-| #20 | Criação de diagrama UML | M | 4h | Victor Blum |
-| #21 | Configuração do banco de dados | G | 8h | Alexandre Pereira Villela |
-| #22 | Configuração de CORS entre frontend e backend | M | 3h | Victor Blum |
-| #25 | Cadastro e autenticação de usuário | GG | 10h | Victor Blum |
-| #26 | Tela de login | M | 4h | João Pedro Callegaro |
-| #27 | Tela de cadastro | M | 4h | João Pedro Callegaro |
-| #13 | Criação da Home com relatório resumido | G | 8h | João Pedro Callegaro |
-| **Total** | | | **50h** | |
-
-
-## 5. Hipóteses assumidas
+## 4. Hipóteses assumidas
 
 As estimativas foram construídas sobre as seguintes premissas. Caso alguma mude, as estimativas devem ser revisadas:
 
@@ -67,7 +46,7 @@ As estimativas foram construídas sobre as seguintes premissas. Caso alguma mude
 - O parser de extratos (XML/CSV) não está neste recorte, seu dimensionamento será feito na Sprint 2, após validação técnica inicial
 
 
-## 6. Limitações e incertezas
+## 5. Limitações e incertezas
 
 - **Sem histórico de velocidade:** esta é a primeira sprint de desenvolvimento real da equipe. As estimativas são hipóteses iniciais e devem ser calibradas a partir da Sprint 2, quando houver dados reais de entrega.
 - **Parser de extratos não estimado:** o item de maior incerteza técnica do projeto foi intencionalmente deixado fora deste recorte. Será dimensionado somente após a equipe ter contato com arquivos reais de extrato bancário.
