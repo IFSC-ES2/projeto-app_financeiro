@@ -16,23 +16,29 @@ Assim, a equipe consegue testar a base do MVP logo no início, reduzir riscos t�
 
 As issues para essa sprint foram:
 
-- #13: Criação da Home com um Relatório resumido das finanças do usuário (Alexandre Vilella)
-- #16: Definir dependências do Sprint Boot (Victor Blum)
-- #17: Configuração do Spring Boot e estrutura de pastas (Victor Blum)
-- #18: Configuração do React com TypeScript (João Pedro)
-- #19: Modelagem do banco de dados Entidade Relacionamento (Victor Blum)
-- #20: Criação do diagrama UML (Victor Blum)
-- #21: Configuração do banco de dados (João Pedro)
-- #22: Configuração de CORS entre frontend e backend (João Pedro)
-- #25: Cadastro e autenticação de usuário (Alexandre Vilella)
-- #26: Tela de login (João Pedro)
-- #27: Tela de cadastro (Alexandre Vilella)
-- #40: Criação do docs/sprint1.md (Victor Lacerda)
-- #41: Vertical slice: estruturação básica do backend para a Sprint 1 (João Pedro)
-- #42: Criar arquivo de configuração para testes (Lucas de Leon)
-- #43: Infraestrutura de execução do Docker (Alexandre Vilella)
-- #44: Vertical slice: implementar a tela correspondente à entrega da Sprint 1 (João Pedro)
-- #53: Implementar entidades JPA e enums do diagrama de classes (Victor Blum)
+- #13: Criação da Home com um Relatório resumido das finanças do usuário (Alexandre Vilella) **[Não atendido]**
+- #16: Definir dependências do Sprint Boot (Victor Blum) **[x]**
+- #17: Configuração do Spring Boot e estrutura de pastas (Victor Blum) **[x]**
+- #18: Configuração do React com TypeScript (João Pedro) **[x]**
+- #19: Modelagem do banco de dados Entidade Relacionamento (Victor Blum) **[x]**
+- #20: Criação do diagrama UML (Victor Blum) **[x]**
+- #21: Configuração do banco de dados (João Pedro) **[x]**
+- #22: Configuração de CORS entre frontend e backend (João Pedro) **[x]**
+- #25: Cadastro e autenticação de usuário (Alexandre Vilella) **[x]**
+- #26: Tela de login (João Pedro) **[x]**
+- #27: Tela de cadastro (Alexandre Vilella) **[x]**
+- #40: Criação do docs/sprint1.md (Victor Lacerda) **[x]**
+- #41: Vertical slice: estruturação básica do backend para a Sprint 1 (João Pedro) **[x]**
+- #42: Criar arquivo de configuração para testes (Lucas de Leon) **[x]**
+- #43: Infraestrutura de execução do Docker (Alexandre Vilella) **[x]**
+- #44: Vertical slice: implementar a tela correspondente à entrega da Sprint 1 (João Pedro) **[x]**
+- #53: Implementar entidades JPA e enums do diagrama de classes (Victor Blum) **[x]**
+
+Obs.: Essa foi a projeção e divisão inicial. Devido a atrasos de entrega, algumas issues foram repassadas para outras pessoas finalizarem.
+
+- #44, #26 e #27: Repassada para Victor Lacerda e Lucas de Leon
+
+
 
 
 ## Contribuições em Pull Requests (Reviews)
@@ -57,19 +63,21 @@ As issues para essa sprint foram:
 | Victor Lacerda | [chore: Criando o projeto springboot e adicionando as dependencias #47](https://github.com/IFSC-ES2/projeto-app_financeiro/pull/47) | Pontuou a falta do driver do banco de dados e orientou a equipe a revisar a ADR para validação do modelo escolhido. | O driver do PostgreSQL foi incluído nas dependências pelo proprietário do PR, Victor Blum.<br><br>Commit: <https://github.com/IFSC-ES2/projeto-app_financeiro/pull/47/commits/2f7d7875569f355c14b7106c0d425159f070da72> | 1. [Comentário sobre driver do banco e revisão da ADR](https://github.com/IFSC-ES2/projeto-app_financeiro/pull/47#issuecomment-4317143777) |
  
 
+ Esse é apenas um resumo das reviews nos PRs e não abrange 100% da participação da equipe durante a Sprint 1. 
+
 ### Pontos de notoriedade
 
-Essa Sprint consistiu em 11 pull requests, sendo:
-- 7 aprovados;
+Essa Sprint consistiu em 16 pull requests, sendo:
+- 12 aprovados;
 - 4 recusados por inconsistências. 
 
-8 desses 11 PRs foram revisados por no mínimo 2 pessoas, demonstrando o esforço colaborativo na revisão dos PRs. 
+13 desses 16 PRs foram revisados por no mínimo 2 pessoas, demonstrando o esforço colaborativo na revisão dos PRs. 
 - Em sua maioria, eles foram aprovados/mergeados pelo Scrum Master;
-- Em casos pontuais, o Scrum Master participou do review, porém outro membro fez a aprovação do merge.
+- Em casos pontuais, o Scrum Master (Victor Gabriel) participou do review, porém outro membro fez a aprovação do merge.
 
 Será revisada a disponibilidade de tempo de cada membro novamente, visto que, na prática, nem toda a carga que foi atribuída a cada um foi realizada dentro do prazo, impactando o planejamento inicial.
 
 A partir dessa análise, será conversado novamente com cada membro para reorganizar tempo e interesse individual para a realização das issues propostas na Sprint 2. 
 
 
-**Obs.:** Esse documento está incompleto. Será finalizado quando o elemento principal dessa sprint estiver pronto, o front-end, garantindo que o fluxo mínimo do MVP funcione.
+Para a Sprint 2, o Scrum Master passará a ser o Lucas de Leon.
