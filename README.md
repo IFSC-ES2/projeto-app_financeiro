@@ -35,8 +35,8 @@ O sistema vai permitir a leitura de extratos bancários e notas fiscais (.xml, .
 ### b) quais são as funcionalidades principais?
 
 1. Criação de perfil pessoal, com autenticação;
-1. Leitura de extratos bancários e notas fiscais (xml, csv, txt);
 1. Adicionar gastos manualmente;
+1. Leitura de extratos bancários e notas fiscais (xml, csv, txt);
 1. Categorizar os gastos em subdivisões (lazer, alimentação etc);
 1. Categorizar os gastos a partir de como o dinheiro foi utilizado (cartão, pix, dinheiro, boleto);
 1. Categorizar os gastos a partir do cartão e banco utilizado;
