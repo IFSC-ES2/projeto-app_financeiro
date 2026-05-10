@@ -51,6 +51,56 @@ O sistema vai permitir a leitura de extratos bancários e notas fiscais (.xml, .
 1. Investimentos e Criptomoedas;
 1. Conversão para outras moedas (dólar, euro, libras etc), será apenas o Real.
 
+### 4. Situação atual do projeto
+
+Sprint 1 com a funcionalidade de cadastro e autenticação implementada, conforme MVP.
+
+Para rodar os testes, execute: `./gradlew test --tests "bcd.appfinanceirobackend.service.RegistrarLoginTests"`
+
+Para rodar banco de dados:
+
+```bash
+docker run -d \
+  --name app-financeiro-db \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=1234 \
+  -e POSTGRES_DB=app_financeiro \
+  -p 5432:5432 \
+  -v app-financeiro-pgdata:/var/lib/postgresql/data \
+  postgres:16
+```
+
+Para rodar front-end:
+
+```bash
+cd app-financeiro-front-end
+npm install
+npm run dev
+```
+
+- Porta: 5173 (default do Vite)
+- URL: `http://localhost:5173`
+
+Para rodar back-end:
+
+```bash
+cd app-financeiro-back-end
+./gradlew bootRun
+```
+
+- Porta: 8080
+- Base URL: `http://localhost:8080`
+
+Para testar autenticação via curl:
+```bash
+curl -X POST http://localhost:8080/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"nome":"Alexandre","email":"alex@test.com","cpf":"12345678909","senha":"123456"}'
+```
+
+Informações mais detalhadas disponível em [docs/como-rodar.md](docs/como-rodar.md)
+
+
 -------
 ### Documentos 
 
@@ -65,3 +115,4 @@ O sistema vai permitir a leitura de extratos bancários e notas fiscais (.xml, .
 - [Estimativas](docs\estimativas.md)
 - [Metricas](docs/metricas.md)
 - [Metricas](docs/baseline.md)
+- [Como rodar Sprint 1](docs/como-rodar.md)
