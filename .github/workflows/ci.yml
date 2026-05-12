@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  backend:
+    name: Backend (build & test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app-financeiro-back-end
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: app_financeiro
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: '1234'
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Build
+        run: gradle build -x test
+
+      - name: Tests
+        run: gradle test
+
+  frontend:
+    name: Frontend (build & test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app-financeiro-front-end
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: app-financeiro-front-end/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Tests
+        run: npm test --if-present
+
+  yaml-lint:
+    name: YAML syntax validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Validate YAML files
+        run: |
+          python - <<'PY'
+          import sys, pathlib, yaml
+          erros = 0
+          for arquivo in pathlib.Path('.').rglob('*.y*ml'):
+              if any(parte in arquivo.parts for parte in ('node_modules', 'build', 'dist', '.gradle')):
+                  continue
+              try:
+                  with arquivo.open('r', encoding='utf-8') as f:
+                      list(yaml.safe_load_all(f))
+                  print(f'ok   {arquivo}')
+              except yaml.YAMLError as e:
+                  print(f'erro {arquivo}: {e}')
+                  erros += 1
+          sys.exit(1 if erros else 0)
+          PY
+
+  required-files:
+    name: Required files check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify required files exist
+        run: |
+          obrigatorios=(
+            "README.md"
+            ".github/workflows"
+            "docs/riscos.md"
+            ".github/pull_request_template.md"
+          )
+          faltando=0
+          for caminho in "${obrigatorios[@]}"; do
+            if [ -e "$caminho" ]; then
+              echo "ok       $caminho"
+            else
+              echo "faltando $caminho"
+              faltando=1
+            fi
+          done
+          exit $faltando
