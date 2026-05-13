@@ -2,19 +2,18 @@ package bcd.appfinanceirobackend.service;
 
 import bcd.appfinanceirobackend.dto.transacao.TransacaoRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
+import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 public class TransacaoService {
 
-    private TransacaoRepository transacaoRepository;
-    private ContaRepository contaRepository;
+    private final TransacaoRepository transacaoRepository;
+    private final ContaRepository contaRepository;
 
     public TransacaoService(TransacaoRepository transacaoRepository, ContaRepository contaRepository) {
         this.transacaoRepository = transacaoRepository;
@@ -26,7 +25,8 @@ public class TransacaoService {
                 dto.getContaId() == null ||
                 dto.getData() == null) throw new IllegalArgumentException("Campos obrigatórios não informados");
 
-        Optional<Conta> conta = contaRepository.findById(dto.getContaId());
+        Conta conta = contaRepository.findById(dto.getContaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
 
         Transacao transacao = new Transacao();
         transacao.setCategorizada(true);
@@ -38,10 +38,20 @@ public class TransacaoService {
         transacao.setFormaPagamento(dto.getFormaPagamento());
         transacaoRepository.save(transacao);
 
+        return toResponse(transacao);
+
     }
 
     public TransacaoResponseDTO toResponse(Transacao transacao) {
-        
+        TransacaoResponseDTO responseDTO = new TransacaoResponseDTO();
+        responseDTO.setData(transacao.getData());
+        responseDTO.setValor(transacao.getValor());
+        responseDTO.setFormaPagamento(transacao.getFormaPagamento());
+        responseDTO.setTipoTransacao(transacao.getTipo());
+        responseDTO.setDescricao(transacao.getDescricao());
+        responseDTO.setContaId(transacao.getConta().getId());
+        responseDTO.setCategoriaId(transacao.getCategoria().getId());
+        return responseDTO;
     }
 
 }
