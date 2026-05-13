@@ -6,14 +6,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Getter
 @Setter
 public class TransacaoRequestDTO {
     private BigDecimal valor;
-    private LocalDateTime data;
+    private LocalDate data;
     private String descricao;
     private TipoTransacao tipoTransacao;
     private TipoPagamento formaPagamento;
