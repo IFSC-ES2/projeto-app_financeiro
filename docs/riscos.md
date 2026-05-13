@@ -34,6 +34,14 @@ Baseado em probabilidade × impacto em níveis de prioridade
 
 ## 2. Matriz de riscos
 
+| | Impacto Baixo | Impacto Médio | Impacto Alto |
+|-|-|-|-|
+| **Prob. Alta** | — | R02, R03 | R01 |
+| **Prob. Média** | — | R05 | R04 |
+| **Prob. Baixa** | — | — | R06, R07 |
+
+### Tabela Resumo
+
 | ID | Risco | Probabilidade | Impacto | Prioridade |
 |-|-|-|-|-|
 | R01 | Parser de extratos com formatos incompatíveis | Alta | Alto | **Crítica** |
