@@ -2,14 +2,17 @@ package bcd.appfinanceirobackend.service;
 
 import bcd.appfinanceirobackend.dto.conta.ContaRequestDTO;
 import bcd.appfinanceirobackend.dto.conta.ContaResponseDTO;
-import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.model.Conta;
-import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
+import bcd.appfinanceirobackend.repository.ContaRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ContaService   {
+public class ContaService {
+
+    private final ContaRepository contaRepository;
+
+    public ContaService (ContaRepository contaRepository) {this.contaRepository = contaRepository;}
 
     public ContaResponseDTO registrar(ContaRequestDTO dto, Usuario usuarioAutenticado) {
         if(dto.getNome() == null ||
@@ -22,8 +25,8 @@ public class ContaService   {
         conta.setBanco(dto.getBanco());
         conta.setDescricao(dto.getDescricao());
         conta.setUsuario(usuarioAutenticado);
+        contaRepository.save(conta);
         return toResponse(conta);
-
     }
 
     public ContaResponseDTO toResponse(Conta conta) {
