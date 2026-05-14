@@ -1,5 +1,25 @@
 # Atributos de Qualidade
 
+## Modelo de Qualidade Adotado
+
+Este documento segue a norma **ISO/IEC 25010** como referência para seleção e definição dos atributos de qualidade. Os atributos escolhidos (Confiabilidade, Segurança, Desempenho e Manutenibilidade) são subcaracterísticas previstas nesse modelo e foram priorizados conforme o contexto do MVP.
+
+## Escopo Inicial da Avaliação de Qualidade
+
+Nesta etapa, a equipe não realizará testes formais ou medições completas. O objetivo é estabelecer quais atributos serão monitorados e como isso acontecerá nas etapas seguintes.
+
+**O que será avaliado:**
+- O módulo de autenticação (segurança e confiabilidade)
+- O parser de extratos (desempenho e confiabilidade)
+- A integração frontend/backend (confiabilidade)
+- A estrutura geral do código (manutenibilidade)
+
+**Quando será avaliado:**
+- Ao final de cada sprint, com base nas métricas e critérios definidos abaixo
+- Com revisão completa antes da entrega final do MVP
+
+As métricas listadas nas seções seguintes são **indicações preliminares** que orientarão as avaliações futuras, não medições realizadas neste momento.
+
 ## 1. Confiabilidade
 - Justificativa: Como o sistema trabalha com movimentações financeiras, precisa apresentar confiabilidade para o usuário, devemos evitar inconsistências nos extratos devido a falhas, inconsistência nos calculos de custos e previsibilidade de gastos devido a lentidão ou falhas de rede.
 - Relação com riscos: **R05 - Falha na integração entre frontend e backend** A integração entre as camadas é o ponto mais frágil em termos de comportamento esperado do sistema. Medir a taxa de erros nas chamadas de API e a disponibilidade dos endpoints ao longo do tempo reflete diretamente se o sistema está se comportando de forma estável e previsível para o usuário.
