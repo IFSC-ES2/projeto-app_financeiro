@@ -6,6 +6,7 @@ import bcd.appfinanceirobackend.service.TransacaoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,7 +21,7 @@ public class TransacaoController {
     }
 
     @PostMapping("/manual")
-    public ResponseEntity<TransacaoResponseDTO> registrarTransacaoManual (TransacaoRequestDTO requestDTO) {
+    public ResponseEntity<TransacaoResponseDTO> registrarTransacaoManual (@RequestBody TransacaoRequestDTO requestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(transacaoService.registrarManual(requestDTO));
     }
 }
