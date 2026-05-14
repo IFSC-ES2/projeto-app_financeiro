@@ -5,9 +5,12 @@ import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
+import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class TransacaoService {
@@ -20,7 +23,7 @@ public class TransacaoService {
         this.contaRepository = contaRepository;
     }
 
-    public TransacaoResponseDTO registrarManual (TransacaoRequestDTO dto) {
+    public TransacaoResponseDTO registrarManual (TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
         if(dto.getValor() == null ||
                 dto.getContaId() == null ||
                 dto.getData() == null) throw new IllegalArgumentException(
@@ -28,6 +31,10 @@ public class TransacaoService {
 
         Conta conta = contaRepository.findById(dto.getContaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
+
+        if(!conta.getUsuario().getId().equals(usuarioAutenticado.getId())){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a esta conta");
+        }
 
         Transacao transacao = new Transacao();
         transacao.setCategorizada(true);
