@@ -26,8 +26,9 @@ public class TransacaoService {
     public TransacaoResponseDTO registrarManual (TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
         if(dto.getValor() == null ||
                 dto.getContaId() == null ||
-                dto.getData() == null) throw new IllegalArgumentException(
-                        "Campos obrigatórios de uma transação não informados");
+                dto.getData() == null ||
+        dto.getTipoTransacao() == null) throw new IllegalArgumentException(
+                        "Campos obrigatórios não informados(valor, data, contaId, tipoTransacao)");
 
         Conta conta = contaRepository.findById(dto.getContaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
