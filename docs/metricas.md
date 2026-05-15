@@ -154,3 +154,7 @@ Documento com a definição das métricas que serão acompanhadas.
 
 **Referência de cobertura (reprodutibilidade):** executar `./gradlew test` em `app-financeiro-back-end/` com PostgreSQL acessível em `localhost:5432` (mesmos parâmetros do [README](../README.md) / CI); relatório HTML/XML em `app-financeiro-back-end/build/reports/jacoco/test/`.
 
+### Dívidas técnicas registradas na Sprint 2
+
+- **Cobertura de testes no frontend = 0% (dívida técnica).** O projeto front-end (`app-financeiro-front-end/`) não possui framework de testes configurado no `package.json` nem step de execução real no CI; o passo `npm test --if-present` apenas é ignorado quando o script não existe. Isso significa que a métrica de cobertura agregada do produto **subestima o risco real**, pois mede apenas o backend. **Ação planejada para a Sprint 3:** abrir issue dedicada para introduzir Vitest + React Testing Library, configurar o script `test` no `package.json`, adicionar geração de cobertura (`--coverage`) e incorporar o resumo no workflow de CI ao lado do JaCoCo. Responsável: Lucas de Leon (Engenheiro de Qualidade).
+
