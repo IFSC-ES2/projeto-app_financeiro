@@ -12,6 +12,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class TransacaoResponseDTO {
+    private UUID transacaoId;
     private BigDecimal valor;
     private LocalDate data;
     private String descricao;
