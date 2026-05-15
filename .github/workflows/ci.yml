@@ -46,6 +46,36 @@ jobs:
       - name: Tests
         run: gradle test
 
+      - name: Resumo de cobertura (JaCoCo)
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          p = Path("build/reports/jacoco/test/jacocoTestReport.xml")
+          if not p.is_file():
+              print("Relatório JaCoCo não encontrado; execute os testes com o plugin jacoco configurado.")
+              raise SystemExit(1)
+          root = ET.parse(p).getroot()
+          for c in root.findall("counter"):
+              if c.get("type") == "LINE":
+                  missed = int(c.get("missed"))
+                  covered = int(c.get("covered"))
+                  total = missed + covered
+                  pct = 100.0 * covered / total if total else 0.0
+                  print(f"Cobertura de linhas (projeto backend): {pct:.1f}% ({covered}/{total} linhas cobertas)")
+          for pkg in root.findall("package"):
+              name = pkg.get("name", "")
+              if not name.endswith("/service"):
+                  continue
+              for c in pkg.findall("counter"):
+                  if c.get("type") == "LINE":
+                      missed = int(c.get("missed"))
+                      covered = int(c.get("covered"))
+                      total = missed + covered
+                      pct = 100.0 * covered / total if total else 0.0
+                      print(f"Cobertura de linhas (pacote service): {pct:.1f}% ({covered}/{total})")
+          PY
+
   frontend:
     name: Frontend (build & test)
     runs-on: ubuntu-latest
