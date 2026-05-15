@@ -1,29 +1,28 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ProvedorAutenticacao } from './contexts/ContextoAutenticacao';
 import Login from './pages/Login';
+import Cadastro from './pages/Cadastro';
 
-// criando um dashboard provisorio direto aqui pra nao dar erro de import faltando
-const DashboardFake = () => (
-  <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'Arial' }}>
-    <h2>Dashboard</h2>
+// Dashboard provisório — substituir pela tela oficial
+const PainelProvisorio = () => (
+  <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'system-ui, sans-serif' }}>
+    <h2>Painel</h2>
     <p>Login realizado com sucesso! (Tela oficial em construção)</p>
   </div>
 );
 
 function App() {
-  // router em volta de tudo pra navegacao funcionar
   return (
-    <Router>
-      <Routes>
-        {/* redireciona a raiz pro login logo de cara */}
-        <Route path="/" element={<Navigate to="/login" />} />
-        
-        {/* rota da nossa tela de login oficial */}
-        <Route path="/login" element={<Login />} />
-        
-        {/* joga pro dashboard provisorio quando o login der certo */}
-        <Route path="/dashboard" element={<DashboardFake />} />
-      </Routes>
-    </Router>
+    <ProvedorAutenticacao>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/cadastro" element={<Cadastro />} />
+          <Route path="/dashboard" element={<PainelProvisorio />} />
+        </Routes>
+      </Router>
+    </ProvedorAutenticacao>
   );
 }
 
