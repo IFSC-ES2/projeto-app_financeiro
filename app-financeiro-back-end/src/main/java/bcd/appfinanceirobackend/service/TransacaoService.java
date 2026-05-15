@@ -44,14 +44,15 @@ public class TransacaoService {
         transacao.setDescricao(dto.getDescricao());
         transacao.setTipo(dto.getTipoTransacao());
         transacao.setFormaPagamento(dto.getFormaPagamento());
-        transacaoRepository.save(transacao);
+        Transacao transacaoSalva = transacaoRepository.save(transacao);
 
-        return toResponse(transacao);
+        return toResponse(transacaoSalva);
 
     }
 
     public TransacaoResponseDTO toResponse(Transacao transacao) {
         TransacaoResponseDTO responseDTO = new TransacaoResponseDTO();
+        responseDTO.setTransacaoId(transacao.getId());
         responseDTO.setData(transacao.getData());
         responseDTO.setValor(transacao.getValor());
         responseDTO.setFormaPagamento(transacao.getFormaPagamento());
