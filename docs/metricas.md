@@ -122,7 +122,39 @@ Documento com a definição das métricas que serão acompanhadas.
 - Fonte dos dados: Registro de riscos do projeto
 - Frequência de atualização: Mensal
 - Responsável: Victor Blum (Arquiteto de Software) e Victor Gabriel (Scrum Master)
-- Forma de interpretação: Meta: 100% dos riscos de alta severidade com plano ativo. 
+- Forma de interpretação: Meta: 100% dos riscos de alta severidade com plano ativo.
 
+---
 
+## Valores observados — Sprint 2
+
+**Referência de escopo:** [docs/baseline.md](baseline.md) (marco Sprint 2 em **07/05/2026**), [docs/inception.md](inception.md) (MVP), [docs/riscos.md](riscos.md) (riscos).  
+**Issue de acompanhamento:** [GitHub #75](https://github.com/IFSC-ES2/projeto-app_financeiro/issues/75).
+
+**Janela de medição (processo e projeto):** desenvolvimento e encerramento das histórias da Sprint 2 entre **23/04/2026** e **13/05/2026** (fechamento de [#22](https://github.com/IFSC-ES2/projeto-app_financeiro/issues/22), [#25](https://github.com/IFSC-ES2/projeto-app_financeiro/issues/25), [#26](https://github.com/IFSC-ES2/projeto-app_financeiro/issues/26), [#27](https://github.com/IFSC-ES2/projeto-app_financeiro/issues/27); trabalho adicional [#74](https://github.com/IFSC-ES2/projeto-app_financeiro/issues/74) em **12/05/2026**).
+
+**Story points (Velocity e taxa de conclusão):** o repositório não registra pontos no GitHub Projects; para esta sprint foi adotada equivalência **camiseta do baseline → story points** (escala única para todas as métricas de esforço da Sprint 2): **P = 1**, **M = 2**, **G = 3**, **GG = 5** SP. Itens planejados no baseline para a Sprint 2: **#22** (M = 2), **#25** (GG = 5), **#26** (M = 2), **#27** (M = 2) → **11 SP planejados**. Todos foram concluídos e integrados ao branch principal.
+
+| Métrica | Valor observado (Sprint 2) | Observação |
+|--------|-----------------------------|------------|
+| Taxa de sucesso na importação de arquivos | **Não aplicável** | Módulo de importação de extratos/NF-e ainda não disponível em fluxo utilizável; não há massa de arquivos nem logs de importação para a sprint. |
+| Eficiência de categorização automática | **Não aplicável** | Categorização automática e regras associadas não implementadas neste recorte. |
+| Taxa de erros reportados por usuários | **0** bug(s) válido(s) rastreado(s) na sprint | Consulta às issues do repositório: nenhuma issue fechada na sprint com perfil explícito de *bug report* de usuário. Funcionalidades “ativas” no sentido de MVP ainda limitadas ao fluxo de autenticação/cadastro. Meta do documento: &lt; 2 bugs críticos por sprint — **atendido** por ausência de ocorrências. |
+| Velocidade do time (Velocity) | **11 SP** | Soma dos SP das histórias **#22, #25, #26, #27** concluídas na sprint. |
+| Taxa de conclusão de itens planejados | **100%** | (11 SP concluídos / 11 SP planejados) × 100, para o conjunto baseline da Sprint 2. |
+| Cobertura de testes automatizados | **52,3%** linhas (backend, projeto inteiro); **86,2%** linhas (pacote `bcd.appfinanceirobackend.service`) | Relatório **JaCoCo** gerado por `./gradlew test` após merge do plugin JaCoCo no backend; commit de referência do cálculo: estado atual do repositório com testes passando (PostgreSQL disponível, como no CI). **Front-end:** sem testes automatizados configurados no `package.json` / pipeline. A meta de ≥ 70% para regras de negócio é **atendida** na camada `service`; o agregado do backend fica **abaixo** da meta se considerado o binário inteiro. O workflow de CI passa a imprimir o resumo de cobertura a partir do `jacocoTestReport.xml`. |
+| Lead time de resolução de defeitos | **Não aplicável (amostra vazia)** | Nenhum defeito aberto e fechado como *bug* na sprint nos registros consultados; não há mediana nem máximo a reportar. |
+| Percentual de escopo entregue no MVP | **20%** (1 de 5 funcionalidades essenciais) | Conforme [inception.md](inception.md): (1) autenticação e perfil **entregue e validável** no código; (2) importação, (3) categorização, (4) dashboard do mês e (5) extrato futuro **ainda não** concluídos e validados. |
+| Índice de participação e presença da equipe | **100%** (5/5 integrantes) | Pelo menos um commit no repositório na janela 23/04–13/05/2026 para cada integrante oficial do [README](../README.md) (contas `Victor3294`, `Victor Lacerda`, `jpifsc`, `lucas`, `apvillela` / `alexandre.villela` contabilizados como um único integrante). |
+| Riscos identificados vs. mitigados | **100%** (7/7 com plano ativo documentado) | Todos os riscos **R01–R07** em [riscos.md](riscos.md) possuem estratégia de mitigação e contingência registradas; nenhum item da matriz está sem resposta planejada. |
+
+### Análise qualitativa (Sprint 2)
+
+**O que foi planejado:** O [baseline](baseline.md) previa para a Sprint 2 o fechamento de **#22** (CORS / integração), **#25** (cadastro e autenticação no backend), **#26** e **#27** (telas de login e cadastro), totalizando **19 h** estimadas em camisetas, com o ambiente integrado e o primeiro fluxo de autenticação funcional como resultado esperado. A mitigação do risco **R01** (parser) mencionava iniciar trabalho na Sprint 2, em paralelo à priorização de formatos — isso **não** estava listado como entrega obrigatória das quatro issues acima.
+
+**O que foi executado:** As quatro issues planejadas foram **concluídas** (fechamento em **06/05** e **11/05/2026**). Houve entrega **extra** de infraestrutura de qualidade com a issue **#74** (CI no GitHub Actions, **12/05**), alinhada ao papel de Engenheiro de Qualidade. Testes automatizados do backend foram ampliados em torno de registro/login (`UsuarioService`); o front evoluiu com telas e validação de CPF, sem ainda incorporar testes no pipeline.
+
+**Fatores que influenciaram o resultado:** (1) **Dedicação parcial** e outras disciplinas (risco **R03**) continuam a moldar o ritmo, embora a taxa de conclusão da sprint tenha sido total para o escopo pontuado. (2) **Rotação do Scrum Master** para Lucas de Leon, registrada ao final da Sprint 1 em [sprint1.md](sprint1.md), reorganizou a governança das cerimônias sem bloquear as entregas técnicas. (3) **Dependência de PostgreSQL** para o *context load* do Spring elevou o alinhamento com o CI (serviço `postgres` no workflow), reduzindo divergência ambiente local vs. pipeline. (4) **Escopo do MVP** permanece concentrado na fundação: alta conclusão da sprint **não** implica alto percentual do MVP, pois as próximas funcionalidades essenciais (importação, categorias, dashboards, projeção) ainda estão no backlog. (5) **Cobertura de testes** reflete prioridade na camada de serviço de autenticação; DTOs e demais pacotes puxam a média global para baixo — decisão consciente ou dívida técnica a tratar nas próximas sprints se a meta for o agregado do backend.
+
+**Referência de cobertura (reprodutibilidade):** executar `./gradlew test` em `app-financeiro-back-end/` com PostgreSQL acessível em `localhost:5432` (mesmos parâmetros do [README](../README.md) / CI); relatório HTML/XML em `app-financeiro-back-end/build/reports/jacoco/test/`.
 
