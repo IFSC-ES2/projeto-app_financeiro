@@ -367,7 +367,7 @@ const NovaTransacao: React.FC = () => {
 
                     {contas.length === 0 && (
                       <p className="text-muted small mt-3 mb-0">
-                        Cadastre uma conta antes de registrar transações.
+                        Cadastre-se com uma conta antes de registrar transações.
                       </p>
                     )}
                   </form>
