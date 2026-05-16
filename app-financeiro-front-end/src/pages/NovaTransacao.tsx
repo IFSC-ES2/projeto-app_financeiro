@@ -52,6 +52,24 @@ const formasPagamento: Array<{ valor: TipoPagamento; rotulo: string }> = [
   { valor: 'TED_DOC', rotulo: 'TED/DOC' },
 ];
 
+const formasPagamento: Array<{ valor: TipoPagamento; rotulo: string }> = [
+  { valor: 'PIX', rotulo: 'Pix' },
+  { valor: 'CARTAO_DEBITO', rotulo: 'Cartão de débito' },
+  { valor: 'CARTAO_CREDITO', rotulo: 'Cartão de crédito' },
+  { valor: 'DINHEIRO', rotulo: 'Dinheiro' },
+  { valor: 'BOLETO', rotulo: 'Boleto' },
+  { valor: 'TED_DOC', rotulo: 'TED/DOC' },
+];
+
+const obterRotuloTipoTransacao = (valor: TipoTransacao) =>
+  tiposTransacao.find((tipo) => tipo.valor === valor)?.rotulo || valor;
+
+const obterRotuloFormaPagamento = (valor?: TipoPagamento | null) =>
+  formasPagamento.find((forma) => forma.valor === valor)?.rotulo || valor || 'Não informado';
+
+const formatarMoeda = (valor: number | string) =>
+  Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
 const formatarMoeda = (valor: number | string) =>
   Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
