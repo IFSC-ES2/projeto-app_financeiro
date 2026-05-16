@@ -37,8 +37,8 @@ const valoresIniciais: CamposTransacao = {
 };
 
 const tiposTransacao: Array<{ valor: TipoTransacao; rotulo: string }> = [
-  { valor: 'DEBITO', rotulo: 'Débito / gasto' },
-  { valor: 'CREDITO', rotulo: 'Crédito / entrada' },
+  { valor: 'DEBITO', rotulo: 'Saída / despesa' },
+  { valor: 'CREDITO', rotulo: 'Entrada / receita' },
   { valor: 'PARCELAMENTO', rotulo: 'Parcelamento' },
   { valor: 'BOLETO', rotulo: 'Boleto' },
 ];
@@ -73,13 +73,16 @@ const NovaTransacao: React.FC = () => {
     const carregarDados = async () => {
       setCarregandoDados(true);
       setErroGeral('');
+
       try {
         const [contasCarregadas, categoriasCarregadas] = await Promise.all([
           listarContas(),
           listarCategorias(),
         ]);
+
         setContas(contasCarregadas);
         setCategorias(categoriasCarregadas);
+
         setCampos((prev) => ({
           ...prev,
           contaId: prev.contaId || contasCarregadas[0]?.contaId || '',
@@ -91,6 +94,7 @@ const NovaTransacao: React.FC = () => {
           sair();
           return;
         }
+
         setErroGeral('Não foi possível carregar contas e categorias.');
       } finally {
         setCarregandoDados(false);
@@ -124,13 +128,19 @@ const NovaTransacao: React.FC = () => {
     const novosErros: Partial<Record<keyof CamposTransacao, string>> = {};
     const valorNumerico = Number(campos.valor);
 
-    if (!campos.valor) novosErros.valor = 'Valor é obrigatório.';
-    else if (Number.isNaN(valorNumerico) || valorNumerico <= 0) {
+    if (!campos.valor) {
+      novosErros.valor = 'Valor é obrigatório.';
+    } else if (Number.isNaN(valorNumerico) || valorNumerico <= 0) {
       novosErros.valor = 'Informe um valor positivo.';
     }
 
-    if (!campos.data) novosErros.data = 'Data é obrigatória.';
-    if (!campos.contaId) novosErros.contaId = 'Conta é obrigatória.';
+    if (!campos.data) {
+      novosErros.data = 'Data é obrigatória.';
+    }
+
+    if (!campos.contaId) {
+      novosErros.contaId = 'Conta é obrigatória.';
+    }
 
     setErros(novosErros);
     return Object.keys(novosErros).length === 0;
@@ -144,6 +154,7 @@ const NovaTransacao: React.FC = () => {
     if (!validar()) return;
 
     setSalvando(true);
+
     try {
       const transacaoSalva = await registrarTransacaoManual({
         valor: Number(campos.valor),
@@ -157,6 +168,7 @@ const NovaTransacao: React.FC = () => {
 
       setTransacoes((prev) => [transacaoSalva, ...prev]);
       setSucesso('Transação registrada com sucesso.');
+
       setCampos((prev) => ({
         ...valoresIniciais,
         data: new Date().toISOString().slice(0, 10),
@@ -186,6 +198,7 @@ const NovaTransacao: React.FC = () => {
               Registre manualmente gastos que não vieram de extrato ou nota fiscal.
             </p>
           </div>
+
           <Link to="/dashboard" className="btn btn-outline-secondary align-self-start align-self-md-center">
             Voltar ao painel
           </Link>
@@ -305,7 +318,8 @@ const NovaTransacao: React.FC = () => {
                           <option value="">Sem categoria</option>
                           {categorias.map((categoria) => (
                             <option key={categoria.categoriaId} value={categoria.categoriaId}>
-                              {categoria.nome}{categoria.padrao ? ' (padrão)' : ''}
+                              {categoria.nome}
+                              {categoria.padrao ? ' (padrão)' : ''}
                             </option>
                           ))}
                         </select>
@@ -325,7 +339,8 @@ const NovaTransacao: React.FC = () => {
                           <option value="">Selecione uma conta</option>
                           {contas.map((conta) => (
                             <option key={conta.contaId} value={conta.contaId}>
-                              {conta.nome}{conta.banco ? ` - ${conta.banco}` : ''}
+                              {conta.nome}
+                              {conta.banco ? ` - ${conta.banco}` : ''}
                             </option>
                           ))}
                         </select>
@@ -359,6 +374,7 @@ const NovaTransacao: React.FC = () => {
             <div className="card border-0 shadow-sm" style={{ borderRadius: 18 }}>
               <div className="card-body p-4">
                 <h2 className="h5 fw-bold mb-3">Histórico recém-criado</h2>
+
                 {transacoes.length === 0 ? (
                   <p className="text-muted mb-0">
                     As transações salvas nesta tela aparecerão aqui sem recarregar a página.
@@ -380,8 +396,10 @@ const NovaTransacao: React.FC = () => {
                                 : 'Sem categoria'}
                             </div>
                           </div>
+
                           <strong>{formatarMoeda(transacao.valor)}</strong>
                         </div>
+
                         <div className="text-muted small mt-2">
                           {transacao.data} • {transacao.tipoTransacao} • {transacao.formaPagamento}
                         </div>
