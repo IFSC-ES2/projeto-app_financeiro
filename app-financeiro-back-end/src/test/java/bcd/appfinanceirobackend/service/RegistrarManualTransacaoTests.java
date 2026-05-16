@@ -1,0 +1,269 @@
+package bcd.appfinanceirobackend.service;
+
+import bcd.appfinanceirobackend.dto.transacao.TransacaoRequestDTO;
+import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
+import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
+import bcd.appfinanceirobackend.model.Conta;
+import bcd.appfinanceirobackend.model.Transacao;
+import bcd.appfinanceirobackend.model.Usuario;
+import bcd.appfinanceirobackend.model.enums.TipoPagamento;
+import bcd.appfinanceirobackend.model.enums.TipoTransacao;
+import bcd.appfinanceirobackend.repository.ContaRepository;
+import bcd.appfinanceirobackend.repository.TransacaoRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("TransacaoService - registrarManual")
+class RegistrarManualTransacaoTests {
+
+    @Mock
+    private TransacaoRepository transacaoRepository;
+
+    @Mock
+    private ContaRepository contaRepository;
+
+    @InjectMocks
+    private TransacaoService transacaoService;
+
+    private Usuario usuarioDono;
+    private Usuario outroUsuario;
+    private Conta conta;
+    private TransacaoRequestDTO dtoValido;
+
+    @BeforeEach
+    void setUp() {
+        usuarioDono = new Usuario();
+        usuarioDono.setId(UUID.randomUUID());
+        usuarioDono.setNome("João Silva");
+        usuarioDono.setEmail("joao@email.com");
+        usuarioDono.setSenha("hash");
+        usuarioDono.setCpf("12345678900");
+
+        outroUsuario = new Usuario();
+        outroUsuario.setId(UUID.randomUUID());
+        outroUsuario.setNome("Outro Usuário");
+        outroUsuario.setEmail("outro@email.com");
+        outroUsuario.setSenha("hash");
+        outroUsuario.setCpf("99988877766");
+
+        conta = new Conta();
+        conta.setId(UUID.randomUUID());
+        conta.setNome("Conta Corrente");
+        conta.setUsuario(usuarioDono);
+
+        dtoValido = new TransacaoRequestDTO();
+        dtoValido.setValor(new BigDecimal("150.00"));
+        dtoValido.setData(LocalDate.of(2025, 5, 10));
+        dtoValido.setDescricao("Mercado");
+        dtoValido.setTipoTransacao(TipoTransacao.DEBITO);
+        dtoValido.setFormaPagamento(TipoPagamento.PIX);
+        dtoValido.setContaId(conta.getId());
+    }
+
+    // ─────────────────────────── CAMPOS OBRIGATÓRIOS ────────────────────────────
+
+    @Nested
+    @DisplayName("Validação de campos obrigatórios")
+    class ValidacaoCamposObrigatorios {
+
+        @Test
+        @DisplayName("Lança exceção quando valor é nulo")
+        void deveLancarExcecaoQuandoValorNulo() {
+            dtoValido.setValor(null);
+
+            assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Campos obrigatórios não informados");
+        }
+
+        @Test
+        @DisplayName("Lança exceção quando contaId é nulo")
+        void deveLancarExcecaoQuandoContaIdNulo() {
+            dtoValido.setContaId(null);
+
+            assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Campos obrigatórios não informados");
+        }
+
+        @Test
+        @DisplayName("Lança exceção quando data é nula")
+        void deveLancarExcecaoQuandoDataNula() {
+            dtoValido.setData(null);
+
+            assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Campos obrigatórios não informados");
+        }
+
+        @Test
+        @DisplayName("Lança exceção quando tipoTransacao é nulo")
+        void deveLancarExcecaoQuandoTipoTransacaoNulo() {
+            dtoValido.setTipoTransacao(null);
+
+            assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Campos obrigatórios não informados");
+        }
+
+        @Test
+        @DisplayName("Não consulta o repositório quando campos obrigatórios estão ausentes")
+        void naoDeveConsultarRepositorioComCamposFaltando() {
+            dtoValido.setValor(null);
+
+            assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
+                    .isInstanceOf(IllegalArgumentException.class);
+
+            verifyNoInteractions(contaRepository, transacaoRepository);
+        }
+    }
+
+    // ──────────────────────────── VALIDAÇÃO DE CONTA ─────────────────────────────
+
+    @Nested
+    @DisplayName("Validação de conta")
+    class ValidacaoConta {
+
+        @Test
+        @DisplayName("Lança ResourceNotFoundException quando conta não existe")
+        void deveLancarExcecaoQuandoContaNaoEncontrada() {
+            when(contaRepository.findById(dtoValido.getContaId())).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
+                    .isInstanceOf(ResourceNotFoundException.class)
+                    .hasMessageContaining("Conta não encontrada");
+        }
+
+        @Test
+        @DisplayName("Lança ResponseStatusException 403 quando a conta pertence a outro usuário")
+        void deveLancarForbiddenQuandoContaNaoPertenceAoUsuario() {
+            conta.setUsuario(outroUsuario);
+            when(contaRepository.findById(dtoValido.getContaId())).thenReturn(Optional.of(conta));
+
+            assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .hasMessageContaining("Acesso negado a esta conta");
+
+            verifyNoInteractions(transacaoRepository);
+        }
+    }
+
+    // ──────────────────────────── REGISTRO COM SUCESSO ───────────────────────────
+
+    @Nested
+    @DisplayName("Registro bem-sucedido")
+    class RegistroBemSucedido {
+
+        @BeforeEach
+        void mockRepositorios() {
+            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
+            when(transacaoRepository.save(any(Transacao.class))).thenAnswer(inv -> {
+                Transacao t = inv.getArgument(0);
+                t.setId(UUID.randomUUID());
+                return t;
+            });
+        }
+
+        @Test
+        @DisplayName("Retorna DTO com os dados da transação registrada")
+        void deveRetornarResponseDTOComDadosCorretos() {
+            TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getValor()).isEqualByComparingTo(dtoValido.getValor());
+            assertThat(response.getData()).isEqualTo(dtoValido.getData());
+            assertThat(response.getDescricao()).isEqualTo(dtoValido.getDescricao());
+            assertThat(response.getTipoTransacao()).isEqualTo(dtoValido.getTipoTransacao());
+            assertThat(response.getFormaPagamento()).isEqualTo(dtoValido.getFormaPagamento());
+            assertThat(response.getContaId()).isEqualTo(conta.getId());
+        }
+
+        @Test
+        @DisplayName("Persiste a transação com o campo categorizada igual a true")
+        void deveSalvarTransacaoComCategorizadaTrue() {
+            ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
+
+            transacaoService.registrarManual(dtoValido, usuarioDono);
+
+            verify(transacaoRepository).save(captor.capture());
+            assertThat(captor.getValue().getCategorizada()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Persiste a transação com a conta correta")
+        void deveSalvarTransacaoComContaCorreta() {
+            ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
+
+            transacaoService.registrarManual(dtoValido, usuarioDono);
+
+            verify(transacaoRepository).save(captor.capture());
+            assertThat(captor.getValue().getConta()).isEqualTo(conta);
+        }
+
+        @Test
+        @DisplayName("Registra transação sem descrição (campo opcional)")
+        void deveRegistrarTransacaoSemDescricao() {
+            dtoValido.setDescricao(null);
+
+            TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
+
+            assertThat(response.getDescricao()).isNull();
+        }
+
+        @Test
+        @DisplayName("Registra transação sem forma de pagamento (campo opcional)")
+        void deveRegistrarTransacaoSemFormaPagamento() {
+            dtoValido.setFormaPagamento(null);
+
+            TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
+
+            assertThat(response.getFormaPagamento()).isNull();
+        }
+
+        @Test
+        @DisplayName("Retorna categoriaId nulo quando a transação não possui categoria")
+        void deveRetornarCategoriaIdNuloQuandoSemCategoria() {
+            TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
+
+            assertThat(response.getCategoriaId()).isNull();
+        }
+
+        @Test
+        @DisplayName("Chama o repositório de transação exatamente uma vez")
+        void deveChamarRepositorioDeTransacaoUmaVez() {
+            transacaoService.registrarManual(dtoValido, usuarioDono);
+
+            verify(transacaoRepository, times(1)).save(any(Transacao.class));
+        }
+
+        @Test
+        @DisplayName("Registra corretamente para cada TipoTransacao")
+        void deveRegistrarParaCadaTipoTransacao() {
+            for (TipoTransacao tipo : TipoTransacao.values()) {
+                dtoValido.setTipoTransacao(tipo);
+
+                TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
+
+                assertThat(response.getTipoTransacao()).isEqualTo(tipo);
+            }
+        }
+    }
+}

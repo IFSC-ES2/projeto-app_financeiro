@@ -1,4 +1,4 @@
-package bcd.appfinanceirobackend;
+package bcd.appfinanceirobackend.service;
 
 import bcd.appfinanceirobackend.dto.auth.LoginRequestDTO;
 import bcd.appfinanceirobackend.dto.auth.RegisterRequestDTO;
@@ -6,7 +6,6 @@ import bcd.appfinanceirobackend.dto.auth.TokenDTO;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.repository.UsuarioRepository;
 import bcd.appfinanceirobackend.security.JwtUtil;
-import bcd.appfinanceirobackend.service.UsuarioService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
