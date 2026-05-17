@@ -15,6 +15,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -71,7 +73,7 @@ class RegistrarManualTransacaoTests {
 
         dtoValido = new TransacaoRequestDTO();
         dtoValido.setValor(new BigDecimal("150.00"));
-        dtoValido.setData(LocalDate.of(2025, 5, 10));
+        dtoValido.setData(LocalDate.now());
         dtoValido.setDescricao("Mercado");
         dtoValido.setTipoTransacao(TipoTransacao.DEBITO);
         dtoValido.setFormaPagamento(TipoPagamento.PIX);
@@ -92,6 +94,26 @@ class RegistrarManualTransacaoTests {
             assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Campos obrigatórios não informados");
+        }
+
+        @Test
+        @DisplayName("Lança exceção quando valor é zero")
+        void deveLancarExcecaoQuandoValorZero() {
+            dtoValido.setValor(BigDecimal.ZERO);
+
+            assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Valor deve ser maior que zero");
+        }
+
+        @Test
+        @DisplayName("Lança exceção quando valor é negativo")
+        void deveLancarExcecaoQuandoValorNegativo() {
+            dtoValido.setValor(new BigDecimal("-50.00"));
+
+            assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Valor deve ser maior que zero");
         }
 
         @Test
@@ -208,6 +230,52 @@ class RegistrarManualTransacaoTests {
         }
 
         @Test
+        @DisplayName("Persiste a transação com futura = false para data atual")
+        void deveSalvarTransacaoComFuturaFalseParaDataAtual() {
+            dtoValido.setData(LocalDate.now());
+            ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
+
+            transacaoService.registrarManual(dtoValido, usuarioDono);
+
+            verify(transacaoRepository).save(captor.capture());
+            assertThat(captor.getValue().getFutura()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Persiste a transação com futura = true para data futura")
+        void deveSalvarTransacaoComFuturaTrueParaDataFutura() {
+            dtoValido.setData(LocalDate.now().plusDays(5));
+            ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
+
+            transacaoService.registrarManual(dtoValido, usuarioDono);
+
+            verify(transacaoRepository).save(captor.capture());
+            assertThat(captor.getValue().getFutura()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Persiste a transação com importacaoId nulo")
+        void deveSalvarTransacaoComImportacaoIdNulo() {
+            ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
+
+            transacaoService.registrarManual(dtoValido, usuarioDono);
+
+            verify(transacaoRepository).save(captor.capture());
+            assertThat(captor.getValue().getImportacao()).isNull();
+        }
+
+        @Test
+        @DisplayName("Persiste a transação com faturaId nulo")
+        void deveSalvarTransacaoComFaturaIdNulo() {
+            ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
+
+            transacaoService.registrarManual(dtoValido, usuarioDono);
+
+            verify(transacaoRepository).save(captor.capture());
+            assertThat(captor.getValue().getFatura()).isNull();
+        }
+
+        @Test
         @DisplayName("Persiste a transação com a conta correta")
         void deveSalvarTransacaoComContaCorreta() {
             ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
@@ -254,16 +322,15 @@ class RegistrarManualTransacaoTests {
             verify(transacaoRepository, times(1)).save(any(Transacao.class));
         }
 
-        @Test
+        @ParameterizedTest(name = "TipoTransacao = {0}")
+        @EnumSource(TipoTransacao.class)
         @DisplayName("Registra corretamente para cada TipoTransacao")
-        void deveRegistrarParaCadaTipoTransacao() {
-            for (TipoTransacao tipo : TipoTransacao.values()) {
-                dtoValido.setTipoTransacao(tipo);
+        void deveRegistrarParaCadaTipoTransacao(TipoTransacao tipo) {
+            dtoValido.setTipoTransacao(tipo);
 
-                TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
+            TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
 
-                assertThat(response.getTipoTransacao()).isEqualTo(tipo);
-            }
+            assertThat(response.getTipoTransacao()).isEqualTo(tipo);
         }
     }
 }
