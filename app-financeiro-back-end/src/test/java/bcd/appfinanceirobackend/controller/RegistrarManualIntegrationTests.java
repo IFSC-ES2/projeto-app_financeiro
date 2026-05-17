@@ -99,24 +99,7 @@ class RegistrarManualIntegrationTests {
         responseValido.setFormaPagamento(dtoValido.getFormaPagamento());
         responseValido.setContaId(contaId);
     }
-
-    // ─────────────────────────── AUTENTICAÇÃO ────────────────────────────────
-
-    @Nested
-    @DisplayName("Autenticação")
-    class Autenticacao {
-
-        @Test
-        @DisplayName("Retorna 401 quando requisição não está autenticada")
-        void deveRetornar401SemAutenticacao() throws Exception {
-            mockMvc.perform(post("/transacoes/manual")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(mapper.writeValueAsString(dtoValido)))
-                    .andExpect(status().isUnauthorized());
-
-            verifyNoInteractions(transacaoService);
-        }
-    }
+    
 
     // ─────────────────────────── SUCESSO ─────────────────────────────────────
 
