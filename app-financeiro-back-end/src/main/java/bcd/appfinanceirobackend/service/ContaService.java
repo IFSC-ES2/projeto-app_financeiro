@@ -7,12 +7,21 @@ import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.repository.ContaRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ContaService {
 
     private final ContaRepository contaRepository;
 
     public ContaService (ContaRepository contaRepository) {this.contaRepository = contaRepository;}
+
+    public List<ContaResponseDTO> listarPorUsuario(Usuario usuarioAutenticado) {
+        return contaRepository.findByUsuarioId(usuarioAutenticado.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
 
     public ContaResponseDTO registrar(ContaRequestDTO dto, Usuario usuarioAutenticado) {
         if(dto.getNome() == null ||
