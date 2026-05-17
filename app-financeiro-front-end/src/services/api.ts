@@ -16,4 +16,52 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export type TipoTransacao = 'DEBITO' | 'CREDITO' | 'PARCELAMENTO' | 'BOLETO';
+export type TipoPagamento = 'PIX' | 'CARTAO_DEBITO' | 'CARTAO_CREDITO' | 'DINHEIRO' | 'BOLETO' | 'TED_DOC';
+
+export interface ContaResponse {
+  contaId: string;
+  nome: string;
+  tipoConta: string;
+  banco?: string;
+  descricao?: string;
+}
+
+export interface CategoriaResponse {
+  categoriaId: string;
+  nome: string;
+  icone?: string;
+  cor?: string;
+  padrao: boolean;
+}
+
+export interface TransacaoRequest {
+  valor: number;
+  data: string;
+  descricao?: string;
+  tipoTransacao: TipoTransacao;
+  formaPagamento?: TipoPagamento;
+  categoriaId?: string | null;
+  contaId: string;
+}
+
+export interface TransacaoResponse extends TransacaoRequest {
+  transacaoId: string;
+}
+
+export const listarContas = async () => {
+  const { data } = await api.get<ContaResponse[]>('/contas');
+  return data;
+};
+
+export const listarCategorias = async () => {
+  const { data } = await api.get<CategoriaResponse[]>('/categorias');
+  return data;
+};
+
+export const registrarTransacaoManual = async (transacao: TransacaoRequest) => {
+  const { data } = await api.post<TransacaoResponse>('/transacoes/manual', transacao);
+  return data;
+};
+
 export default api;

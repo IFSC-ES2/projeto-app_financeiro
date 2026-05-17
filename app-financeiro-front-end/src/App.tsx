@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ProvedorAutenticacao } from './contexts/ContextoAutenticacao';
 import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
+import NovaTransacao from './pages/NovaTransacao';
 
 // Dashboard provisório — substituir pela tela oficial
 const PainelProvisorio = () => (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/dashboard" element={<PainelProvisorio />} />
+          <Route path="/transacoes/nova" element={<NovaTransacao />} />
         </Routes>
       </Router>
     </ProvedorAutenticacao>
