@@ -31,7 +31,7 @@ public class TransacaoService {
                 dto.getContaId() == null ||
                 dto.getData() == null ||
         dto.getTipoTransacao() == null) throw new IllegalArgumentException(
-                        "Campos obrigatórios não informados(valor, data, contaId, tipoTransacao)");
+                        "Campos obrigatórios não informados");
 
         Conta conta = contaRepository.findById(dto.getContaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
@@ -46,7 +46,7 @@ public class TransacaoService {
         transacao.setConta(conta);
         if(transacao.getValor().compareTo(BigDecimal.valueOf(0)) == 0 ||
                 transacao.getValor().compareTo(BigDecimal.valueOf(0)) < 0) {
-            throw new IllegalArgumentException("O valor informado não pode ser igual ou menor que zero");
+            throw new IllegalArgumentException("O valor informado deve ser maior que zero");
         }
         transacao.setValor(dto.getValor());
         transacao.setData(dto.getData());
