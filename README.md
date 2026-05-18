@@ -100,6 +100,41 @@ curl -X POST http://localhost:8080/auth/register \
 
 Informações mais detalhadas disponível em [docs/como-rodar.md](docs/como-rodar.md)
 
+## Rodando os testes localmente
+
+Os testes automatizados estão versionados no repositório e devem passar antes de qualquer merge — o pipeline de CI executa exatamente os mesmos comandos descritos abaixo a cada pull request.
+
+Backend (JUnit + Spring Boot):
+
+```bash
+cd app-financeiro-back-end
+./gradlew test
+```
+
+O relatório HTML fica em `app-financeiro-back-end/build/reports/tests/test/index.html` e o relatório de cobertura JaCoCo em `app-financeiro-back-end/build/reports/jacoco/test/html/index.html`.
+
+Para rodar apenas uma classe específica:
+
+```bash
+./gradlew test --tests "bcd.appfinanceirobackend.RegistrarLoginTests"
+```
+
+Frontend (React + Vite):
+
+```bash
+cd app-financeiro-front-end
+npm install
+npm test --if-present
+```
+
+> O frontend ainda está construindo a sua suíte de testes; enquanto não houver script `test` no `package.json`, o comando acima é um no-op proposital, mesma forma como o CI se comporta. O passo está versionado para que a primeira suíte adicionada já entre como gate obrigatório, sem precisar mexer no workflow.
+
+## Integração contínua (CI)
+
+O workflow `.github/workflows/ci.yml` é disparado em cada pull request (`opened`, `synchronize`, `reopened`) e roda quatro jobs: build e testes do backend (com Postgres efêmero), build e testes do frontend, validação de YAML e verificação de arquivos obrigatórios. Qualquer falha derruba o check do PR e impede o merge.
+
+A proteção da branch `main` no GitHub deve marcar o job `Backend (build & test)` (e o `Frontend (build & test)` quando a suíte for adicionada) como **required status check**, garantindo que nenhum PR seja mergeado com testes vermelhos.
+
 
 -------
 ### Documentos 
