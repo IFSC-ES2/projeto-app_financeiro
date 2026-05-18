@@ -133,7 +133,7 @@ npm test --if-present
 
 O workflow `.github/workflows/ci.yml` é disparado em cada pull request (`opened`, `synchronize`, `reopened`) e roda quatro jobs: build e testes do backend (com Postgres efêmero), build e testes do frontend, validação de YAML e verificação de arquivos obrigatórios. Qualquer falha derruba o check do PR e impede o merge.
 
-A proteção da branch `main` no GitHub deve marcar o job `Backend (build & test)` (e o `Frontend (build & test)` quando a suíte for adicionada) como **required status check**, garantindo que nenhum PR seja mergeado com testes vermelhos.
+A proteção da branch `main` no GitHub já exige os quatro jobs (`Backend (build & test)`, `Frontend (build & test)`, `YAML syntax validation` e `Required files check`) como **required status checks** e exige ao menos 1 review aprovador, garantindo que nenhum PR seja mergeado com testes vermelhos.
 
 
 -------
