@@ -12,6 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 @Service
 public class TransacaoService {
 
@@ -33,13 +36,18 @@ public class TransacaoService {
         Conta conta = contaRepository.findById(dto.getContaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
 
-        if(!conta.getUsuario().getId().equals(usuarioAutenticado.getId())){
+        if(!conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a esta conta");
         }
 
         Transacao transacao = new Transacao();
+        if(transacao.getData().isAfter(LocalDate.now())) transacao.setFutura(true);
         transacao.setCategorizada(true);
         transacao.setConta(conta);
+        if(transacao.getValor().compareTo(BigDecimal.valueOf(0)) == 0 ||
+                transacao.getValor().compareTo(BigDecimal.valueOf(0)) < 0) {
+            throw new IllegalArgumentException("O valor informado não pode ser igual ou menor que zero");
+        }
         transacao.setValor(dto.getValor());
         transacao.setData(dto.getData());
         transacao.setDescricao(dto.getDescricao());
