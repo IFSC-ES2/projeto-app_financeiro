@@ -103,7 +103,7 @@ class RegistrarManualTransacaoTests {
 
             assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("Valor deve ser maior que zero");
+                    .hasMessageContaining("O valor informado deve ser maior que zero");
         }
 
         @Test
@@ -113,7 +113,7 @@ class RegistrarManualTransacaoTests {
 
             assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("Valor deve ser maior que zero");
+                    .hasMessageContaining("O valor informado deve ser maior que zero");
         }
 
         @Test
