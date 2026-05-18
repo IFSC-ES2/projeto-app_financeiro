@@ -69,7 +69,10 @@ public class TransacaoService {
         responseDTO.setDescricao(transacao.getDescricao());
         responseDTO.setContaId(transacao.getConta().getId());
         responseDTO.setCategoriaId(
-                transacao.getCategoria() != null ? transacao.getCategoria().getId() : null
+                    transacao.getCategoria() != null ? transacao.getCategoria().getId() : null
+        );
+        responseDTO.setImportacaoId(
+                    transacao.getImportacao() != null ? transacao.getImportacao().getId() : null
         );
         return responseDTO;
     }
