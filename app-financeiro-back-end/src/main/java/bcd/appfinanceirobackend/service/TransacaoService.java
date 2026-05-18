@@ -41,7 +41,6 @@ public class TransacaoService {
         }
 
         Transacao transacao = new Transacao();
-        if(transacao.getData().isAfter(LocalDate.now())) transacao.setFutura(true);
         transacao.setCategorizada(true);
         transacao.setConta(conta);
         if(transacao.getValor().compareTo(BigDecimal.valueOf(0)) == 0 ||
@@ -50,6 +49,7 @@ public class TransacaoService {
         }
         transacao.setValor(dto.getValor());
         transacao.setData(dto.getData());
+        if(transacao.getData().isAfter(LocalDate.now())) transacao.setFutura(true);
         transacao.setDescricao(dto.getDescricao());
         transacao.setTipo(dto.getTipoTransacao());
         transacao.setFormaPagamento(dto.getFormaPagamento());
