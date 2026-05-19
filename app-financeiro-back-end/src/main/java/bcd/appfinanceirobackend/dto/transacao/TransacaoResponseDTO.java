@@ -18,6 +18,7 @@ public class TransacaoResponseDTO {
     private String descricao;
     private TipoTransacao tipoTransacao;
     private TipoPagamento formaPagamento;
+    private UUID importacaoId;
     private UUID categoriaId;
     private UUID contaId;
 }
