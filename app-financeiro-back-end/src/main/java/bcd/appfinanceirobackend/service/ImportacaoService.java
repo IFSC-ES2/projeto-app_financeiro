@@ -85,6 +85,8 @@ public class ImportacaoService {
         importacao.setStatusImportacao(StatusImportacao.PROCESSANDO);
         importacaoRepository.save(importacao);
 
+        String mensagemDeErro = "";
+
         int sucessos = 0, falhas = 0;
         try {
             List<Transacao> transacoes = parser.parsear(arquivo, conta);
@@ -101,13 +103,14 @@ public class ImportacaoService {
             importacao.setStatusImportacao(StatusImportacao.CONCLUIDO);
         } catch (Exception e) {
             importacao.setStatusImportacao(StatusImportacao.ERRO);
+            mensagemDeErro = e.getMessage();
         }
 
         importacao.setSucessos(sucessos);
         importacao.setFalhas(falhas);
         importacaoRepository.save(importacao);
 
-        return toResponse(importacao);
+        return toResponse(importacao, mensagemDeErro);
     }
 
     private FormatoArquivo detectarFormato(String nomeArquivo, boolean verificaNfe) {
@@ -138,13 +141,14 @@ public class ImportacaoService {
 
 
 
-    private ImportacaoResponseDTO toResponse(Importacao importacao) {
+    private ImportacaoResponseDTO toResponse(Importacao importacao, String mensagemDeErro) {
         ImportacaoResponseDTO dto = new ImportacaoResponseDTO();
         dto.setId(importacao.getId());
         dto.setStatus(importacao.getStatusImportacao());
         dto.setSucessos(importacao.getSucessos());
         dto.setFalhas(importacao.getFalhas());
         dto.setImportadoEm(importacao.getImportado_em());
+        dto.setMensagemErro(mensagemDeErro);
         return dto;
     }
 }
