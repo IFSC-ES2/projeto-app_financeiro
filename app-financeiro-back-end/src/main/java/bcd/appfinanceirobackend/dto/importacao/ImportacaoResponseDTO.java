@@ -15,4 +15,5 @@ public class ImportacaoResponseDTO {
     private int sucessos;
     private int falhas;
     private LocalDateTime importadoEm;
+    private String mensagemErro;
 }
