@@ -47,6 +47,10 @@ public class ImportacaoService {
         Conta conta = contaRepository.findById(contaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
 
+        if (!conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Conta não pertence ao usuário autenticado");
+        }
+
         if(arquivo.isEmpty()) throw new IllegalArgumentException("Arquivo vazio");
 
         boolean verificaNFe = false;
