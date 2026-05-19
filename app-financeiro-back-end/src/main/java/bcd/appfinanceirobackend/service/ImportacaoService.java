@@ -70,7 +70,7 @@ public class ImportacaoService {
         if(nome==null) throw new IllegalArgumentException("Nome do arquivo inválido");
         Importacao importacao = new Importacao();
         importacao.setNome_arquivo(arquivo.getOriginalFilename());
-        importacao.setFormatoArquivo(detectarFormato(nome));
+        importacao.setFormatoArquivo(detectarFormato(nome, verificaNFe));
         importacao.setUsuario(usuarioAutenticado);
         importacao.setStatusImportacao(StatusImportacao.PENDENTE);
         importacao.setImportado_em(LocalDateTime.now());
@@ -110,15 +110,19 @@ public class ImportacaoService {
         return toResponse(importacao);
     }
 
-    private FormatoArquivo detectarFormato(String nomeArquivo) {
+    private FormatoArquivo detectarFormato(String nomeArquivo, boolean verificaNfe) {
         String extensaoArquivo = nomeArquivo.toLowerCase();
         if(extensaoArquivo.endsWith(".csv")){
             return FormatoArquivo.CSV;
-        } else if (extensaoArquivo.endsWith(".txt")) {
-            return FormatoArquivo.TXT;
-        } else if (extensaoArquivo.endsWith(".xml")) {
-
         }
+        if (extensaoArquivo.endsWith(".txt")) {
+            return FormatoArquivo.TXT;
+        }
+        if (extensaoArquivo.endsWith(".xml")) {
+            return verificaNfe ? FormatoArquivo.NFE : FormatoArquivo.XML;
+        }
+
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Formato do Arquivo não suportado");
 
     }
 
