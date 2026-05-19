@@ -38,6 +38,6 @@ public class ImportacaoController {
             @PathVariable UUID id,
             @AuthenticationPrincipal Usuario usuarioAutenticado) {
 
-        return ResponseEntity.ok(importacaoService.buscarStatus(id));
+        return ResponseEntity.ok(importacaoService.buscarStatus(id, usuarioAutenticado));
     }
 }
