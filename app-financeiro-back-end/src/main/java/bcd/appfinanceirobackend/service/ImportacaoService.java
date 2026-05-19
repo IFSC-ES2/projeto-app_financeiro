@@ -126,9 +126,12 @@ public class ImportacaoService {
 
     }
 
-    public StatusImportacao buscarStatus(UUID importacaoID) {
+    public StatusImportacao buscarStatus(UUID importacaoID, Usuario usuarioAutenticado) {
         Importacao importacao = importacaoRepository.findById(importacaoID).
                 orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Importação não encontrada"));
+        if (!importacao.getUsuario().getId().equals(usuarioAutenticado.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Importação não pertence ao usuário autenticado");
+        }
         return importacao.getStatusImportacao();
     }
 
