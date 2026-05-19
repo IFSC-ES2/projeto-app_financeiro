@@ -6,6 +6,7 @@ import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Importacao;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
+import bcd.appfinanceirobackend.model.enums.FormatoArquivo;
 import bcd.appfinanceirobackend.model.enums.StatusImportacao;
 import bcd.appfinanceirobackend.parser.ParserExtrato;
 import bcd.appfinanceirobackend.repository.ContaRepository;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -44,7 +46,27 @@ public class ImportacaoService {
 
         Conta conta = contaRepository.findById(contaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
+
+        if(arquivo.isEmpty()) throw new IllegalArgumentException("Arquivo vazio");
+
+        boolean verificaNFe = false;
+
+        try (InputStream is = arquivo.getInputStream()) {
+            byte[] preview = is.readNBytes(500);
+            String inicio = new String(preview).toLowerCase();
+            if(inicio.contains("nfeproc") || inicio.contains("<nfe")){
+                verificaNFe = true;
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Conteúdo do arquivo inválido");
+        }
+
+
+        String nome = arquivo.getOriginalFilename();
+        if(nome==null) throw new IllegalArgumentException("Nome do arquivo inválido");
         Importacao importacao = new Importacao();
+        importacao.setNome_arquivo(arquivo.getOriginalFilename());
+        importacao.setFormatoArquivo(detectarFormato(nome));
         importacao.setUsuario(usuarioAutenticado);
         importacao.setStatusImportacao(StatusImportacao.PENDENTE);
         importacao.setImportado_em(LocalDateTime.now());
@@ -82,6 +104,18 @@ public class ImportacaoService {
         importacaoRepository.save(importacao);
 
         return toResponse(importacao);
+    }
+
+    private FormatoArquivo detectarFormato(String nomeArquivo) {
+        String extensaoArquivo = nomeArquivo.toLowerCase();
+        if(extensaoArquivo.endsWith(".csv")){
+            return FormatoArquivo.CSV;
+        } else if (extensaoArquivo.endsWith(".txt")) {
+            return FormatoArquivo.TXT;
+        } else if (extensaoArquivo.endsWith(".xml")) {
+
+        }
+
     }
 
     public StatusImportacao buscarStatus(UUID importacaoID) {
