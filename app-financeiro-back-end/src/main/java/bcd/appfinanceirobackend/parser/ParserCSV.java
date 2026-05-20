@@ -71,13 +71,16 @@ public class ParserCSV implements ParserExtrato {
 
                 String[] linha;
                 while ((linha = reader.readNext()) != null) {
-                    if (linha.length < 4) continue;
+                    totalLinhas++;
+                    if (linha.length < 4) {
+                        linhasInvalidas++;
+                        continue;
+                    }
 
                     // Ignora cabeçalho: primeira coluna não é uma data válida
                     LocalDate data = parsearData(linha[0].trim());
                     if (data == null) {
                         linhasInvalidas++;
-                        totalLinhas++;
                         continue;
                     }
 
@@ -85,7 +88,6 @@ public class ParserCSV implements ParserExtrato {
                     BigDecimal valor = parsearValor(linha[2].trim());
                     if (valor == null) {
                         linhasInvalidas++;
-                        totalLinhas++;
                         continue;
                     };
 
