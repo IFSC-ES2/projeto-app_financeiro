@@ -80,11 +80,9 @@ public class ParserTXT implements ParserExtrato {
             String linha;
             while ((linha = reader.readLine()) != null) {
                 linha = linha.trim();
-                if (linha.isBlank()) {
-                    totalLinhas++;
-                    linhasInvalidas++;
-                    continue;
-                };
+                if (linha.isBlank()) continue;
+
+                totalLinhas++;
 
                 Transacao transacao = parsearPorRegex(linha, conta);
 
@@ -96,13 +94,20 @@ public class ParserTXT implements ParserExtrato {
                 if (transacao != null) {
                     transacoes.add(transacao);
                 }
+                else {
+                    linhasInvalidas++;
+                }
             }
 
         } catch (Exception e) {
             throw new RuntimeException("Erro ao processar arquivo TXT: " + e.getMessage(), e);
         }
 
-        return transacoes;
+        ResultadoParser resultado = new ResultadoParser();
+        resultado.setLinhasInvalidas(linhasInvalidas);
+        resultado.setTotalLinhas(totalLinhas);
+        resultado.setTransacoes(transacoes);
+        return resultado;
     }
 
     /** Estratégia 1: extrai campos via regex. */
