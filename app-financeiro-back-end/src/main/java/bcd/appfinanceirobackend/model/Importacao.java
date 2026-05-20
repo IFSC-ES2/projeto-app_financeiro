@@ -46,4 +46,7 @@ public class Importacao {
 
     @Column
     private int falhas;
+
+    @Column
+    private String mensagemErro;
 }
