@@ -55,7 +55,15 @@ public class ImportacaoService {
 
         boolean verificaNFe = false;
 
-
+        try (InputStream is = arquivo.getInputStream()) {
+            byte[] preview = is.readNBytes(500);
+            String inicio = new String(preview).toLowerCase();
+            if(inicio.contains("nfeproc") || inicio.contains("<nfe")){
+                verificaNFe = true;
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Conteúdo do arquivo inválido");
+        }
 
 
         String nome = arquivo.getOriginalFilename();
