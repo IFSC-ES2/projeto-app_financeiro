@@ -9,9 +9,12 @@ import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.model.enums.FormatoArquivo;
 import bcd.appfinanceirobackend.model.enums.StatusImportacao;
 import bcd.appfinanceirobackend.parser.ParserExtrato;
+import bcd.appfinanceirobackend.parser.ResultadoParser;
 import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.ImportacaoRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -87,14 +90,15 @@ public class ImportacaoService {
 
         int sucessos = 0, falhas = 0;
         try {
-            List<Transacao> transacoes = parser.parsear(arquivo, conta);
-            for (Transacao t : transacoes) {
+            ResultadoParser resultado = parser.parsear(arquivo, conta);
+            falhas = resultado.getLinhasInvalidas();
+            for (Transacao t: resultado.getTransacoes()){
                 try {
                     t.setImportacao(importacao);
                     t.setCategorizada(false);
                     transacaoRepository.save(t);
                     sucessos++;
-                } catch (Exception e) {
+                }catch (Exception e){
                     falhas++;
                 }
             }

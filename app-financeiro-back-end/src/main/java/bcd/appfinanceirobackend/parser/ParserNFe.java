@@ -69,8 +69,10 @@ public class ParserNFe implements ParserExtrato {
     }
 
     @Override
-    public List<Transacao> parsear(MultipartFile arquivo, Conta conta) {
+    public ResultadoParser parsear(MultipartFile arquivo, Conta conta) {
         List<Transacao> transacoes = new ArrayList<>();
+        int linhasInvalidas = 0;
+        int totalLinhas = 0;
 
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -106,7 +108,11 @@ public class ParserNFe implements ParserExtrato {
                 String descricaoProduto = primeiroTextoElemento(item, "xProd");
                 BigDecimal valorProduto = parsearBigDecimal(primeiroTextoElemento(item, "vProd"));
 
-                if (valorProduto == null || valorProduto.compareTo(BigDecimal.ZERO) <= 0) continue;
+                if (valorProduto == null || valorProduto.compareTo(BigDecimal.ZERO) <= 0) {
+                    linhasInvalidas++;
+                    totalLinhas++;
+                    continue;
+                }
 
                 Transacao transacao = new Transacao();
                 transacao.setConta(conta);
@@ -125,7 +131,11 @@ public class ParserNFe implements ParserExtrato {
             throw new RuntimeException("Erro ao processar NF-e: " + e.getMessage(), e);
         }
 
-        return transacoes;
+        ResultadoParser resultado = new ResultadoParser();
+        resultado.setTotalLinhas(totalLinhas);
+        resultado.setTransacoes(transacoes);
+        resultado.setLinhasInvalidas(linhasInvalidas);
+        return resultado;
     }
 
     /**

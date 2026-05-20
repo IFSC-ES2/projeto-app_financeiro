@@ -69,8 +69,10 @@ public class ParserTXT implements ParserExtrato {
     }
 
     @Override
-    public List<Transacao> parsear(MultipartFile arquivo, Conta conta) {
+    public ResultadoParser parsear(MultipartFile arquivo, Conta conta) {
         List<Transacao> transacoes = new ArrayList<>();
+        int totalLinhas = 0;
+        int linhasInvalidas = 0;
 
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(arquivo.getInputStream(), StandardCharsets.UTF_8))) {
@@ -78,7 +80,11 @@ public class ParserTXT implements ParserExtrato {
             String linha;
             while ((linha = reader.readLine()) != null) {
                 linha = linha.trim();
-                if (linha.isBlank()) continue;
+                if (linha.isBlank()) {
+                    totalLinhas++;
+                    linhasInvalidas++;
+                    continue;
+                };
 
                 Transacao transacao = parsearPorRegex(linha, conta);
 
