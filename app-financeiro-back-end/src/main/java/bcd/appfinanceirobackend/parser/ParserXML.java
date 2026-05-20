@@ -3,6 +3,7 @@ package bcd.appfinanceirobackend.parser;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
@@ -41,6 +42,7 @@ import java.util.List;
  * Tags alternativas também aceitas: <lancamento>, <movimento>, <entry>
  */
 @Component
+@Order(2)
 public class ParserXML implements ParserExtrato {
 
     private static final List<String> TAGS_TRANSACAO = List.of(
