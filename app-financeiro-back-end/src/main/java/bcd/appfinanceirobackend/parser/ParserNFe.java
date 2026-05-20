@@ -93,22 +93,31 @@ public class ParserNFe implements ParserExtrato {
             String cnpjEmitente = primeiroTexto(doc, "CNPJ");
             String descricao = montarDescricao(nomeEmitente, cnpjEmitente);
 
-            // Extrai valor total da nota
-            BigDecimal valorTotal = extrairValorTotal(doc);
-            if (valorTotal == null || valorTotal.compareTo(BigDecimal.ZERO) <= 0) {
-                throw new RuntimeException("Campo <vNF> não encontrado ou inválido na NF-e.");
+            // Itera sobre os itens da nota (<det>) gerando uma transação por produto
+            NodeList itens = doc.getElementsByTagName("det");
+
+            if (itens.getLength() == 0) {
+                throw new RuntimeException("Nenhum item <det> encontrado na NF-e.");
             }
 
-            // Uma NF-e = uma transação de DEBITO
-            Transacao transacao = new Transacao();
-            transacao.setConta(conta);
-            transacao.setData(dataEmissao);
-            transacao.setDescricao(descricao);
-            transacao.setValor(valorTotal);
-            transacao.setTipo(TipoTransacao.DEBITO);
-            transacao.setCategorizada(false);
+            for (int i = 0; i < itens.getLength(); i++) {
+                Element item = (Element) itens.item(i);
 
-            transacoes.add(transacao);
+                String descricaoProduto = primeiroTextoElemento(item, "xProd");
+                BigDecimal valorProduto = parsearBigDecimal(primeiroTextoElemento(item, "vProd"));
+
+                if (valorProduto == null || valorProduto.compareTo(BigDecimal.ZERO) <= 0) continue;
+
+                Transacao transacao = new Transacao();
+                transacao.setConta(conta);
+                transacao.setData(dataEmissao);
+                transacao.setDescricao(descricaoProduto.isBlank() ? "Item NF-e #" + (i + 1) : descricaoProduto);
+                transacao.setValor(valorProduto);
+                transacao.setTipo(TipoTransacao.DEBITO);
+                transacao.setCategorizada(false);
+
+                transacoes.add(transacao);
+            }
 
         } catch (RuntimeException e) {
             throw e;
@@ -144,26 +153,13 @@ public class ParserNFe implements ParserExtrato {
         }
     }
 
-    /**
-     * Extrai o valor total da nota a partir de <ICMSTot>/<vNF>.
-     * Se não encontrar via ICMSTot, tenta buscar <vNF> diretamente.
-     */
-    private BigDecimal extrairValorTotal(Document doc) {
-        // Tenta via ICMSTot primeiro (estrutura padrão)
-        NodeList icmsTot = doc.getElementsByTagName("ICMSTot");
-        if (icmsTot.getLength() > 0) {
-            Element el = (Element) icmsTot.item(0);
-            NodeList vnf = el.getElementsByTagName("vNF");
-            if (vnf.getLength() > 0) {
-                return parsearBigDecimal(vnf.item(0).getTextContent().trim());
-            }
-        }
-
-        // Fallback: busca <vNF> diretamente no documento
-        String vNF = primeiroTexto(doc, "vNF");
-        return parsearBigDecimal(vNF);
+    /** Extrai o texto de uma tag filha dentro de um Element específico. */
+    private String primeiroTextoElemento(Element elemento, String tag) {
+        NodeList nos = elemento.getElementsByTagName(tag);
+        if (nos.getLength() == 0) return "";
+        return nos.item(0).getTextContent().trim();
     }
-
+    
     /** Busca o texto do primeiro elemento com a tag informada no documento. */
     private String primeiroTexto(Document doc, String tag) {
         NodeList nos = doc.getElementsByTagName(tag);
