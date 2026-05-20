@@ -104,13 +104,13 @@ public class ParserNFe implements ParserExtrato {
 
             for (int i = 0; i < itens.getLength(); i++) {
                 Element item = (Element) itens.item(i);
+                totalLinhas++;
 
                 String descricaoProduto = primeiroTextoElemento(item, "xProd");
                 BigDecimal valorProduto = parsearBigDecimal(primeiroTextoElemento(item, "vProd"));
 
                 if (valorProduto == null || valorProduto.compareTo(BigDecimal.ZERO) <= 0) {
                     linhasInvalidas++;
-                    totalLinhas++;
                     continue;
                 }
 

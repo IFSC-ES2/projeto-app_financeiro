@@ -98,19 +98,18 @@ public class ParserXML implements ParserExtrato {
             }
 
             for (int i = 0; i < nos.getLength(); i++) {
+                totalLinhas++;
                 Element el = (Element) nos.item(i);
 
                 LocalDate data = parsearData(texto(el, "data"));
                 if (data == null) {
                     linhasInvalidas++;
-                    totalLinhas++;
                     continue;
                 }
 
                 BigDecimal valor = parsearValor(texto(el, "valor"));
                 if (valor == null) {
                     linhasInvalidas++;
-                    totalLinhas++;
                     continue;
                 }
 
