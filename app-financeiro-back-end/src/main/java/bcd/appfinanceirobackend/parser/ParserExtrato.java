@@ -30,8 +30,8 @@ public interface ParserExtrato {
      *
      * @param arquivo arquivo recebido via upload
      * @param conta   conta à qual as transações serão vinculadas
-     * @return lista de transações extraídas do arquivo
+     * @return um objeto da classe resultadoParser
      * @throws RuntimeException se o arquivo estiver corrompido ou em formato inválido
      */
-    List<Transacao> parsear(MultipartFile arquivo, Conta conta);
+    ResultadoParser parsear(MultipartFile arquivo, Conta conta);
 }
