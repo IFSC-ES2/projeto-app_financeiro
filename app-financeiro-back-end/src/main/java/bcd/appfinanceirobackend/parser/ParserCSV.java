@@ -54,6 +54,7 @@ public class ParserCSV implements ParserExtrato {
 
     @Override
     public ResultadoParser parsear(MultipartFile arquivo, Conta conta) {
+        List<Transacao> transacoes = new ArrayList<>();
         ResultadoParser resultadoParser = new ResultadoParser();
         int linhasInvalidas = resultadoParser.getLinhasInvalidas();
         int totalLinhas = resultadoParser.getTotalLinhas();
@@ -102,15 +103,15 @@ public class ParserCSV implements ParserExtrato {
                     transacao.setTipo(tipo);
                     transacao.setCategorizada(false);
 
-                    resultadoParser.getTransacoes().add(transacao);
-                    resultadoParser.setLinhasInvalidas(linhasInvalidas);
-                    resultadoParser.setTotalLinhas(totalLinhas);
+                    transacoes.add(transacao);
                 }
             }
         } catch (Exception e) {
             throw new RuntimeException("Erro ao processar arquivo CSV: " + e.getMessage(), e);
         }
-
+        resultadoParser.setTransacoes(transacoes);
+        resultadoParser.setLinhasInvalidas(linhasInvalidas);
+        resultadoParser.setTotalLinhas(totalLinhas);
         return resultadoParser;
     }
 

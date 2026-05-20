@@ -102,6 +102,7 @@ public class ImportacaoService {
                     falhas++;
                 }
             }
+            importacao.setTotal_linhas(resultado.getTotalLinhas());
             importacao.setStatusImportacao(StatusImportacao.CONCLUIDO);
         } catch (Exception e) {
             importacao.setStatusImportacao(StatusImportacao.ERRO);
