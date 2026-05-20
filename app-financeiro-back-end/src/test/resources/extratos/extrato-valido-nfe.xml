@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfe>
+    <transacao>
+        <data>2024-01-15</data>
+        <descricao>Compra NFe</descricao>
+        <valor>-150.00</valor>
+        <tipo>DEBITO</tipo>
+    </transacao>
+</nfe>
