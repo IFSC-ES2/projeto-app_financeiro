@@ -53,8 +53,11 @@ public class ParserCSV implements ParserExtrato {
     }
 
     @Override
-    public List<Transacao> parsear(MultipartFile arquivo, Conta conta) {
+    public ResultadoParser parsear(MultipartFile arquivo, Conta conta) {
         List<Transacao> transacoes = new ArrayList<>();
+        ResultadoParser resultadoParser = new ResultadoParser();
+        int linhasInvalidas = resultadoParser.getLinhasInvalidas();
+        int totalLinhas = resultadoParser.getTotalLinhas();
 
         try {
             // Lê o conteúdo bruto para detectar o delimitador
@@ -69,15 +72,25 @@ public class ParserCSV implements ParserExtrato {
 
                 String[] linha;
                 while ((linha = reader.readNext()) != null) {
-                    if (linha.length < 4) continue;
+                    totalLinhas++;
+                    if (linha.length < 4) {
+                        linhasInvalidas++;
+                        continue;
+                    }
 
                     // Ignora cabeçalho: primeira coluna não é uma data válida
                     LocalDate data = parsearData(linha[0].trim());
-                    if (data == null) continue;
+                    if (data == null) {
+                        linhasInvalidas++;
+                        continue;
+                    }
 
                     String descricao = linha[1].trim();
                     BigDecimal valor = parsearValor(linha[2].trim());
-                    if (valor == null) continue;
+                    if (valor == null) {
+                        linhasInvalidas++;
+                        continue;
+                    };
 
                     TipoTransacao tipo = parsearTipo(linha[3].trim(), valor);
 
@@ -96,8 +109,10 @@ public class ParserCSV implements ParserExtrato {
         } catch (Exception e) {
             throw new RuntimeException("Erro ao processar arquivo CSV: " + e.getMessage(), e);
         }
-
-        return transacoes;
+        resultadoParser.setTransacoes(transacoes);
+        resultadoParser.setLinhasInvalidas(linhasInvalidas);
+        resultadoParser.setTotalLinhas(totalLinhas);
+        return resultadoParser;
     }
 
     /**

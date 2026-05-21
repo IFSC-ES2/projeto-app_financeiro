@@ -69,8 +69,10 @@ public class ParserTXT implements ParserExtrato {
     }
 
     @Override
-    public List<Transacao> parsear(MultipartFile arquivo, Conta conta) {
+    public ResultadoParser parsear(MultipartFile arquivo, Conta conta) {
         List<Transacao> transacoes = new ArrayList<>();
+        int totalLinhas = 0;
+        int linhasInvalidas = 0;
 
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(arquivo.getInputStream(), StandardCharsets.UTF_8))) {
@@ -79,6 +81,8 @@ public class ParserTXT implements ParserExtrato {
             while ((linha = reader.readLine()) != null) {
                 linha = linha.trim();
                 if (linha.isBlank()) continue;
+
+                totalLinhas++;
 
                 Transacao transacao = parsearPorRegex(linha, conta);
 
@@ -90,13 +94,20 @@ public class ParserTXT implements ParserExtrato {
                 if (transacao != null) {
                     transacoes.add(transacao);
                 }
+                else {
+                    linhasInvalidas++;
+                }
             }
 
         } catch (Exception e) {
             throw new RuntimeException("Erro ao processar arquivo TXT: " + e.getMessage(), e);
         }
 
-        return transacoes;
+        ResultadoParser resultado = new ResultadoParser();
+        resultado.setLinhasInvalidas(linhasInvalidas);
+        resultado.setTotalLinhas(totalLinhas);
+        resultado.setTransacoes(transacoes);
+        return resultado;
     }
 
     /** Estratégia 1: extrai campos via regex. */

@@ -72,8 +72,10 @@ public class ParserXML implements ParserExtrato {
     }
 
     @Override
-    public List<Transacao> parsear(MultipartFile arquivo, Conta conta) {
+    public ResultadoParser parsear(MultipartFile arquivo, Conta conta) {
         List<Transacao> transacoes = new ArrayList<>();
+        int linhasInvalidas = 0;
+        int totalLinhas = 0;
 
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -96,13 +98,20 @@ public class ParserXML implements ParserExtrato {
             }
 
             for (int i = 0; i < nos.getLength(); i++) {
+                totalLinhas++;
                 Element el = (Element) nos.item(i);
 
                 LocalDate data = parsearData(texto(el, "data"));
-                if (data == null) continue;
+                if (data == null) {
+                    linhasInvalidas++;
+                    continue;
+                }
 
                 BigDecimal valor = parsearValor(texto(el, "valor"));
-                if (valor == null) continue;
+                if (valor == null) {
+                    linhasInvalidas++;
+                    continue;
+                }
 
                 String descricao = texto(el, "descricao");
                 TipoTransacao tipo = parsearTipo(texto(el, "tipo"), valor);
@@ -123,8 +132,11 @@ public class ParserXML implements ParserExtrato {
         } catch (Exception e) {
             throw new RuntimeException("Erro ao processar arquivo XML: " + e.getMessage(), e);
         }
-
-        return transacoes;
+        ResultadoParser resultado = new ResultadoParser();
+        resultado.setLinhasInvalidas(linhasInvalidas);
+        resultado.setTransacoes(transacoes);
+        resultado.setTotalLinhas(totalLinhas);
+        return resultado;
     }
 
     /** Extrai o texto de uma tag filha pelo nome, retornando "" se ausente. */
