@@ -7,7 +7,6 @@ const api = axios.create({
   },
 });
 
-// Interceptor: injeta o token em toda requisição autenticada
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -45,22 +44,35 @@ export interface TransacaoRequest {
   contaId: string;
 }
 
-export interface TransacaoResponse extends TransacaoRequest {
+export interface TransacaoResponse {
   transacaoId: string;
+  valor: number;
+  data: string;
+  descricao?: string;
+  tipoTransacao: TipoTransacao;
+  formaPagamento?: TipoPagamento;
+  categoriaId?: string | null;
+  contaId: string;
+  importacaoId?: string | null;
 }
 
-export const listarContas = async () => {
+export const listarContas = async (): Promise<ContaResponse[]> => {
   const { data } = await api.get<ContaResponse[]>('/contas');
   return data;
 };
 
-export const listarCategorias = async () => {
+export const listarCategorias = async (): Promise<CategoriaResponse[]> => {
   const { data } = await api.get<CategoriaResponse[]>('/categorias');
   return data;
 };
 
-export const registrarTransacaoManual = async (transacao: TransacaoRequest) => {
+export const registrarTransacaoManual = async (transacao: TransacaoRequest): Promise<TransacaoResponse> => {
   const { data } = await api.post<TransacaoResponse>('/transacoes/manual', transacao);
+  return data;
+};
+
+export const listarTransacoes = async (): Promise<TransacaoResponse[]> => {
+  const { data } = await api.get<TransacaoResponse[]>('/transacoes');
   return data;
 };
 

@@ -1,27 +1,28 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ProvedorAutenticacao } from './contexts/ContextoAutenticacao';
+import RotaProtegida from './components/layout/RotaProtegida';
 import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
-import NovaTransacao from './pages/NovaTransacao';
-
-// Dashboard provisório — substituir pela tela oficial
-const PainelProvisorio = () => (
-  <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'system-ui, sans-serif' }}>
-    <h2>Painel</h2>
-    <p>Login realizado com sucesso! (Tela oficial em construção)</p>
-  </div>
-);
+import Painel from './pages/Painel';
 
 function App() {
   return (
     <ProvedorAutenticacao>
       <Router>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
-          <Route path="/dashboard" element={<PainelProvisorio />} />
-          <Route path="/transacoes/nova" element={<NovaTransacao />} />
+          <Route
+            path="/painel"
+            element={
+              <RotaProtegida>
+                <Painel />
+              </RotaProtegida>
+            }
+          />
+          <Route path="/dashboard" element={<Navigate to="/painel" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </ProvedorAutenticacao>

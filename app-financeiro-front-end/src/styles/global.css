@@ -1,9 +1,8 @@
 /*
   SmartBudget – Global Styles
-  Bootstrap é carregado via CDN no index.html ou instalado via npm.
-  Instale com: npm install bootstrap
-  E importe no main.tsx: import 'bootstrap/dist/css/bootstrap.min.css';
 */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
 :root {
   --sb-primary: #2FA98F;
@@ -17,6 +16,17 @@
   --sb-text-muted: #2F4B63;
   --sb-border: #E5E7EB;
   --sb-gradient: linear-gradient(135deg, #0E1624, #2FA98F);
+
+  /* Dashboard-specific */
+  --dash-bg: #0B1520;
+  --dash-surface: #111E2E;
+  --dash-surface-2: #162A3D;
+  --dash-border: rgba(47, 169, 143, 0.15);
+  --dash-text: #E8F4F1;
+  --dash-text-muted: #7BA8A0;
+  --dash-primary: #2FA98F;
+  --dash-primary-glow: rgba(47, 169, 143, 0.25);
+  --dash-accent: #FFC83D;
 }
 
 * {
@@ -25,13 +35,13 @@
 
 body {
   margin: 0;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'DM Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: var(--sb-bg);
   color: var(--sb-text);
   -webkit-font-smoothing: antialiased;
 }
 
-/* Override Bootstrap focus rings to match brand color */
+/* Bootstrap overrides */
 .form-control:focus {
   border-color: var(--sb-primary-light) !important;
   box-shadow: 0 0 0 0.2rem rgba(47, 169, 143, 0.22) !important;
@@ -42,7 +52,6 @@ body {
   border-color: var(--sb-primary);
 }
 
-/* Smooth transition on buttons */
 .btn {
   transition: opacity 0.18s ease, transform 0.1s ease;
 }
@@ -56,7 +65,6 @@ body {
   transform: translateY(0);
 }
 
-/* Input border style */
 .form-control,
 .input-group-text {
   border-color: var(--sb-border);
@@ -78,7 +86,6 @@ body {
   border-radius: 8px 0 0 8px;
 }
 
-/* Auth panel transition on resize */
 @media (max-width: 991px) {
   .auth-panel {
     display: none;

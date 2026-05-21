@@ -34,7 +34,7 @@ const Login: React.FC = () => {
     setCarregando(true);
     try {
       await login(valores.email, valores.senha);
-      navigate('/dashboard');
+      navigate('/painel');
     } catch (err: any) {
       const msg = err?.response?.data?.erro;
       setErro(msg || 'E-mail ou senha inválidos. Tente novamente.');
@@ -49,24 +49,6 @@ const Login: React.FC = () => {
       subtituloPainel="Faça login para acessar seu painel financeiro e continuar no controle do seu orçamento."
     >
       <div className="mb-4">
-        {/* Logo visível apenas no mobile */}
-        <div className="d-flex d-lg-none align-items-center gap-2 mb-4">
-          <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
-            <rect width="36" height="36" rx="10" fill="var(--sb-primary)" />
-            <path
-              d="M10 24 L14 16 L18 20 L22 12 L26 18"
-              stroke="white"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-            />
-            <circle cx="26" cy="18" r="2" fill="white" />
-          </svg>
-          <span className="fw-bold" style={{ fontSize: '1.2rem', color: 'var(--sb-primary-dark)' }}>
-            SmartBudget
-          </span>
-        </div>
 
         <h2 className="fw-bold mb-1" style={{ color: 'var(--sb-text)', fontSize: '1.8rem' }}>
           Entrar
