@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extrato>
+    <transacao>
+        <data>2024-01-15</data>
+        <descricao>Supermercado</descricao>
+        <valor>-150.00</valor>
+        <tipo>DEBITO</tipo>
+    </transacao>
+    <transacao>
+        <data>2024-01-16</data>
+        <descricao>Salário</descricao>
+        <valor>5000.00</valor>
+        <tipo>CREDITO</tipo>
+    </transacao>
+</extrato>
