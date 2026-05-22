@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -27,12 +26,16 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -70,129 +73,219 @@ class ImportacaoServiceTest {
         conta.setUsuario(usuarioDono);
     }
 
-    // ---------------------------------------------------------------------------
-    // Helpers de fixture
-    // ---------------------------------------------------------------------------
-
     private MockMultipartFile csvValido(String conteudo) {
-        return new MockMultipartFile("arquivo", "extrato.csv",
-                "text/csv", conteudo.getBytes());
+        return arquivo("arquivo", "extrato.csv", "text/csv", conteudo);
+    }
+
+    private MockMultipartFile txtValido(String conteudo) {
+        return arquivo("arquivo", "extrato.TXT", "text/plain", conteudo);
     }
 
     private MockMultipartFile xmlNFe(String conteudo) {
-        return new MockMultipartFile("arquivo", "nota.xml",
-                "application/xml", conteudo.getBytes());
+        return arquivo("arquivo", "nota.xml", "application/xml", conteudo);
     }
 
     private MockMultipartFile xmlGenerico(String conteudo) {
-        return new MockMultipartFile("arquivo", "extrato.xml",
-                "application/xml", conteudo.getBytes());
+        return arquivo("arquivo", "extrato.xml", "application/xml", conteudo);
+    }
+
+    private MockMultipartFile arquivo(String name, String originalFilename, String contentType, String conteudo) {
+        return new MockMultipartFile(
+                name,
+                originalFilename,
+                contentType,
+                conteudo.getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     private ResultadoParser resultadoComTransacoes(int quantidade, int linhasInvalidas) {
         ResultadoParser resultado = new ResultadoParser();
         resultado.setLinhasInvalidas(linhasInvalidas);
         resultado.setTotalLinhas(quantidade + linhasInvalidas);
-        List<Transacao> transacoes = new java.util.ArrayList<>();
+
+        List<Transacao> transacoes = new ArrayList<>();
         for (int i = 0; i < quantidade; i++) {
-            Transacao t = new Transacao();
-            t.setValor(BigDecimal.TEN);
-            transacoes.add(t);
+            Transacao transacao = new Transacao();
+            transacao.setValor(BigDecimal.TEN);
+            transacao.setData(LocalDate.of(2024, 1, 15));
+            transacao.setDescricao("Transação importada " + (i + 1));
+            transacao.setConta(conta);
+            transacoes.add(transacao);
         }
+
         resultado.setTransacoes(transacoes);
         return resultado;
     }
 
-    // ---------------------------------------------------------------------------
-    // processar() — Validações de acesso e entrada
-    // ---------------------------------------------------------------------------
+    private void mockContaDoUsuarioAutenticado() {
+        when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
+    }
+
+    private void mockParserAceitandoComResultado(ResultadoParser resultado) {
+        when(parserMock.aceita(any())).thenReturn(true);
+        when(parserMock.parsear(any(), eq(conta))).thenReturn(resultado);
+    }
+
+    private void mockSaveImportacaoRegistrandoStatus(List<StatusImportacao> statusSalvos) {
+        when(importacaoRepository.save(any(Importacao.class))).thenAnswer(invocation -> {
+            Importacao importacao = invocation.getArgument(0);
+            statusSalvos.add(importacao.getStatusImportacao());
+            return importacao;
+        });
+    }
+
+    private void mockSaveImportacaoRegistrandoFormato(List<FormatoArquivo> formatosSalvos) {
+        when(importacaoRepository.save(any(Importacao.class))).thenAnswer(invocation -> {
+            Importacao importacao = invocation.getArgument(0);
+            formatosSalvos.add(importacao.getFormatoArquivo());
+            return importacao;
+        });
+    }
+
+    private void assertNenhumaPersistenciaDeImportacaoOuTransacao() {
+        verify(importacaoRepository, never()).save(any());
+        verify(transacaoRepository, never()).save(any());
+    }
 
     @Nested
-    @DisplayName("processar() — Validações de Acesso e Entrada")
+    @DisplayName("processar() - validações de acesso e entrada")
     class ValidacoesDeAcesso {
 
         @Test
-        @DisplayName("1.2 Conta inexistente lança ResourceNotFoundException")
+        @DisplayName("Conta inexistente lança ResourceNotFoundException e interrompe o fluxo")
         void contaInexistente_lancaResourceNotFoundException() {
             when(contaRepository.findById(any())).thenReturn(Optional.empty());
 
             assertThrows(ResourceNotFoundException.class, () ->
-                    service.processar(csvValido("a,b,c,d"), UUID.randomUUID(), usuarioDono));
+                    service.processar(csvValido("2024-01-15,Mercado,150.00,DEBITO"), UUID.randomUUID(), usuarioDono));
 
-            verify(importacaoRepository, never()).save(any());
+            assertNenhumaPersistenciaDeImportacaoOuTransacao();
+            verify(parserMock, never()).aceita(any());
+            verify(parserMock, never()).parsear(any(), any());
         }
 
         @Test
-        @DisplayName("1.1 Conta de outro usuário lança 403 FORBIDDEN")
+        @DisplayName("Conta de outro usuário lança 403 FORBIDDEN e não consulta parser")
         void contaDeOutroUsuario_lancaForbidden() {
-            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
+            mockContaDoUsuarioAutenticado();
 
             ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
-                    service.processar(csvValido("a,b,c,d"), conta.getId(), usuarioEstranho));
+                    service.processar(csvValido("2024-01-15,Mercado,150.00,DEBITO"), conta.getId(), usuarioEstranho));
 
             assertAll(
                     () -> assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode()),
-                    () -> verify(importacaoRepository, never()).save(any()),
-                    () -> verify(parserMock, never()).aceita(any())
+                    () -> assertNenhumaPersistenciaDeImportacaoOuTransacao(),
+                    () -> verify(parserMock, never()).aceita(any()),
+                    () -> verify(parserMock, never()).parsear(any(), any())
             );
         }
 
         @Test
-        @DisplayName("1.3 Arquivo vazio lança IllegalArgumentException")
+        @DisplayName("Arquivo vazio lança IllegalArgumentException antes de criar importação")
         void arquivoVazio_lancaIllegalArgumentException() {
-            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
+            mockContaDoUsuarioAutenticado();
 
-            MockMultipartFile vazio = new MockMultipartFile("arquivo", "extrato.csv",
-                    "text/csv", new byte[0]);
+            MockMultipartFile vazio = new MockMultipartFile("arquivo", "extrato.csv", "text/csv", new byte[0]);
 
-            assertThrows(IllegalArgumentException.class, () ->
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
                     service.processar(vazio, conta.getId(), usuarioDono));
 
-            verify(parserMock, never()).aceita(any());
+            assertAll(
+                    () -> assertEquals("Arquivo vazio", ex.getMessage()),
+                    () -> assertNenhumaPersistenciaDeImportacaoOuTransacao(),
+                    () -> verify(parserMock, never()).aceita(any()),
+                    () -> verify(parserMock, never()).parsear(any(), any())
+            );
         }
 
         @Test
-        @DisplayName("1.4 Nome de arquivo nulo lança IllegalArgumentException")
+        @DisplayName("Nome de arquivo nulo lança IllegalArgumentException antes de criar importação")
         void nomeArquivoNulo_lancaIllegalArgumentException() {
-            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
+            mockContaDoUsuarioAutenticado();
 
-            MockMultipartFile semNome = new MockMultipartFile("arquivo", null,
-                    "text/csv", "data,desc,10.00,CREDITO".getBytes());
+            MockMultipartFile semNome = new MockMultipartFile(
+                    "arquivo",
+                    null,
+                    "text/csv",
+                    "2024-01-15,Mercado,150.00,DEBITO".getBytes(StandardCharsets.UTF_8)
+            );
 
-            assertThrows(IllegalArgumentException.class, () ->
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
                     service.processar(semNome, conta.getId(), usuarioDono));
+
+            assertAll(
+                    () -> assertEquals("Nome do arquivo inválido", ex.getMessage()),
+                    () -> assertNenhumaPersistenciaDeImportacaoOuTransacao(),
+                    () -> verify(parserMock, never()).aceita(any()),
+                    () -> verify(parserMock, never()).parsear(any(), any())
+            );
         }
 
         @Test
-        @DisplayName("1.5 Nenhum parser aceita o arquivo lança 400 BAD_REQUEST e salva status ERRO")
-        void nenhumParserAceita_lancaBadRequest_salvandoStatusErro() {
-            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
-            when(parserMock.aceita(any())).thenReturn(false);
+        @DisplayName("Extensão não suportada lança 400 BAD_REQUEST antes de criar importação")
+        void extensaoNaoSuportada_lancaBadRequest_semSalvarImportacao() {
+            mockContaDoUsuarioAutenticado();
 
-            MockMultipartFile pdf = new MockMultipartFile("arquivo", "extrato.pdf",
-                    "application/pdf", "conteudo qualquer".getBytes());
+            MockMultipartFile pdf = arquivo("arquivo", "extrato.pdf", "application/pdf", "conteúdo qualquer");
 
-            // .pdf não passa na detecção de formato — lança antes mesmo de consultar parsers
-            assertThrows(ResponseStatusException.class, () ->
+            ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
                     service.processar(pdf, conta.getId(), usuarioDono));
+
+            assertAll(
+                    () -> assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode()),
+                    () -> assertNenhumaPersistenciaDeImportacaoOuTransacao(),
+                    () -> verify(parserMock, never()).aceita(any()),
+                    () -> verify(parserMock, never()).parsear(any(), any())
+            );
+        }
+
+        @Test
+        @DisplayName("Extensão suportada, mas sem parser compatível, lança 400 e não processa transações")
+        void extensaoSuportadaMasNenhumParserAceita_lancaBadRequest_semProcessarTransacoes() {
+            mockContaDoUsuarioAutenticado();
+            when(parserMock.aceita(any())).thenReturn(false);
+            when(importacaoRepository.save(any(Importacao.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
+                    service.processar(csvValido("2024-01-15,Mercado,150.00,DEBITO"), conta.getId(), usuarioDono));
+
+            ArgumentCaptor<Importacao> importacaoCaptor = ArgumentCaptor.forClass(Importacao.class);
+            verify(importacaoRepository).save(importacaoCaptor.capture());
+
+            assertAll(
+                    () -> assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode()),
+                    () -> assertEquals(StatusImportacao.PENDENTE, importacaoCaptor.getValue().getStatusImportacao()),
+                    () -> verify(parserMock).aceita(any()),
+                    () -> verify(parserMock, never()).parsear(any(), any()),
+                    () -> verify(transacaoRepository, never()).save(any())
+            );
+        }
+
+        @Test
+        @DisplayName("Extensão em maiúsculo é aceita pela detecção de formato")
+        void extensaoMaiuscula_detectaFormatoCorretamente() {
+            mockContaDoUsuarioAutenticado();
+            mockParserAceitandoComResultado(resultadoComTransacoes(1, 0));
+            List<FormatoArquivo> formatosSalvos = new ArrayList<>();
+            mockSaveImportacaoRegistrandoFormato(formatosSalvos);
+
+            service.processar(txtValido("15/01/2024\tMercado\t-150,00"), conta.getId(), usuarioDono);
+
+            assertEquals(FormatoArquivo.TXT, formatosSalvos.getFirst());
         }
     }
 
-    // ---------------------------------------------------------------------------
-    // processar() — Fluxo de estados e Happy Path
-    // ---------------------------------------------------------------------------
-
     @Nested
-    @DisplayName("processar() — Fluxo de Estados e Happy Path")
+    @DisplayName("processar() - fluxo de estados e persistência")
     class FluxoDeEstados {
 
         @Test
-        @DisplayName("1.6 Happy path: transições PENDENTE → PROCESSANDO → CONCLUIDO")
+        @DisplayName("Happy path: transições PENDENTE → PROCESSANDO → CONCLUIDO")
         void happyPath_transicaoDeEstadosCorreta() {
-            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
-            when(parserMock.aceita(any())).thenReturn(true);
-            when(parserMock.parsear(any(), any())).thenReturn(resultadoComTransacoes(3, 0));
-            when(importacaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            mockContaDoUsuarioAutenticado();
+            mockParserAceitandoComResultado(resultadoComTransacoes(3, 0));
+            List<StatusImportacao> statusSalvos = new ArrayList<>();
+            mockSaveImportacaoRegistrandoStatus(statusSalvos);
 
             ImportacaoResponseDTO dto = service.processar(
                     csvValido("2024-01-15,Mercado,150.00,DEBITO"),
@@ -200,59 +293,61 @@ class ImportacaoServiceTest {
                     usuarioDono
             );
 
-            ArgumentCaptor<Importacao> captor = ArgumentCaptor.forClass(Importacao.class);
-            verify(importacaoRepository, times(3)).save(captor.capture());
-
-            List<Importacao> saves = captor.getAllValues();
             assertAll(
-                    () -> assertEquals(StatusImportacao.PENDENTE, saves.get(0).getStatusImportacao()),
-                    () -> assertEquals(StatusImportacao.PROCESSANDO, saves.get(1).getStatusImportacao()),
-                    () -> assertEquals(StatusImportacao.CONCLUIDO, saves.get(2).getStatusImportacao()),
+                    () -> assertEquals(List.of(
+                            StatusImportacao.PENDENTE,
+                            StatusImportacao.PROCESSANDO,
+                            StatusImportacao.CONCLUIDO
+                    ), statusSalvos),
                     () -> assertEquals(StatusImportacao.CONCLUIDO, dto.getStatus()),
                     () -> assertEquals(3, dto.getSucessos()),
                     () -> assertEquals(0, dto.getFalhas()),
-                    () -> assertNull(dto.getMensagemErro())
+                    () -> assertNotNull(dto.getImportadoEm()),
+                    () -> assertNull(dto.getMensagemErro()),
+                    () -> verify(parserMock).parsear(any(), eq(conta)),
+                    () -> verify(transacaoRepository, times(3)).save(any(Transacao.class))
             );
         }
 
         @Test
-        @DisplayName("1.7 Exceção catastrófica no parser resulta em status ERRO com mensagem")
+        @DisplayName("Exceção catastrófica no parser resulta em status ERRO com mensagem")
         void parserLancaExcecao_statusErroComMensagem() {
-            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
+            mockContaDoUsuarioAutenticado();
             when(parserMock.aceita(any())).thenReturn(true);
-            when(parserMock.parsear(any(), any())).thenThrow(new RuntimeException("arquivo corrompido"));
-            when(importacaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(parserMock.parsear(any(), eq(conta))).thenThrow(new RuntimeException("arquivo corrompido"));
+            List<StatusImportacao> statusSalvos = new ArrayList<>();
+            mockSaveImportacaoRegistrandoStatus(statusSalvos);
 
             ImportacaoResponseDTO dto = service.processar(
-                    csvValido("conteudo invalido"),
+                    csvValido("conteúdo inválido"),
                     conta.getId(),
                     usuarioDono
             );
 
-            ArgumentCaptor<Importacao> captor = ArgumentCaptor.forClass(Importacao.class);
-            verify(importacaoRepository, times(3)).save(captor.capture());
-
-            List<Importacao> saves = captor.getAllValues();
             assertAll(
-                    () -> assertEquals(StatusImportacao.PENDENTE, saves.get(0).getStatusImportacao()),
-                    () -> assertEquals(StatusImportacao.PROCESSANDO, saves.get(1).getStatusImportacao()),
-                    () -> assertEquals(StatusImportacao.ERRO, saves.get(2).getStatusImportacao()),
+                    () -> assertEquals(List.of(
+                            StatusImportacao.PENDENTE,
+                            StatusImportacao.PROCESSANDO,
+                            StatusImportacao.ERRO
+                    ), statusSalvos),
                     () -> assertEquals(StatusImportacao.ERRO, dto.getStatus()),
+                    () -> assertEquals(0, dto.getSucessos()),
+                    () -> assertEquals(0, dto.getFalhas()),
                     () -> assertNotNull(dto.getMensagemErro()),
-                    () -> assertTrue(dto.getMensagemErro().contains("arquivo corrompido"))
+                    () -> assertTrue(dto.getMensagemErro().contains("arquivo corrompido")),
+                    () -> verify(transacaoRepository, never()).save(any())
             );
         }
 
         @Test
-        @DisplayName("1.8 Tolerância a falhas: save de transação falha parcialmente, status permanece CONCLUIDO")
+        @DisplayName("Falha parcial ao salvar transação incrementa falhas e mantém status CONCLUIDO")
         void saveDeTransacaoFalhaParcialmente_statusConcluido() {
-            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
-            when(parserMock.aceita(any())).thenReturn(true);
-            when(parserMock.parsear(any(), any())).thenReturn(resultadoComTransacoes(3, 2));
-            when(importacaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            mockContaDoUsuarioAutenticado();
+            mockParserAceitandoComResultado(resultadoComTransacoes(3, 2));
+            List<StatusImportacao> statusSalvos = new ArrayList<>();
+            mockSaveImportacaoRegistrandoStatus(statusSalvos);
 
-            // 2ª chamada ao transacaoRepository.save lança exceção
-            when(transacaoRepository.save(any()))
+            when(transacaoRepository.save(any(Transacao.class)))
                     .thenReturn(new Transacao())
                     .thenThrow(new RuntimeException("constraint violation"))
                     .thenReturn(new Transacao());
@@ -266,83 +361,83 @@ class ImportacaoServiceTest {
             assertAll(
                     () -> assertEquals(StatusImportacao.CONCLUIDO, dto.getStatus()),
                     () -> assertEquals(2, dto.getSucessos()),
-                    () -> assertEquals(3, dto.getFalhas()) // 2 do parser + 1 do save
+                    () -> assertEquals(3, dto.getFalhas()),
+                    () -> assertEquals(List.of(
+                            StatusImportacao.PENDENTE,
+                            StatusImportacao.PROCESSANDO,
+                            StatusImportacao.CONCLUIDO
+                    ), statusSalvos),
+                    () -> verify(transacaoRepository, times(3)).save(any(Transacao.class))
             );
         }
 
         @Test
-        @DisplayName("1.9 Arquivo XML com marcador NF-e detecta FormatoArquivo.NFE")
-        void xmlComMarcadorNFe_detectaFormatoNFE() {
-            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
-            when(parserMock.aceita(any())).thenReturn(true);
-            when(parserMock.parsear(any(), any())).thenReturn(resultadoComTransacoes(1, 0));
-            when(importacaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
-            String conteudoNFe = "<nfeProc versao=\"4.00\"><NFe></NFe></nfeProc>";
-            service.processar(xmlNFe(conteudoNFe), conta.getId(), usuarioDono);
-
-            ArgumentCaptor<Importacao> captor = ArgumentCaptor.forClass(Importacao.class);
-            verify(importacaoRepository, atLeastOnce()).save(captor.capture());
-
-            Importacao primeiraSalva = captor.getAllValues().get(0);
-            assertEquals(FormatoArquivo.NFE, primeiraSalva.getFormatoArquivo());
-        }
-
-        @Test
-        @DisplayName("1.10 Arquivo XML sem marcador NF-e detecta FormatoArquivo.XML")
-        void xmlSemMarcadorNFe_detectaFormatoXML() {
-            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
-            when(parserMock.aceita(any())).thenReturn(true);
-            when(parserMock.parsear(any(), any())).thenReturn(resultadoComTransacoes(1, 0));
-            when(importacaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
-            String conteudoXML = "<extrato><transacao><data>2024-01-15</data></transacao></extrato>";
-            service.processar(xmlGenerico(conteudoXML), conta.getId(), usuarioDono);
-
-            ArgumentCaptor<Importacao> captor = ArgumentCaptor.forClass(Importacao.class);
-            verify(importacaoRepository, atLeastOnce()).save(captor.capture());
-
-            Importacao primeiraSalva = captor.getAllValues().get(0);
-            assertEquals(FormatoArquivo.XML, primeiraSalva.getFormatoArquivo());
-        }
-
-        @Test
-        @DisplayName("1.6b Transações retornadas pelo parser recebem importacao e categorizada=false")
+        @DisplayName("Transações salvas recebem a importação atual e categorizada=false")
         void transacoesRetornadas_recebemImportacaoECategorizadaFalse() {
-            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
-            when(parserMock.aceita(any())).thenReturn(true);
-            when(parserMock.parsear(any(), any())).thenReturn(resultadoComTransacoes(2, 0));
-            when(importacaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            mockContaDoUsuarioAutenticado();
+            mockParserAceitandoComResultado(resultadoComTransacoes(2, 0));
+            when(importacaoRepository.save(any(Importacao.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             service.processar(csvValido("2024-01-15,Desc,10.00,DEBITO"), conta.getId(), usuarioDono);
 
-            ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
-            verify(transacaoRepository, times(2)).save(captor.capture());
+            ArgumentCaptor<Transacao> transacaoCaptor = ArgumentCaptor.forClass(Transacao.class);
+            verify(transacaoRepository, times(2)).save(transacaoCaptor.capture());
 
-            captor.getAllValues().forEach(t -> assertAll(
-                    () -> assertNotNull(t.getImportacao()),
-                    () -> assertFalse(t.getCategorizada())
+            transacaoCaptor.getAllValues().forEach(transacao -> assertAll(
+                    () -> assertNotNull(transacao.getImportacao()),
+                    () -> assertSame(conta, transacao.getConta()),
+                    () -> assertFalse(transacao.getCategorizada())
             ));
         }
 
         @Test
-        @DisplayName("1.6c Resultado do DTO possui data de importação preenchida")
-        void dto_possuiDataImportacaoPreenchida() {
-            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
-            when(parserMock.aceita(any())).thenReturn(true);
-            when(parserMock.parsear(any(), any())).thenReturn(resultadoComTransacoes(1, 0));
-            when(importacaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        @DisplayName("Arquivo XML com marcador NF-e detecta FormatoArquivo.NFE")
+        void xmlComMarcadorNFe_detectaFormatoNFE() {
+            mockContaDoUsuarioAutenticado();
+            mockParserAceitandoComResultado(resultadoComTransacoes(1, 0));
+            List<FormatoArquivo> formatosSalvos = new ArrayList<>();
+            mockSaveImportacaoRegistrandoFormato(formatosSalvos);
 
-            ImportacaoResponseDTO dto = service.processar(
-                    csvValido("2024-01-15,Desc,10.00,DEBITO"), conta.getId(), usuarioDono);
+            String conteudoNFe = "<nfeProc versao=\"4.00\"><NFe></NFe></nfeProc>";
+            service.processar(xmlNFe(conteudoNFe), conta.getId(), usuarioDono);
 
-            assertNotNull(dto.getImportadoEm());
+            assertEquals(FormatoArquivo.NFE, formatosSalvos.getFirst());
+        }
+
+        @Test
+        @DisplayName("Arquivo XML sem marcador NF-e detecta FormatoArquivo.XML")
+        void xmlSemMarcadorNFe_detectaFormatoXML() {
+            mockContaDoUsuarioAutenticado();
+            mockParserAceitandoComResultado(resultadoComTransacoes(1, 0));
+            List<FormatoArquivo> formatosSalvos = new ArrayList<>();
+            mockSaveImportacaoRegistrandoFormato(formatosSalvos);
+
+            String conteudoXML = "<extrato><transacao><data>2024-01-15</data></transacao></extrato>";
+            service.processar(xmlGenerico(conteudoXML), conta.getId(), usuarioDono);
+
+            assertEquals(FormatoArquivo.XML, formatosSalvos.getFirst());
+        }
+
+        @Test
+        @DisplayName("Content-Type informado pelo cliente não define o formato da importação")
+        void contentTypeNaoDefineFormatoImportacao() {
+            mockContaDoUsuarioAutenticado();
+            mockParserAceitandoComResultado(resultadoComTransacoes(1, 0));
+            List<FormatoArquivo> formatosSalvos = new ArrayList<>();
+            mockSaveImportacaoRegistrandoFormato(formatosSalvos);
+
+            MockMultipartFile arquivoComContentTypeFalso = arquivo(
+                    "arquivo",
+                    "extrato.csv",
+                    "application/x-msdownload",
+                    "2024-01-15,Mercado,150.00,DEBITO"
+            );
+
+            service.processar(arquivoComContentTypeFalso, conta.getId(), usuarioDono);
+
+            assertEquals(FormatoArquivo.CSV, formatosSalvos.getFirst());
         }
     }
-
-    // ---------------------------------------------------------------------------
-    // buscarStatus()
-    // ---------------------------------------------------------------------------
 
     @Nested
     @DisplayName("buscarStatus()")
@@ -359,7 +454,7 @@ class ImportacaoServiceTest {
         }
 
         @Test
-        @DisplayName("1.12 Importação inexistente lança 404 NOT_FOUND")
+        @DisplayName("Importação inexistente lança 404 NOT_FOUND")
         void importacaoInexistente_lanca404() {
             when(importacaoRepository.findById(any())).thenReturn(Optional.empty());
 
@@ -370,7 +465,7 @@ class ImportacaoServiceTest {
         }
 
         @Test
-        @DisplayName("1.11 Importação de outro usuário lança 403 FORBIDDEN")
+        @DisplayName("Importação de outro usuário lança 403 FORBIDDEN")
         void importacaoDeOutroUsuario_lanca403() {
             when(importacaoRepository.findById(importacaoDoDono.getId()))
                     .thenReturn(Optional.of(importacaoDoDono));
@@ -382,7 +477,7 @@ class ImportacaoServiceTest {
         }
 
         @Test
-        @DisplayName("Happy path: retorna o status correto para o dono da importação")
+        @DisplayName("Dono da importação consulta o status com sucesso")
         void donoConsulta_retornaStatusCorreto() {
             when(importacaoRepository.findById(importacaoDoDono.getId()))
                     .thenReturn(Optional.of(importacaoDoDono));
