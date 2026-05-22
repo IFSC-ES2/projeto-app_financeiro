@@ -6,12 +6,6 @@ interface Props {
   onNovaTransacao: () => void;
 }
 
-const tipoLabel: Record<string, string> = {
-  DEBITO: 'Débito',
-  CREDITO: 'Crédito',
-  PARCELAMENTO: 'Parcelamento',
-  BOLETO: 'Boleto',
-};
 
 /* Cores de badge: todas com fundo escuro + texto claro para garantir contraste */
 const tipoBadge: Record<string, { bg: string; color: string }> = {
