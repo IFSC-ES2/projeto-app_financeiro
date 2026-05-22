@@ -3,9 +3,11 @@ package bcd.appfinanceirobackend.service;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
+import bcd.appfinanceirobackend.model.Categoria;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
+import bcd.appfinanceirobackend.repository.CategoriaRepository;
 import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.springframework.http.HttpStatus;
@@ -14,16 +16,21 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Service
 public class TransacaoService {
 
     private final TransacaoRepository transacaoRepository;
     private final ContaRepository contaRepository;
+    private final CategoriaRepository categoriaRepository;
 
-    public TransacaoService(TransacaoRepository transacaoRepository, ContaRepository contaRepository) {
+    public TransacaoService(TransacaoRepository transacaoRepository,
+                            ContaRepository contaRepository,
+                            CategoriaRepository categoriaRepository) {
         this.transacaoRepository = transacaoRepository;
         this.contaRepository = contaRepository;
+        this.categoriaRepository = categoriaRepository;
     }
 
     public TransacaoResponseDTO registrarManual (TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
@@ -59,6 +66,24 @@ public class TransacaoService {
         return toResponse(transacaoSalva);
 
     }
+
+    public TransacaoResponseDTO categorizar(UUID transacaoId, UUID categoriaId, Usuario usuarioAutenticado){
+        Transacao transacao = transacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Transacao não encontrada"));
+
+        if(!transacao.getConta().getUsuario().getId().equals(usuarioAutenticado.getId())){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a essa transação");
+        }
+
+        Categoria categoria = categoriaRepository.findById(categoriaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
+
+        transacao.setCategoria(categoria);
+        transacao.setCategorizada(true);
+        transacaoRepository.save(transacao);
+        return toResponse(transacao);
+    }
+
 
     public TransacaoResponseDTO toResponse(Transacao transacao) {
         TransacaoResponseDTO responseDTO = new TransacaoResponseDTO();
