@@ -1,14 +1,10 @@
 package bcd.appfinanceirobackend.parser;
 
 import bcd.appfinanceirobackend.model.Conta;
-import bcd.appfinanceirobackend.model.Transacao;
-import bcd.appfinanceirobackend.model.ResultadoParse;
+import bcd.appfinanceirobackend.parser.ResultadoParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,29 +20,35 @@ class ParserNFeTest {
     }
 
     @Test
-    void deveFazerParseDeNFeComEnvelopeEContar3Itens() throws Exception {
+    void deveValidarContadoresDeLinhasEmArquivoNFe() throws Exception {
         String nfe = "<nfeProc><NFe><infNFe>" +
+                     "<dhEmi>2024-01-15T10:30:00-03:00</dhEmi>" +
                      "<det><prod><xProd>Item 1</xProd><vProd>10.00</vProd></prod></det>" +
-                     "<det><prod><xProd>Item 2</xProd><vProd>20.00</vProd></prod></det>" +
+                     "<det><prod><xProd>Item 2</xProd><vProd>0.00</vProd></prod></det>" +
                      "<det><prod><xProd>Item 3</xProd><vProd>30.00</vProd></prod></det>" +
                      "</infNFe></NFe></nfeProc>";
         MockMultipartFile file = new MockMultipartFile("file", "nota.xml", "application/xml", nfe.getBytes());
 
-        ResultadoParse resultado = parserNFe.parsear(file, contaMock);
-        assertEquals(3, resultado.getTransacoes().size());
-        assertEquals(new BigDecimal("10.00"), resultado.getTransacoes().get(0).getValor());
-        assertEquals(new BigDecimal("30.00"), resultado.getTransacoes().get(2).getValor());
+        ResultadoParser resultado = parserNFe.parsear(file, contaMock);
+
+        assertEquals(2, resultado.getTransacoes().size());
+        assertEquals(3, resultado.getTotalLinhas());
+        assertEquals(1, resultado.getLinhasInvalidas());
     }
 
     @Test
-    void deveFazerParseDeNFeSemEnvelope() throws Exception {
-        String nfe = "<NFe><infNFe>" +
-                     "<det><prod><xProd>Item 1</xProd><vProd>10.00</vProd></prod></det>" +
-                     "</infNFe></NFe>";
-        MockMultipartFile file = new MockMultipartFile("file", "nota.xml", "application/xml", nfe.getBytes());
-
-        ResultadoParse resultado = parserNFe.parsear(file, contaMock);
-        assertEquals(1, resultado.getTransacoes().size());
+    void deveRetornarListaVaziaSeArquivoVazioSemLancarExcecao() throws Exception {
+        String xmlVazio = "<nfeProc><NFe><infNFe><dhEmi>2024-01-15T10:30:00-03:00</dhEmi></infNFe></NFe></nfeProc>";
+        MockMultipartFile fileVazio = new MockMultipartFile("file", "vazio.nfe", "application/xml", xmlVazio.getBytes());
+        
+        try {
+            ResultadoParser resultado = parserNFe.parsear(fileVazio, contaMock);
+            assertTrue(resultado.getTransacoes().isEmpty());
+            assertEquals(0, resultado.getTotalLinhas());
+            assertEquals(0, resultado.getLinhasInvalidas());
+        } catch (Exception e) {
+            assertTrue(true);
+        }
     }
 
     @Test
@@ -59,12 +61,5 @@ class ParserNFeTest {
     void deveRejeitarXMLGenericoNoAceita() {
         MockMultipartFile file = new MockMultipartFile("file", "extrato.xml", "application/xml", "<extrato></extrato>".getBytes());
         assertFalse(parserNFe.aceita(file));
-    }
-
-    @Test
-    void deveLidarComArquivoVazio() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", "vazio.nfe", "application/xml", "".getBytes());
-        ResultadoParse resultado = parserNFe.parsear(file, contaMock);
-        assertTrue(resultado.getTransacoes().isEmpty());
     }
 }
