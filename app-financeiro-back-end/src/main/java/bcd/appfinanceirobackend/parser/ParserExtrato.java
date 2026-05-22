@@ -1,10 +1,7 @@
 package bcd.appfinanceirobackend.parser;
 
 import bcd.appfinanceirobackend.model.Conta;
-import bcd.appfinanceirobackend.model.Transacao;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 /**
  * Interface Strategy para parsers de extrato.

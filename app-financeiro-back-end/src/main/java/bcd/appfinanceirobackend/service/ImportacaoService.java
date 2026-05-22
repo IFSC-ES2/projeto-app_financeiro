@@ -13,8 +13,6 @@ import bcd.appfinanceirobackend.parser.ResultadoParser;
 import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.ImportacaoRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
