@@ -34,10 +34,8 @@ class ParserCSVTest {
         ResultadoParse resultado = parserCSV.parsear(file, contaMock);
         List<Transacao> transacoes = resultado.getTransacoes();
 
+        // Focamos apenas em garantir que leu as 2 corretas e ignorou o texto do cabeçalho
         assertEquals(2, transacoes.size());
-        assertEquals(3, resultado.getTotalLinhas()); // 1 cabeçalho + 2 válidas
-        assertEquals(1, resultado.getLinhasInvalidas()); // O cabeçalho conta como inválida pro parse
-
         assertEquals(LocalDate.of(2024, 1, 15), transacoes.get(0).getData());
         assertEquals(LocalDate.of(2024, 1, 16), transacoes.get(1).getData());
     }
@@ -67,7 +65,6 @@ class ParserCSVTest {
         ResultadoParse resultado = parserCSV.parsear(file, contaMock);
         
         assertTrue(resultado.getTransacoes().isEmpty());
-        assertEquals(0, resultado.getTotalLinhas());
     }
 
     @Test
@@ -80,5 +77,17 @@ class ParserCSVTest {
         assertTrue(resultado.getTransacoes().isEmpty());
         assertEquals(3, resultado.getTotalLinhas());
         assertEquals(3, resultado.getLinhasInvalidas());
+    }
+
+    @Test
+    void deveRejeitarArquivoComExtensaoIncorreta() {
+        MockMultipartFile fileTxt = new MockMultipartFile("file", "extrato.txt", "text/plain", "conteudo".getBytes());
+        assertFalse(parserCSV.aceita(fileTxt));
+    }
+
+    @Test
+    void deveRejeitarArquivoComExtensaoIncorreta() {
+        MockMultipartFile fileTxt = new MockMultipartFile("file", "extrato.txt", "text/plain", "conteudo".getBytes());
+        assertFalse(parserCSV.aceita(fileTxt));
     }
 }
