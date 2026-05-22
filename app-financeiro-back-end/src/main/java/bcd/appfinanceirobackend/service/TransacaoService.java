@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class TransacaoService {
@@ -59,6 +60,14 @@ public class TransacaoService {
         return toResponse(transacaoSalva);
 
     }
+
+    public List<TransacaoResponseDTO> listarTransacoesPorUsuario (Usuario usuarioAutenticado) {
+        return transacaoRepository.findAllByContaUsuarioId(usuarioAutenticado.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
 
     public TransacaoResponseDTO toResponse(Transacao transacao) {
         TransacaoResponseDTO responseDTO = new TransacaoResponseDTO();
