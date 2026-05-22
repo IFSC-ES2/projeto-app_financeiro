@@ -28,6 +28,7 @@ dependencies {
 
     // Banco de Dados
     implementation 'org.postgresql:postgresql:42.7.3'
+    implementation 'org.flywaydb:flyway-core'
     
     // Documentação e Utilidades
     // 3.x do springdoc puxa Spring Boot 4; manter 2.6.x alinhado ao Boot 3.3
