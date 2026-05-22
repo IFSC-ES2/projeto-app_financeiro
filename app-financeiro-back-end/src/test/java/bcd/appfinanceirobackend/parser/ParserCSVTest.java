@@ -1,6 +1,7 @@
 package bcd.appfinanceirobackend.parser;
 
 import bcd.appfinanceirobackend.model.Conta;
+import bcd.appfinanceirobackend.parser.ResultadoParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
@@ -28,8 +29,8 @@ class ParserCSVTest {
         ResultadoParser resultado = parserCSV.parsear(file, contaMock);
 
         assertEquals(2, resultado.getTransacoes().size());
-        assertEquals(3, resultado.getTotalLinhas());
-        assertEquals(1, resultado.getLinhasInvalidas());
+        assertEquals(2, resultado.getTotalLinhas());
+        assertEquals(0, resultado.getLinhasInvalidas());
     }
 
     @Test
@@ -40,5 +41,11 @@ class ParserCSVTest {
         assertTrue(resultado.getTransacoes().isEmpty());
         assertEquals(0, resultado.getTotalLinhas());
         assertEquals(0, resultado.getLinhasInvalidas());
+    }
+
+    @Test
+    void deveRejeitarArquivoTxtNoAceita() {
+        MockMultipartFile fileTxt = new MockMultipartFile("file", "extrato.txt", "text/plain", "conteudo".getBytes());
+        assertFalse(parserCSV.aceita(fileTxt));
     }
 }

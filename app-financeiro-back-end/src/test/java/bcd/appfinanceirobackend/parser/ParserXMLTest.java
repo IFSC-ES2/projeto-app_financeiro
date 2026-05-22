@@ -1,6 +1,7 @@
 package bcd.appfinanceirobackend.parser;
 
 import bcd.appfinanceirobackend.model.Conta;
+import bcd.appfinanceirobackend.parser.ResultadoParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
@@ -20,7 +21,6 @@ class ParserXMLTest {
 
     @Test
     void deveValidarContadoresDeLinhasEmArquivoXML() throws Exception {
-        // XML com 1 transação válida e 1 inválida (sem valor)
         String xml = "<extrato>" +
                      "<transacao><data>2024-01-15</data><descricao>Mercado</descricao><valor>-150.00</valor><tipo>DEBITO</tipo></transacao>" +
                      "<transacao><data>2024-01-16</data><descricao>Invalida</descricao></transacao>" +
@@ -43,5 +43,11 @@ class ParserXMLTest {
         assertTrue(resultado.getTransacoes().isEmpty());
         assertEquals(0, resultado.getTotalLinhas());
         assertEquals(0, resultado.getLinhasInvalidas());
+    }
+
+    @Test
+    void deveRejeitarArquivoCsvNoAceita() {
+        MockMultipartFile fileCsv = new MockMultipartFile("file", "extrato.csv", "text/csv", "conteudo".getBytes());
+        assertFalse(parserXML.aceita(fileCsv));
     }
 }

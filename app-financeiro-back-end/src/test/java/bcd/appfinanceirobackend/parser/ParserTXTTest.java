@@ -1,6 +1,7 @@
 package bcd.appfinanceirobackend.parser;
 
 import bcd.appfinanceirobackend.model.Conta;
+import bcd.appfinanceirobackend.parser.ResultadoParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
@@ -20,7 +21,6 @@ class ParserTXTTest {
 
     @Test
     void deveValidarContadoresDeLinhasEmArquivoTXT() throws Exception {
-        // 2 linhas válidas e 1 linha totalmente inválida
         String txt = "2024-01-15   Supermercado   -150.00   DEBITO\n" +
                      "2024-01-16   Salário         5000.00   CREDITO\n" +
                      "Isso não é uma transação financeira";
@@ -41,5 +41,11 @@ class ParserTXTTest {
         assertTrue(resultado.getTransacoes().isEmpty());
         assertEquals(0, resultado.getTotalLinhas());
         assertEquals(0, resultado.getLinhasInvalidas());
+    }
+
+    @Test
+    void deveRejeitarArquivoCsvNoAceita() {
+        MockMultipartFile fileCsv = new MockMultipartFile("file", "extrato.csv", "text/csv", "conteudo".getBytes());
+        assertFalse(parserTXT.aceita(fileCsv));
     }
 }
