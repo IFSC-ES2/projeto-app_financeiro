@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Este comentário propositalmente deixa o marcador de NF-e depois dos primeiros 500 bytes.
+O objetivo é expor que a detecção por preview curto pode classificar uma NF-e como XML genérico.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pretium, libero non porta
+varius, sem massa fermentum risus, in cursus velit lorem a est. Curabitur nec sem vitae velit
+molestie feugiat. Integer non lorem in massa feugiat suscipit. Donec mattis turpis eu urna
+convallis, at efficitur lorem condimentum. Praesent sed erat sed nibh tincidunt posuere.
+-->
+<nfeProc>
+    <NFe>
+        <infNFe></infNFe>
+    </NFe>
+</nfeProc>

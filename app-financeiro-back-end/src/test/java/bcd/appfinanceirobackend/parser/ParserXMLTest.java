@@ -270,6 +270,91 @@ class ParserXMLTest {
         }
     }
 
+
+    @Nested
+    @DisplayName("parsear() - casos realistas")
+    class CasosRealistasQueExpoemDefeitos {
+
+        @Test
+        @DisplayName("rejeita NF-e mesmo quando marcador aparece depois do preview inicial")
+        void aceita_rejeitaNFeMesmoQuandoMarcadorApareceDepoisDoPreviewInicial() throws IOException {
+            MockMultipartFile arquivo = fromFixture("xml-nfe-marcador-apos-preview.xml");
+
+            assertFalse(parser.aceita(arquivo));
+        }
+
+        @Test
+        @DisplayName("processa XML com namespace prefixado nas tags de transação")
+        void xmlComNamespacePrefixado_processaTransacao() throws IOException {
+            MockMultipartFile arquivo = fromFixture("extrato-namespace-prefixado.xml");
+
+            ResultadoParser resultado = parser.parsear(arquivo, conta);
+            Transacao transacao = resultado.getTransacoes().get(0);
+
+            assertAll(
+                    () -> assertEquals(1, resultado.getTransacoes().size()),
+                    () -> assertEquals(1, resultado.getTotalLinhas()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+                    () -> assertEquals(LocalDate.of(2024, 4, 1), transacao.getData()),
+                    () -> assertEquals("Compra com namespace", transacao.getDescricao()),
+                    () -> assertEquals(0, transacao.getValor().compareTo(new BigDecimal("45.67"))),
+                    () -> assertEquals(TipoTransacao.DEBITO, transacao.getTipo())
+            );
+        }
+
+        @Test
+        @DisplayName("processa campos com nomes em maiúsculo")
+        void camposComNomesMaiusculos_processaTransacao() throws IOException {
+            MockMultipartFile arquivo = fromFixture("extrato-campos-maiusculos.xml");
+
+            ResultadoParser resultado = parser.parsear(arquivo, conta);
+            Transacao transacao = resultado.getTransacoes().get(0);
+
+            assertAll(
+                    () -> assertEquals(1, resultado.getTransacoes().size()),
+                    () -> assertEquals(1, resultado.getTotalLinhas()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+                    () -> assertEquals(LocalDate.of(2024, 4, 2), transacao.getData()),
+                    () -> assertEquals("Pagamento com campos maiúsculos", transacao.getDescricao()),
+                    () -> assertEquals(0, transacao.getValor().compareTo(new BigDecimal("120.00"))),
+                    () -> assertEquals(TipoTransacao.DEBITO, transacao.getTipo())
+            );
+        }
+
+        @Test
+        @DisplayName("processa data ISO com horário usando a parte da data")
+        void dataIsoComHorario_processaUsandoParteDaData() throws IOException {
+            MockMultipartFile arquivo = fromFixture("extrato-data-com-hora.xml");
+
+            ResultadoParser resultado = parser.parsear(arquivo, conta);
+            Transacao transacao = resultado.getTransacoes().get(0);
+
+            assertAll(
+                    () -> assertEquals(1, resultado.getTransacoes().size()),
+                    () -> assertEquals(1, resultado.getTotalLinhas()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+                    () -> assertEquals(LocalDate.of(2024, 4, 3), transacao.getData()),
+                    () -> assertEquals("Compra com data e hora", transacao.getDescricao())
+            );
+        }
+
+        @Test
+        @DisplayName("processa todas as tags suportadas quando aparecem no mesmo XML")
+        void tagsSuportadasMistas_processaTodas() throws IOException {
+            MockMultipartFile arquivo = fromFixture("extrato-tags-mistas.xml");
+
+            ResultadoParser resultado = parser.parsear(arquivo, conta);
+
+            assertAll(
+                    () -> assertEquals(2, resultado.getTransacoes().size()),
+                    () -> assertEquals(2, resultado.getTotalLinhas()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+                    () -> assertEquals("Transação padrão", resultado.getTransacoes().get(0).getDescricao()),
+                    () -> assertEquals("Lançamento misto", resultado.getTransacoes().get(1).getDescricao())
+            );
+        }
+    }
+
     @Nested
     @DisplayName("parsear() - Tolerância a falhas")
     class ToleranciaAFalhas {
