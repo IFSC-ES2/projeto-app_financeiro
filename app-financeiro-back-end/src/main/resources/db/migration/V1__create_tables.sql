@@ -12,7 +12,7 @@
 
 -- ─── USUARIOS ───────────────────────────────────────────────
 
-CREATE TABLE usuarios (
+CREATE TABLE usuario(
                           id         CHAR(36)     NOT NULL,
                           nome       VARCHAR(100) NOT NULL,
                           email      VARCHAR(150) NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE contas (
 -- UNIQUE em conta_id garante relação 1:1 com contas.
 -- limite é opcional — fora do escopo do MVP atual (R04).
 
-CREATE TABLE cartoes_credito (
+CREATE TABLE cartao_credito (
                                  id              CHAR(36)       NOT NULL,
                                  conta_id        CHAR(36)       NOT NULL,
                                  dia_fechamento  INT            NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE cartoes_credito (
 -- ─── CATEGORIAS ─────────────────────────────────────────────
 -- usuario_id é NULL para categorias padrão do sistema.
 
-CREATE TABLE categorias (
+CREATE TABLE categoria (
                             id         CHAR(36)    NOT NULL,
                             usuario_id CHAR(36)        NULL,
                             nome       VARCHAR(60) NOT NULL,
@@ -84,7 +84,7 @@ CREATE TABLE categorias (
 
 -- ─── IMPORTACOES ────────────────────────────────────────────
 
-CREATE TABLE importacoes (
+CREATE TABLE importacao (
                              id           CHAR(36)     NOT NULL,
                              usuario_id   CHAR(36)     NOT NULL,
                              nome_arquivo VARCHAR(255) NOT NULL,
@@ -101,9 +101,10 @@ CREATE TABLE importacoes (
                      'ERRO'
                  )            NOT NULL DEFAULT 'PENDENTE',
                              importado_em DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                             total_linhas INT              NULL,
-                             sucessos     INT              NULL,
-                             falhas       INT              NULL,
+                             total_linhas INT  NOT NULL DEFAULT 0,
+                             sucessos     INT  NOT NULL DEFAULT 0,
+                             falhas       INT  NOT NULL DEFAULT 0,
+                             mensagem_erro varchar(255),
 
                              CONSTRAINT pk_importacoes          PRIMARY KEY (id),
                              CONSTRAINT fk_importacoes_usuario  FOREIGN KEY (usuario_id)
@@ -113,7 +114,7 @@ CREATE TABLE importacoes (
 
 -- ─── FATURAS ────────────────────────────────────────────────
 
-CREATE TABLE faturas (
+CREATE TABLE fatura (
                          id              CHAR(36)       NOT NULL,
                          conta_id        CHAR(36)       NOT NULL,
                          mes_referencia  VARCHAR(7)     NOT NULL,
