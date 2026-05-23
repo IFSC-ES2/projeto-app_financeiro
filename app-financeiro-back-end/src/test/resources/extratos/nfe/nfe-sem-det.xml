@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc versao="4.00">
+  <NFe>
+    <infNFe versao="4.00">
+      <ide><dhEmi>2024-04-01T08:00:00-03:00</dhEmi></ide>
+      <emit><CNPJ>66666666000166</CNPJ><xNome>Loja Sem Itens</xNome></emit>
+      <total><ICMSTot><vNF>0.00</vNF></ICMSTot></total>
+    </infNFe>
+  </NFe>
+</nfeProc>

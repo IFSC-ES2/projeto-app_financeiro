@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc versao="4.00">
+  <NFe>
+    <infNFe versao="4.00">
+      <ide><dhEmi>data-invalida</dhEmi></ide>
+      <emit><CNPJ>55555555000155</CNPJ><xNome>Loja Data Invalida</xNome></emit>
+      <det nItem="1"><prod><xProd>Produto Data Invalida</xProd><vProd>66.66</vProd></prod></det>
+      <total><ICMSTot><vNF>66.66</vNF></ICMSTot></total>
+    </infNFe>
+  </NFe>
+</nfeProc>
