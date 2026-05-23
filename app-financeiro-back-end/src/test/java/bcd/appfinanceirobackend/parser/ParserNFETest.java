@@ -11,7 +11,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -22,7 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @DisplayName("ParserNFe")
-class ParserNFeTest {
+class ParserNFETest {
 
     private ParserNFe parser;
     private Conta conta;
@@ -75,9 +74,9 @@ class ParserNFeTest {
         }
 
         @Test
-        @DisplayName("retorna true para extensão .nfe com conteúdo NF-e")
-        void retornaTrue_paraExtensaoNfe() throws IOException {
-            MockMultipartFile arquivo = fromFixtureAs("nfe-extensao-nfe.xml", "nota-fiscal.nfe", "application/xml");
+        @DisplayName("retorna true para arquivo .nfe com conteúdo NF-e")
+        void retornaTrue_paraArquivoNfe() throws IOException {
+            MockMultipartFile arquivo = fromFixture("nfe-extensao-nfe.nfe");
 
             assertTrue(parser.aceita(arquivo));
         }
@@ -131,7 +130,7 @@ class ParserNFeTest {
     }
 
     @Nested
-    @DisplayName("parsear() — Happy Paths")
+    @DisplayName("parsear() - Happy Paths")
     class HappyPaths {
 
         @Test
@@ -176,6 +175,27 @@ class ParserNFeTest {
         }
 
         @Test
+        @DisplayName("processa arquivo .nfe com conteúdo XML de NF-e")
+        void arquivoNfe_comConteudoXml_funciona() throws IOException {
+            MockMultipartFile arquivo = fromFixture("nfe-extensao-nfe.nfe");
+
+            ResultadoParser resultado = parser.parsear(arquivo, conta);
+
+            Transacao transacao = resultado.getTransacoes().get(0);
+
+            assertAll(
+                    () -> assertEquals(1, resultado.getTransacoes().size()),
+                    () -> assertEquals(1, resultado.getTotalLinhas()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+                    () -> assertEquals("Produto Arquivo NFE", transacao.getDescricao()),
+                    () -> assertTrue(transacao.getValor().compareTo(BigDecimal.ZERO) > 0),
+                    () -> assertEquals(TipoTransacao.DEBITO, transacao.getTipo()),
+                    () -> assertSame(conta, transacao.getConta()),
+                    () -> assertFalse(transacao.getCategorizada())
+            );
+        }
+
+        @Test
         @DisplayName("processa NF-e com namespace padrão")
         void nfeComNamespace_funciona() throws IOException {
             MockMultipartFile arquivo = fromFixture("nfe-com-namespace.xml");
@@ -207,7 +227,7 @@ class ParserNFeTest {
     }
 
     @Nested
-    @DisplayName("parsear() — Datas de emissão")
+    @DisplayName("parsear() - Datas de emissão")
     class DatasDeEmissao {
 
         @Test
@@ -240,19 +260,6 @@ class ParserNFeTest {
             assertEquals(LocalDate.of(2024, 3, 5), resultado.getTransacoes().get(0).getData());
         }
 
-
-
-        @Test
-        @DisplayName("NF-e antiga com dEmi, sem dhEmi, documenta limitação atual")
-        void nfeAntigaComDEmi_semDhEmi_naoSuportada() throws IOException {
-            MockMultipartFile arquivo = fromFixture("nfe-realista-versao-110-com-demi.xml");
-
-            RuntimeException ex = assertThrows(RuntimeException.class, () -> parser.parsear(arquivo, conta));
-
-            assertTrue(ex.getMessage().contains("Campo <dhEmi>")
-                    || ex.getMessage().contains("Erro ao processar NF-e"));
-        }
-
         @Test
         @DisplayName("ausência de dhEmi lança RuntimeException clara")
         void semDhEmi_lancaRuntimeException() throws IOException {
@@ -272,10 +279,21 @@ class ParserNFeTest {
 
             assertTrue(ex.getMessage().contains("Campo <dhEmi>"));
         }
+
+        @Test
+        @DisplayName("NF-e antiga com dEmi, sem dhEmi, documenta limitação atual")
+        void nfeAntigaComDEmi_semDhEmi_naoSuportada() throws IOException {
+            MockMultipartFile arquivo = fromFixture("nfe-realista-versao-110-com-demi.xml");
+
+            RuntimeException ex = assertThrows(RuntimeException.class, () -> parser.parsear(arquivo, conta));
+
+            assertTrue(ex.getMessage().contains("Campo <dhEmi>")
+                    || ex.getMessage().contains("Erro ao processar NF-e"));
+        }
     }
 
     @Nested
-    @DisplayName("parsear() — Itens da NF-e")
+    @DisplayName("parsear() - Itens da NF-e")
     class ItensDaNFe {
 
         @Test
@@ -335,7 +353,7 @@ class ParserNFeTest {
     }
 
     @Nested
-    @DisplayName("parsear() — Segurança e arquivos inválidos")
+    @DisplayName("parsear() - Segurança e arquivos inválidos")
     class SegurancaEArquivosInvalidos {
 
         @Test

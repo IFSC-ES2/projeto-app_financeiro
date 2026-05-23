@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extrato>
+    <transacao>
+        <data>2024-03-02</data>
+        <descricao>Recebimento sem tipo conhecido</descricao>
+        <valor>250.00</valor>
+        <tipo>ENTRADA</tipo>
+    </transacao>
+</extrato>

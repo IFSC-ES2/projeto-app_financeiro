@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE extrato [
+        <!ENTITY xxe SYSTEM "file:///etc/passwd">
+        ]>
+<extrato>
+    <transacao>
+        <data>2024-03-09</data>
+        <descricao>&xxe;</descricao>
+        <valor>10.00</valor>
+        <tipo>CREDITO</tipo>
+    </transacao>
+</extrato>
