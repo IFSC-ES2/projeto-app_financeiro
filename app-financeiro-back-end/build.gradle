@@ -29,6 +29,7 @@ dependencies {
     // Banco de Dados
     implementation 'org.postgresql:postgresql:42.7.3'
     implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
     
     // Documentação e Utilidades
     // 3.x do springdoc puxa Spring Boot 4; manter 2.6.x alinhado ao Boot 3.3
@@ -50,6 +51,8 @@ dependencies {
     // AQUI ESTÁ A CORREÇÃO FINAL DOS TESTES:
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 }
 
 tasks.named('test') {
