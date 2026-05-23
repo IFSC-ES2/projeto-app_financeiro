@@ -3,7 +3,7 @@ import { ProvedorAutenticacao } from './contexts/ContextoAutenticacao';
 import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
 import NovaTransacao from './pages/NovaTransacao';
-import { NovaConta } from './pages/NovaConta';
+import NovaConta from './pages/NovaConta';
 
 // Dashboard provisório — substituir pela tela oficial
 const PainelProvisorio = () => (
