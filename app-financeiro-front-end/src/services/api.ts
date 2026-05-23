@@ -19,6 +19,15 @@ api.interceptors.request.use((config) => {
 export type TipoTransacao = 'DEBITO' | 'CREDITO' | 'PARCELAMENTO' | 'BOLETO';
 export type TipoPagamento = 'PIX' | 'CARTAO_DEBITO' | 'CARTAO_CREDITO' | 'DINHEIRO' | 'BOLETO' | 'TED_DOC';
 
+export type TipoConta = 'CORRENTE' | 'POUPANCA' | 'CARTAO_CREDITO' | 'CARTEIRA';
+
+export interface ContaRequest {
+  nome: string;
+  tipoConta: TipoConta;
+  banco?: string;
+  descricao?: string;
+}
+
 export interface ContaResponse {
   contaId: string;
   nome: string;
@@ -51,6 +60,11 @@ export interface TransacaoResponse extends TransacaoRequest {
 
 export const listarContas = async () => {
   const { data } = await api.get<ContaResponse[]>('/contas');
+  return data;
+};
+
+export const registrarConta = async (conta: ContaRequest) => {
+  const { data } = await api.post<ContaResponse>('/contas/registrar', conta);
   return data;
 };
 
