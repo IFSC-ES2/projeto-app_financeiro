@@ -23,6 +23,7 @@ function App() {
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/dashboard" element={<PainelProvisorio />} />
           <Route path="/transacoes/nova" element={<NovaTransacao />} />
+          <Route path="/contas/nova" element={<NovaConta />} />
         </Routes>
       </Router>
     </ProvedorAutenticacao>
