@@ -16,6 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -32,6 +34,16 @@ public class TransacaoService {
         this.contaRepository = contaRepository;
         this.categoriaRepository = categoriaRepository;
     }
+
+    private static final Map<String, List<String>> PALAVRAS_CHAVE = Map.of(
+            "Alimentação",  List.of("mercado", "supermercado", "padaria", "restaurante", "lanchonete", "ifood", "rappi"),
+            "Transporte",   List.of("uber", "99", "combustivel", "gasolina", "onibus", "metro", "estacionamento"),
+            "Saúde",        List.of("farmacia", "hospital", "clinica", "medico", "laboratorio", "drogaria"),
+            "Lazer",        List.of("netflix", "spotify", "cinema", "teatro", "steam", "jogos"),
+            "Habitação",    List.of("aluguel", "condominio", "agua", "luz", "energia", "gas"),
+            "Serviços",     List.of("internet", "telefone", "celular", "tim", "claro", "vivo"),
+            "Manutenção",   List.of("oficina", "reparo", "conserto", "ferragem", "material")
+    );
 
     public TransacaoResponseDTO registrarManual (TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
         if(dto.getValor() == null ||
@@ -83,6 +95,18 @@ public class TransacaoService {
         transacaoRepository.save(transacao);
         return toResponse(transacao);
     }
+
+    public Categoria sugerirCategoria (String descricao) {
+        String descricaoMinuscula = descricao.toLowerCase();
+        for (Map.Entry<String, List<String>> entry: PALAVRAS_CHAVE.entrySet()) {
+            boolean encontrou = entry.getValue().stream().anyMatch(descricaoMinuscula::contains);
+            if(encontrou) {
+                return categoriaRepository.findByNomeAndPadraoTrue(entry.getKey()).orElse(null);
+            }
+        }
+        return null;
+    }
+
 
 
     public TransacaoResponseDTO toResponse(Transacao transacao) {

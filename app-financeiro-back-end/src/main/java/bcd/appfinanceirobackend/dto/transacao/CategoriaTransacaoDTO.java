@@ -1,7 +1,12 @@
 package bcd.appfinanceirobackend.dto.transacao;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.UUID;
 
+@Setter
+@Getter
 public class CategoriaTransacaoDTO {
 
     private UUID categoriaId;
@@ -10,43 +15,4 @@ public class CategoriaTransacaoDTO {
     private String cor;
     private boolean padrao;
 
-    public UUID getCategoriaId() {
-        return categoriaId;
-    }
-
-    public void setCategoriaId(UUID categoriaId) {
-        this.categoriaId = categoriaId;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getIcone() {
-        return icone;
-    }
-
-    public void setIcone(String icone) {
-        this.icone = icone;
-    }
-
-    public String getCor() {
-        return cor;
-    }
-
-    public void setCor(String cor) {
-        this.cor = cor;
-    }
-
-    public boolean isPadrao() {
-        return padrao;
-    }
-
-    public void setPadrao(boolean padrao) {
-        this.padrao = padrao;
-    }
 }
