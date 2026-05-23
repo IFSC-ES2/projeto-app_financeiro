@@ -1,13 +1,30 @@
-import { useState } from 'react';
-import type { FormEvent } from 'react';
+import React, { useState } from 'react';
+import { Link, Navigate } from 'react-router-dom';
+import BotaoCarregando from '../components/ui/BotaoCarregando';
+import MensagemAlerta from '../components/ui/MensagemAlerta';
+import { useAutenticacao } from '../contexts/ContextoAutenticacao';
 import { registrarConta } from '../services/api';
 import type { ContaRequest, TipoConta } from '../services/api';
 
-const tiposConta: { label: string; value: TipoConta }[] = [
-  { label: 'Conta corrente', value: 'CORRENTE' },
-  { label: 'Conta poupança', value: 'POUPANCA' },
-  { label: 'Cartão de crédito', value: 'CARTAO_CREDITO' },
-  { label: 'Outro / Carteira', value: 'CARTEIRA' },
+type CamposConta = {
+  nome: string;
+  tipoConta: TipoConta;
+  banco: string;
+  descricao: string;
+};
+
+const valoresIniciais: CamposConta = {
+  nome: '',
+  tipoConta: 'CORRENTE',
+  banco: 'Nubank',
+  descricao: '',
+};
+
+const tiposConta: Array<{ valor: TipoConta; rotulo: string }> = [
+  { valor: 'CORRENTE', rotulo: 'Conta corrente' },
+  { valor: 'POUPANCA', rotulo: 'Conta poupança' },
+  { valor: 'CARTAO_CREDITO', rotulo: 'Cartão de crédito' },
+  { valor: 'CARTEIRA', rotulo: 'Outro / Carteira' },
 ];
 
 const bancos = [
@@ -20,171 +37,199 @@ const bancos = [
   'Outro',
 ];
 
-export function NovaConta() {
-  const [nome, setNome] = useState('');
-  const [tipoConta, setTipoConta] = useState<TipoConta>('CORRENTE');
-  const [banco, setBanco] = useState('Nubank');
-  const [descricao, setDescricao] = useState('');
+const NovaConta: React.FC = () => {
+  const { estaAutenticado, sair } = useAutenticacao();
 
-  const [carregando, setCarregando] = useState(false);
-  const [mensagemSucesso, setMensagemSucesso] = useState('');
-  const [mensagemErro, setMensagemErro] = useState('');
+  const [campos, setCampos] = useState<CamposConta>(valoresIniciais);
+  const [erros, setErros] = useState<Partial<Record<keyof CamposConta, string>>>({});
+  const [erroGeral, setErroGeral] = useState('');
+  const [sucesso, setSucesso] = useState('');
+  const [salvando, setSalvando] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  if (!estaAutenticado) {
+    return <Navigate to="/login" replace />;
+  }
 
-    setMensagemSucesso('');
-    setMensagemErro('');
+  const alterarCampo = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setCampos((prev) => ({ ...prev, [name]: value }));
+    setErros((prev) => ({ ...prev, [name]: undefined }));
+  };
 
-    if (!nome.trim()) {
-      setMensagemErro('Informe o nome da conta.');
-      return;
+  const validar = () => {
+    const novosErros: Partial<Record<keyof CamposConta, string>> = {};
+
+    if (!campos.nome.trim()) {
+      novosErros.nome = 'Nome da conta é obrigatório.';
     }
 
-    if (!tipoConta) {
-      setMensagemErro('Selecione o tipo da conta.');
-      return;
+    if (!campos.tipoConta) {
+      novosErros.tipoConta = 'Tipo de conta é obrigatório.';
     }
 
-    if (!banco.trim()) {
-      setMensagemErro('Informe o banco.');
-      return;
+    if (!campos.banco.trim()) {
+      novosErros.banco = 'Banco é obrigatório.';
     }
 
-    const novaConta: ContaRequest = {
-      nome,
-      tipoConta,
-      banco,
-      descricao,
-    };
+    setErros(novosErros);
+    return Object.keys(novosErros).length === 0;
+  };
+
+  const enviar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErroGeral('');
+    setSucesso('');
+
+    if (!validar()) return;
+
+    setSalvando(true);
 
     try {
-      setCarregando(true);
+      const novaConta: ContaRequest = {
+        nome: campos.nome.trim(),
+        tipoConta: campos.tipoConta,
+        banco: campos.banco.trim(),
+        descricao: campos.descricao.trim() || undefined,
+      };
 
       await registrarConta(novaConta);
 
-      setMensagemSucesso('Conta bancária cadastrada com sucesso!');
-      setNome('');
-      setTipoConta('CORRENTE');
-      setBanco('Nubank');
-      setDescricao('');
-    } catch (error) {
-      console.error(error);
-      setMensagemErro('Não foi possível cadastrar a conta bancária.');
+      setSucesso('Conta bancária cadastrada com sucesso.');
+      setCampos(valoresIniciais);
+      setErros({});
+    } catch (err: any) {
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
+        setErroGeral('Sua sessão expirou. Faça login novamente.');
+        sair();
+        return;
+      }
+
+      const msg = err?.response?.data?.erro || err?.response?.data?.message;
+      setErroGeral(msg || 'Não foi possível cadastrar a conta bancária.');
     } finally {
-      setCarregando(false);
+      setSalvando(false);
     }
-  }
+  };
 
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-8">
-      <section className="mx-auto max-w-2xl rounded-lg bg-white p-6 shadow">
-        <h1 className="mb-2 text-2xl font-bold text-slate-800">
-          Associar conta bancária
-        </h1>
-
-        <p className="mb-6 text-sm text-slate-600">
-          Cadastre uma conta bancária para utilizar nas funcionalidades do sistema,
-          como transações manuais.
-        </p>
-
-        {mensagemSucesso && (
-          <div className="mb-4 rounded-md bg-green-100 p-3 text-sm text-green-700">
-            {mensagemSucesso}
-          </div>
-        )}
-
-        {mensagemErro && (
-          <div className="mb-4 rounded-md bg-red-100 p-3 text-sm text-red-700">
-            {mensagemErro}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <main className="min-vh-100 py-4" style={{ background: 'var(--sb-bg)' }}>
+      <div className="container" style={{ maxWidth: 900 }}>
+        <div className="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4">
           <div>
-            <label
-              htmlFor="nome"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Nome da conta
-            </label>
-            <input
-              id="nome"
-              type="text"
-              value={nome}
-              onChange={(event) => setNome(event.target.value)}
-              placeholder="Ex: Conta Principal"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
-            />
+            <span className="badge rounded-pill mb-2" style={{ background: 'var(--sb-primary)' }}>
+              SmartBudget
+            </span>
+            <h1 className="fw-bold mb-1" style={{ color: 'var(--sb-text)' }}>
+              Associar conta bancária
+            </h1>
+            <p className="text-muted mb-0">
+              Cadastre uma conta para utilizar em funcionalidades como transações manuais.
+            </p>
           </div>
 
-          <div>
-            <label
-              htmlFor="tipoConta"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Tipo de conta
-            </label>
-            <select
-              id="tipoConta"
-              value={tipoConta}
-              onChange={(event) => setTipoConta(event.target.value as TipoConta)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
-            >
-              {tiposConta.map((tipo) => (
-                <option key={tipo.value} value={tipo.value}>
-                  {tipo.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Link to="/dashboard" className="btn btn-outline-secondary align-self-start align-self-md-center">
+            Voltar ao painel
+          </Link>
+        </div>
 
-          <div>
-            <label
-              htmlFor="banco"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Banco
-            </label>
-            <select
-              id="banco"
-              value={banco}
-              onChange={(event) => setBanco(event.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
-            >
-              {bancos.map((nomeBanco) => (
-                <option key={nomeBanco} value={nomeBanco}>
-                  {nomeBanco}
-                </option>
-              ))}
-            </select>
-          </div>
+        <MensagemAlerta mensagem={erroGeral} tipo="danger" />
+        <MensagemAlerta mensagem={sucesso} tipo="success" />
 
-          <div>
-            <label
-              htmlFor="descricao"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Descrição
-            </label>
-            <textarea
-              id="descricao"
-              value={descricao}
-              onChange={(event) => setDescricao(event.target.value)}
-              placeholder="Ex: Conta para transações manuais"
-              className="min-h-24 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
-            />
-          </div>
+        <div className="card border-0 shadow-sm" style={{ borderRadius: 18 }}>
+          <div className="card-body p-4">
+            <h2 className="h5 fw-bold mb-3">Dados da conta</h2>
 
-          <button
-            type="submit"
-            disabled={carregando}
-            className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {carregando ? 'Cadastrando...' : 'Cadastrar conta'}
-          </button>
-        </form>
-      </section>
+            <form onSubmit={enviar} noValidate>
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <label className="form-label fw-semibold small" htmlFor="nome">
+                    Nome da conta *
+                  </label>
+                  <input
+                    id="nome"
+                    name="nome"
+                    type="text"
+                    className={`form-control ${erros.nome ? 'is-invalid' : ''}`}
+                    value={campos.nome}
+                    onChange={alterarCampo}
+                    placeholder="Ex.: Conta Principal"
+                  />
+                  {erros.nome && <div className="invalid-feedback">{erros.nome}</div>}
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label fw-semibold small" htmlFor="tipoConta">
+                    Tipo de conta *
+                  </label>
+                  <select
+                    id="tipoConta"
+                    name="tipoConta"
+                    className={`form-select ${erros.tipoConta ? 'is-invalid' : ''}`}
+                    value={campos.tipoConta}
+                    onChange={alterarCampo}
+                  >
+                    {tiposConta.map((tipo) => (
+                      <option key={tipo.valor} value={tipo.valor}>
+                        {tipo.rotulo}
+                      </option>
+                    ))}
+                  </select>
+                  {erros.tipoConta && <div className="invalid-feedback">{erros.tipoConta}</div>}
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label fw-semibold small" htmlFor="banco">
+                    Banco *
+                  </label>
+                  <select
+                    id="banco"
+                    name="banco"
+                    className={`form-select ${erros.banco ? 'is-invalid' : ''}`}
+                    value={campos.banco}
+                    onChange={alterarCampo}
+                  >
+                    {bancos.map((banco) => (
+                      <option key={banco} value={banco}>
+                        {banco}
+                      </option>
+                    ))}
+                  </select>
+                  {erros.banco && <div className="invalid-feedback">{erros.banco}</div>}
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label fw-semibold small" htmlFor="descricao">
+                    Descrição
+                  </label>
+                  <textarea
+                    id="descricao"
+                    name="descricao"
+                    className="form-control"
+                    value={campos.descricao}
+                    onChange={alterarCampo}
+                    placeholder="Ex.: Conta para teste de transação manual"
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              <BotaoCarregando
+                type="submit"
+                carregando={salvando}
+                textoCarregando="Cadastrando..."
+                className="w-100 mt-4 py-2 fw-semibold"
+                style={{ background: 'var(--sb-gradient)', border: 'none', borderRadius: 10 }}
+              >
+                Cadastrar conta
+              </BotaoCarregando>
+            </form>
+          </div>
+        </div>
+      </div>
     </main>
   );
-}
+};
+
+export default NovaConta;
