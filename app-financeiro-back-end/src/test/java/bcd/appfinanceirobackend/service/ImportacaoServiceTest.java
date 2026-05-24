@@ -310,6 +310,38 @@ class ImportacaoServiceTest {
         }
 
         @Test
+        @DisplayName("Happy path: persiste nome do arquivo, formato, usuário e resumo final da importação")
+        void happyPath_persisteNomeArquivoFormatoUsuarioETotaisNaImportacao() {
+            mockContaDoUsuarioAutenticado();
+            mockParserAceitandoComResultado(resultadoComTransacoes(2, 1));
+            when(importacaoRepository.save(any(Importacao.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+
+            service.processar(
+                    csvValido("2024-01-15,Mercado,150.00,DEBITO"),
+                    conta.getId(),
+                    usuarioDono
+            );
+
+            ArgumentCaptor<Importacao> importacaoCaptor = ArgumentCaptor.forClass(Importacao.class);
+            verify(importacaoRepository, times(3)).save(importacaoCaptor.capture());
+
+            Importacao importacaoFinal = importacaoCaptor.getAllValues().getLast();
+
+            assertAll(
+                    () -> assertEquals("extrato.csv", importacaoFinal.getNome_arquivo()),
+                    () -> assertEquals(FormatoArquivo.CSV, importacaoFinal.getFormatoArquivo()),
+                    () -> assertSame(usuarioDono, importacaoFinal.getUsuario()),
+                    () -> assertEquals(StatusImportacao.CONCLUIDO, importacaoFinal.getStatusImportacao()),
+                    () -> assertEquals(3, importacaoFinal.getTotal_linhas()),
+                    () -> assertEquals(2, importacaoFinal.getSucessos()),
+                    () -> assertEquals(1, importacaoFinal.getFalhas()),
+                    () -> assertNotNull(importacaoFinal.getImportado_em()),
+                    () -> assertNull(importacaoFinal.getMensagemErro())
+            );
+        }
+
+        @Test
         @DisplayName("Exceção catastrófica no parser resulta em status ERRO com mensagem")
         void parserLancaExcecao_statusErroComMensagem() {
             mockContaDoUsuarioAutenticado();
