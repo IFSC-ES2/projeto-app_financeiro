@@ -51,7 +51,7 @@ export interface TransacaoRequest {
   tipoTransacao: TipoTransacao;
   formaPagamento?: TipoPagamento;
   categoriaId?: string | null;
-  contaId: string;
+  contaId: string | null;
 }
 
 export interface TransacaoResponse extends TransacaoRequest {
