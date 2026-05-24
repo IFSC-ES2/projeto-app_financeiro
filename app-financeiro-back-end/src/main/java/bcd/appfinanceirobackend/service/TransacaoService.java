@@ -11,6 +11,7 @@ import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import bcd.appfinanceirobackend.model.enums.TipoPagamento;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
