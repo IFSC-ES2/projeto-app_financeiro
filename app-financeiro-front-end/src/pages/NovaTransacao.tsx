@@ -348,29 +348,33 @@ const NovaTransacao: React.FC = () => {
                         </select>
                       </div>
 
-                      <div className="col-md-6">
-                        <label className="form-label fw-semibold small" htmlFor="contaId">
-                          Conta *
-                        </label>
-                        <select
-                          id="contaId"
-                          name="contaId"
-                          className={`form-select ${erros.contaId ? 'is-invalid' : ''}`}
-                          value={campos.contaId}
-                          onChange={alterarCampo}
-                        >
-                          <option value="">Selecione uma conta</option>
-                          {contas.map((conta) => (
-                            <option key={conta.contaId} value={conta.contaId}>
-                              {conta.nome}
-                              {conta.banco ? ` - ${conta.banco}` : ''}
+                        <div className="col-md-6">
+                          <label className="form-label fw-semibold small" htmlFor="contaId">
+                            Conta {campos.formaPagamento !== 'DINHEIRO' ? '*' : ''}
+                          </label>
+                          <select
+                            id="contaId"
+                            name="contaId"
+                            className={`form-select ${erros.contaId ? 'is-invalid' : ''}`}
+                            value={campos.contaId}
+                            onChange={alterarCampo}
+                            disabled={campos.formaPagamento === 'DINHEIRO'}
+                          >
+                            <option value="">
+                              {campos.formaPagamento === 'DINHEIRO'
+                                ? 'Não necessário para pagamento em dinheiro'
+                                : 'Selecione uma conta'}
                             </option>
-                          ))}
-                        </select>
-                        {erros.contaId && <div className="invalid-feedback">{erros.contaId}</div>}
-                      </div>
+                            {contas.map((conta) => (
+                              <option key={conta.contaId} value={conta.contaId}>
+                                {conta.nome}
+                                {conta.banco ? ` - ${conta.banco}` : ''}
+                              </option>
+                            ))}
+                          </select>
+                          {erros.contaId && <div className="invalid-feedback">{erros.contaId}</div>}
+                        </div>
                     </div>
-
                     <BotaoCarregando
                       type="submit"
                       carregando={salvando}
