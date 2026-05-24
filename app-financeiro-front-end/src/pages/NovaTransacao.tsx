@@ -125,10 +125,27 @@ const NovaTransacao: React.FC = () => {
   }
 
   const alterarCampo = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setCampos((prev) => ({ ...prev, [name]: value }));
-    setErros((prev) => ({ ...prev, [name]: undefined }));
-  };
+  const { name, value } = e.target;
+
+  if (name === 'formaPagamento' && value === 'DINHEIRO') {
+    setCampos((prev) => ({
+      ...prev,
+      formaPagamento: value as TipoPagamento,
+      contaId: '',
+    }));
+
+    setErros((prev) => ({
+      ...prev,
+      formaPagamento: undefined,
+      contaId: undefined,
+    }));
+
+    return;
+  }
+
+  setCampos((prev) => ({ ...prev, [name]: value }));
+  setErros((prev) => ({ ...prev, [name]: undefined }));
+};
 
   const validar = () => {
     const novosErros: Partial<Record<keyof CamposTransacao, string>> = {};
