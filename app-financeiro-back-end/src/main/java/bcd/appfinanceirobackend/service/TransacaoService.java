@@ -90,6 +90,8 @@ public class TransacaoService {
         Categoria categoria = categoriaRepository.findById(categoriaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
 
+        validarCategoriaPermitida(categoria, usuarioAutenticado);
+
         transacao.setCategoria(categoria);
         transacao.setCategorizada(true);
         transacaoRepository.save(transacao);
@@ -127,4 +129,13 @@ public class TransacaoService {
         return responseDTO;
     }
 
+    private void validarCategoriaPermitida(Categoria categoria, Usuario usuario) {
+        boolean categoriaPadrao = categoria.isPadrao();
+        boolean categoriaDoUsuario = categoria.getUsuario() != null
+                && categoria.getUsuario().getId().equals(usuario.getId());
+
+        if (!categoriaPadrao && !categoriaDoUsuario) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Categoria não pertence ao usuário autenticado");
+        }
+    }
 }
