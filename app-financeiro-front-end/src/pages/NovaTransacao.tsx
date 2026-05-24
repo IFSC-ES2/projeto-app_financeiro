@@ -381,16 +381,16 @@ const NovaTransacao: React.FC = () => {
                       textoCarregando="Salvando..."
                       className="w-100 mt-4 py-2 fw-semibold"
                       style={{ background: 'var(--sb-gradient)', border: 'none', borderRadius: 10 }}
-                      disabled={contas.length === 0}
+                      disabled={contas.length === 0 && campos.formaPagamento !== 'DINHEIRO'}
                     >
                       Salvar transação
                     </BotaoCarregando>
 
-                    {contas.length === 0 && (
-                      <p className="text-muted small mt-3 mb-0">
-                        Cadastre-se com uma conta antes de registrar transações.
-                      </p>
-                    )}
+                    {contas.length === 0 && campos.formaPagamento !== 'DINHEIRO' && (
+                        <p className="text-muted small mt-3 mb-0">
+                          Cadastre uma conta bancária ou selecione Dinheiro como forma de pagamento.
+                        </p>
+                      )}
                   </form>
                 )}
               </div>
