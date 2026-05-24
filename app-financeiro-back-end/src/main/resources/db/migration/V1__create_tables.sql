@@ -37,7 +37,7 @@ CREATE TABLE contas (
 
                         CONSTRAINT pk_contas        PRIMARY KEY (id),
                         CONSTRAINT fk_contas_usuario FOREIGN KEY (usuario_id)
-                            REFERENCES usuarios (id)
+                            REFERENCES usuario (id)
                             ON DELETE CASCADE
 );
 
@@ -73,7 +73,7 @@ CREATE TABLE categoria (
 
                             CONSTRAINT pk_categorias          PRIMARY KEY (id),
                             CONSTRAINT fk_categorias_usuario  FOREIGN KEY (usuario_id)
-                                REFERENCES usuarios (id)
+                                REFERENCES usuario (id)
                                 ON DELETE SET NULL
 );
 
@@ -93,7 +93,7 @@ CREATE TABLE importacao (
 
                              CONSTRAINT pk_importacoes          PRIMARY KEY (id),
                              CONSTRAINT fk_importacoes_usuario  FOREIGN KEY (usuario_id)
-                                 REFERENCES usuarios (id)
+                                 REFERENCES usuario (id)
                                  ON DELETE CASCADE
 );
 
@@ -137,12 +137,12 @@ CREATE TABLE transacoes (
                                 REFERENCES contas (id)
                                 ON DELETE CASCADE,
                             CONSTRAINT fk_transacoes_categoria    FOREIGN KEY (categoria_id)
-                                REFERENCES categorias (id)
+                                REFERENCES categoria (id)
                                 ON DELETE SET NULL,
                             CONSTRAINT fk_transacoes_importacao   FOREIGN KEY (importacao_id)
-                                REFERENCES importacoes (id)
+                                REFERENCES importacao (id)
                                 ON DELETE SET NULL,
                             CONSTRAINT fk_transacoes_fatura       FOREIGN KEY (fatura_id)
-                                REFERENCES faturas (id)
+                                REFERENCES fatura (id)
                                 ON DELETE SET NULL
 );
