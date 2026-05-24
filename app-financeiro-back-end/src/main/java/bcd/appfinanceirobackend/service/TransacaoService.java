@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service
 public class TransacaoService {
@@ -104,9 +105,10 @@ public class TransacaoService {
             return null;
         }
         String descricaoMinuscula = descricao.toLowerCase();
-        descricaoMinuscula = normalizarTexto(descricaoMinuscula);
+        String descricaoNormalizada = normalizarTexto(descricaoMinuscula);
         for (Map.Entry<String, List<String>> entry: PALAVRAS_CHAVE.entrySet()) {
-            boolean encontrou = entry.getValue().stream().anyMatch(descricaoMinuscula::contains);
+            boolean encontrou = entry.getValue().stream().anyMatch( palavraChave ->
+                    contemPalavra(descricaoNormalizada, palavraChave));
             if(encontrou) {
                 return categoriaRepository.findByNomeAndPadraoTrue(entry.getKey()).orElse(null);
             }
@@ -149,5 +151,9 @@ public class TransacaoService {
                 .replaceAll("\\p{M}", "")
                 .toLowerCase()
                 .trim();
+    }
+
+    private boolean contemPalavra(String descricao, String palavraChave) {
+        return descricao.matches(".*\\b" + Pattern.quote(palavraChave) + "\\b.*");
     }
 }
