@@ -97,7 +97,7 @@ public class ImportacaoService {
                         t.setCategoria(categoria);
                     }
                     t.setImportacao(importacao);
-                    t.setCategorizada(false);
+                    t.setCategorizada(true);
                     transacaoRepository.save(t);
                     sucessos++;
                 }catch (Exception e){
