@@ -144,9 +144,9 @@ const NovaTransacao: React.FC = () => {
       novosErros.data = 'Data é obrigatória.';
     }
 
-    if (!campos.contaId) {
-      novosErros.contaId = 'Conta é obrigatória.';
-    }
+    if (campos.formaPagamento !== 'DINHEIRO' && !campos.contaId) {
+    novosErros.contaId = 'Conta é obrigatória.';
+    } 
 
     setErros(novosErros);
     return Object.keys(novosErros).length === 0;
