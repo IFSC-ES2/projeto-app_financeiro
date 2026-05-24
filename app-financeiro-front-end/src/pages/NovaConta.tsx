@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import LayoutAutenticacao from '../components/layout/LayoutAutenticacao';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
@@ -40,6 +40,7 @@ const bancos = [
 
 const NovaConta: React.FC = () => {
   const { estaAutenticado, sair } = useAutenticacao();
+  const navigate = useNavigate();
 
   const [campos, setCampos] = useState<CamposConta>(valoresIniciais);
   const [erros, setErros] = useState<Partial<Record<keyof CamposConta, string>>>({});
@@ -98,9 +99,14 @@ const NovaConta: React.FC = () => {
 
       await registrarConta(novaConta);
 
-      setSucesso('Conta bancária cadastrada com sucesso. Agora ela já pode ser usada em transações manuais.');
+      setSucesso('Conta bancária cadastrada com sucesso. Redirecionando para o login...');
       setCampos(valoresIniciais);
       setErros({});
+
+      setTimeout(() => {
+        navigate('/login');
+      }, 1200);
+
     } catch (err: any) {
       if (err?.response?.status === 401 || err?.response?.status === 403) {
         setErroGeral('Sua sessão expirou. Faça login novamente.');
@@ -279,16 +285,6 @@ const NovaConta: React.FC = () => {
           Cadastrar conta
         </BotaoCarregando>
 
-        <p className="text-center text-muted small mt-4 mb-0">
-          Quer fazer isso depois?{' '}
-          <Link
-            to="/transacoes/nova"
-            className="fw-semibold text-decoration-none"
-            style={{ color: 'var(--sb-primary)' }}
-          >
-            Ir para transação manual
-          </Link>
-        </p>
       </form>
     </LayoutAutenticacao>
   );
