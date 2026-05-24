@@ -17,7 +17,7 @@ CREATE TABLE usuario(
                           nome       VARCHAR(255) NOT NULL,
                           email      VARCHAR(255) NOT NULL UNIQUE,
                           senha      VARCHAR(255) NOT NULL,
-                          cpf        CHAR(11)     NOT NULL,
+                          cpf        VARCHAR(11)  NOT NULL,
                           created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
                           CONSTRAINT pk_usuarios        PRIMARY KEY (id),
