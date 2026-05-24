@@ -417,7 +417,7 @@ const NovaTransacao: React.FC = () => {
                           <div>
                             <strong>{transacao.descricao || 'Transação manual'}</strong>
                             <div className="text-muted small">
-                              {contaPorId.get(transacao.contaId)?.nome || 'Conta'} •{' '}
+                              {transacao.contaId ? contaPorId.get(transacao.contaId)?.nome || 'Conta' : 'Dinheiro'} •{' '}
                               {transacao.categoriaId
                                 ? categoriaPorId.get(transacao.categoriaId)?.nome || 'Categoria'
                                 : 'Sem categoria'}
