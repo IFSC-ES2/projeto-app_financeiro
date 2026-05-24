@@ -41,11 +41,15 @@ public class TransacaoService {
             throw new IllegalArgumentException("O valor informado deve ser maior que zero");
         }
 
-        Conta conta = contaRepository.findById(dto.getContaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
+        Conta conta = null;
 
-        if(!conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a esta conta");
+        if (dto.getContaId() != null) {
+            conta = contaRepository.findById(dto.getContaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
+
+            if (!conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a esta conta");
+            }
         }
 
         Transacao transacao = new Transacao();
@@ -72,7 +76,9 @@ public class TransacaoService {
         responseDTO.setFormaPagamento(transacao.getFormaPagamento());
         responseDTO.setTipoTransacao(transacao.getTipo());
         responseDTO.setDescricao(transacao.getDescricao());
-        responseDTO.setContaId(transacao.getConta().getId());
+        responseDTO.setContaId(
+                transacao.getConta() != null ? transacao.getConta().getId() : null
+        );
         responseDTO.setCategoriaId(
                     transacao.getCategoria() != null ? transacao.getCategoria().getId() : null
         );
