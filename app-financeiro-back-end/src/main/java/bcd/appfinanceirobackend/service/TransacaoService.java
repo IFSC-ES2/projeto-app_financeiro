@@ -28,11 +28,14 @@ public class TransacaoService {
     }
 
     public TransacaoResponseDTO registrarManual (TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
-        if(dto.getValor() == null ||
-                dto.getContaId() == null ||
+        boolean pagamentoEmDinheiro = dto.getFormaPagamento() == TipoPagamento.DINHEIRO;
+
+        if (dto.getValor() == null ||
                 dto.getData() == null ||
-        dto.getTipoTransacao() == null) throw new IllegalArgumentException(
-                        "Campos obrigatórios não informados");
+                dto.getTipoTransacao() == null ||
+                (!pagamentoEmDinheiro && dto.getContaId() == null)) {
+            throw new IllegalArgumentException("Campos obrigatórios não informados");
+        }
 
         if(dto.getValor().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("O valor informado deve ser maior que zero");
