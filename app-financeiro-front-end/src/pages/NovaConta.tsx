@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
+import LayoutAutenticacao from '../components/layout/LayoutAutenticacao';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
 import { useAutenticacao } from '../contexts/ContextoAutenticacao';
@@ -79,6 +80,7 @@ const NovaConta: React.FC = () => {
 
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setErroGeral('');
     setSucesso('');
 
@@ -114,121 +116,181 @@ const NovaConta: React.FC = () => {
   };
 
   return (
-    <main className="min-vh-100 py-4" style={{ background: 'var(--sb-bg)' }}>
-      <div className="container" style={{ maxWidth: 900 }}>
-        <div className="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4">
-          <div>
-            <span className="badge rounded-pill mb-2" style={{ background: 'var(--sb-primary)' }}>
-              SmartBudget
-            </span>
-            <h1 className="fw-bold mb-1" style={{ color: 'var(--sb-text)' }}>
-              Associar conta bancária
-            </h1>
-            <p className="text-muted mb-0">
-              Cadastre uma conta para utilizar em funcionalidades como transações manuais.
-            </p>
-          </div>
-
-          <Link to="/transacoes/nova" className="btn btn-outline-secondary align-self-start align-self-md-center">
-          Ir para transação manual
-        </Link>
+    <LayoutAutenticacao
+      tituloPainel="Quase pronto!"
+      subtituloPainel="Agora associe sua primeira conta bancária para começar a organizar suas finanças."
+    >
+      <div className="mb-4">
+        <div className="d-flex d-lg-none align-items-center gap-2 mb-4">
+          <img
+            src="/smartbudget-logo.png"
+            alt="SmartBudget"
+            width="32"
+            height="32"
+            style={{ objectFit: 'contain' }}
+          />
+          <span className="fw-bold" style={{ fontSize: '1.2rem', color: 'var(--sb-primary-dark)' }}>
+            SmartBudget
+          </span>
         </div>
 
-        <MensagemAlerta mensagem={erroGeral} tipo="danger" />
-        <MensagemAlerta mensagem={sucesso} tipo="success" />
+        <h2 className="fw-bold mb-1" style={{ color: 'var(--sb-text)', fontSize: '1.8rem' }}>
+          Associar conta bancária
+        </h2>
 
-        <div className="card border-0 shadow-sm" style={{ borderRadius: 18 }}>
-          <div className="card-body p-4">
-            <h2 className="h5 fw-bold mb-3">Dados da conta</h2>
-
-            <form onSubmit={enviar} noValidate>
-              <div className="row g-3">
-                <div className="col-md-6">
-                  <label className="form-label fw-semibold small" htmlFor="nome">
-                    Nome da conta *
-                  </label>
-                  <input
-                    id="nome"
-                    name="nome"
-                    type="text"
-                    className={`form-control ${erros.nome ? 'is-invalid' : ''}`}
-                    value={campos.nome}
-                    onChange={alterarCampo}
-                    placeholder="Ex.: Conta Principal"
-                  />
-                  {erros.nome && <div className="invalid-feedback">{erros.nome}</div>}
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label fw-semibold small" htmlFor="tipoConta">
-                    Tipo de conta *
-                  </label>
-                  <select
-                    id="tipoConta"
-                    name="tipoConta"
-                    className={`form-select ${erros.tipoConta ? 'is-invalid' : ''}`}
-                    value={campos.tipoConta}
-                    onChange={alterarCampo}
-                  >
-                    {tiposConta.map((tipo) => (
-                      <option key={tipo.valor} value={tipo.valor}>
-                        {tipo.rotulo}
-                      </option>
-                    ))}
-                  </select>
-                  {erros.tipoConta && <div className="invalid-feedback">{erros.tipoConta}</div>}
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label fw-semibold small" htmlFor="banco">
-                    Banco *
-                  </label>
-                  <select
-                    id="banco"
-                    name="banco"
-                    className={`form-select ${erros.banco ? 'is-invalid' : ''}`}
-                    value={campos.banco}
-                    onChange={alterarCampo}
-                  >
-                    {bancos.map((banco) => (
-                      <option key={banco} value={banco}>
-                        {banco}
-                      </option>
-                    ))}
-                  </select>
-                  {erros.banco && <div className="invalid-feedback">{erros.banco}</div>}
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label fw-semibold small" htmlFor="descricao">
-                    Descrição
-                  </label>
-                  <textarea
-                    id="descricao"
-                    name="descricao"
-                    className="form-control"
-                    value={campos.descricao}
-                    onChange={alterarCampo}
-                    placeholder="Ex.: Conta para teste de transação manual"
-                    rows={3}
-                  />
-                </div>
-              </div>
-
-              <BotaoCarregando
-                type="submit"
-                carregando={salvando}
-                textoCarregando="Cadastrando..."
-                className="w-100 mt-4 py-2 fw-semibold"
-                style={{ background: 'var(--sb-gradient)', border: 'none', borderRadius: 10 }}
-              >
-                Cadastrar conta
-              </BotaoCarregando>
-            </form>
-          </div>
-        </div>
+        <p className="text-muted small mb-0">
+          Informe os dados da conta que será usada nas transações.
+        </p>
       </div>
-    </main>
+
+      <MensagemAlerta mensagem={erroGeral} tipo="danger" />
+      <MensagemAlerta mensagem={sucesso} tipo="success" />
+
+      <form onSubmit={enviar} noValidate>
+        <div className="mb-3">
+          <label htmlFor="nome" className="form-label fw-semibold text-secondary small mb-1">
+            Nome da conta
+          </label>
+
+          <div className="input-group">
+            <span className="input-group-text bg-light border-end-0 text-muted">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="4" width="18" height="16" rx="2" />
+                <path d="M7 8h10" />
+                <path d="M7 12h7" />
+                <path d="M7 16h5" />
+              </svg>
+            </span>
+
+            <input
+              id="nome"
+              name="nome"
+              type="text"
+              className={`form-control border-start-0 ${erros.nome ? 'is-invalid' : ''}`}
+              style={{ boxShadow: 'none' }}
+              value={campos.nome}
+              onChange={alterarCampo}
+              placeholder="Ex: Conta Principal"
+            />
+
+            {erros.nome && <div className="invalid-feedback">{erros.nome}</div>}
+          </div>
+        </div>
+
+        <div className="mb-3">
+          <label htmlFor="tipoConta" className="form-label fw-semibold text-secondary small mb-1">
+            Tipo de conta
+          </label>
+
+          <div className="input-group">
+            <span className="input-group-text bg-light border-end-0 text-muted">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 10h18" />
+                <path d="M5 10V7l7-4 7 4v3" />
+                <path d="M6 10v8" />
+                <path d="M10 10v8" />
+                <path d="M14 10v8" />
+                <path d="M18 10v8" />
+                <path d="M4 18h16" />
+              </svg>
+            </span>
+
+            <select
+              id="tipoConta"
+              name="tipoConta"
+              className={`form-select border-start-0 ${erros.tipoConta ? 'is-invalid' : ''}`}
+              style={{ boxShadow: 'none' }}
+              value={campos.tipoConta}
+              onChange={alterarCampo}
+            >
+              {tiposConta.map((tipo) => (
+                <option key={tipo.valor} value={tipo.valor}>
+                  {tipo.rotulo}
+                </option>
+              ))}
+            </select>
+
+            {erros.tipoConta && <div className="invalid-feedback">{erros.tipoConta}</div>}
+          </div>
+        </div>
+
+        <div className="mb-3">
+          <label htmlFor="banco" className="form-label fw-semibold text-secondary small mb-1">
+            Banco
+          </label>
+
+          <div className="input-group">
+            <span className="input-group-text bg-light border-end-0 text-muted">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 10h16" />
+                <path d="M6 10V7l6-3 6 3v3" />
+                <path d="M6 14h12" />
+                <path d="M6 18h12" />
+              </svg>
+            </span>
+
+            <select
+              id="banco"
+              name="banco"
+              className={`form-select border-start-0 ${erros.banco ? 'is-invalid' : ''}`}
+              style={{ boxShadow: 'none' }}
+              value={campos.banco}
+              onChange={alterarCampo}
+            >
+              {bancos.map((banco) => (
+                <option key={banco} value={banco}>
+                  {banco}
+                </option>
+              ))}
+            </select>
+
+            {erros.banco && <div className="invalid-feedback">{erros.banco}</div>}
+          </div>
+        </div>
+
+        <div className="mb-3">
+          <label htmlFor="descricao" className="form-label fw-semibold text-secondary small mb-1">
+            Descrição
+          </label>
+
+          <textarea
+            id="descricao"
+            name="descricao"
+            className="form-control"
+            style={{ boxShadow: 'none', minHeight: 88 }}
+            value={campos.descricao}
+            onChange={alterarCampo}
+            placeholder="Ex: Conta para transações manuais"
+          />
+        </div>
+
+        <BotaoCarregando
+          type="submit"
+          carregando={salvando}
+          textoCarregando="Cadastrando..."
+          className="w-100 py-2 fw-semibold mt-2"
+          style={{
+            background: 'var(--sb-gradient)',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '1rem',
+          }}
+        >
+          Cadastrar conta
+        </BotaoCarregando>
+
+        <p className="text-center text-muted small mt-4 mb-0">
+          Quer fazer isso depois?{' '}
+          <Link
+            to="/transacoes/nova"
+            className="fw-semibold text-decoration-none"
+            style={{ color: 'var(--sb-primary)' }}
+          >
+            Ir para transação manual
+          </Link>
+        </p>
+      </form>
+    </LayoutAutenticacao>
   );
 };
 
