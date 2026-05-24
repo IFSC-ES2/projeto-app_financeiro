@@ -186,7 +186,7 @@ const NovaTransacao: React.FC = () => {
         tipoTransacao: campos.tipoTransacao,
         formaPagamento: campos.formaPagamento,
         categoriaId: campos.categoriaId || null,
-        contaId: campos.contaId,
+        contaId: campos.formaPagamento === 'DINHEIRO' ? null : campos.contaId,
       });
 
       setTransacoes((prev) => [transacaoSalva, ...prev]);
