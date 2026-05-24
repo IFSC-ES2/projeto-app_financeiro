@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +100,11 @@ public class TransacaoService {
     }
 
     public Categoria sugerirCategoria (String descricao) {
+        if(descricao == null || descricao.isBlank()){
+            return null;
+        }
         String descricaoMinuscula = descricao.toLowerCase();
+        descricaoMinuscula = normalizarTexto(descricaoMinuscula);
         for (Map.Entry<String, List<String>> entry: PALAVRAS_CHAVE.entrySet()) {
             boolean encontrou = entry.getValue().stream().anyMatch(descricaoMinuscula::contains);
             if(encontrou) {
@@ -137,5 +142,12 @@ public class TransacaoService {
         if (!categoriaPadrao && !categoriaDoUsuario) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Categoria não pertence ao usuário autenticado");
         }
+    }
+
+    private String normalizarTexto(String texto) {
+        return Normalizer.normalize(texto, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase()
+                .trim();
     }
 }
