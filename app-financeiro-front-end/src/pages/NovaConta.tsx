@@ -129,9 +129,9 @@ const NovaConta: React.FC = () => {
             </p>
           </div>
 
-          <Link to="/dashboard" className="btn btn-outline-secondary align-self-start align-self-md-center">
-            Voltar ao painel
-          </Link>
+          <Link to="/transacoes/nova" className="btn btn-outline-secondary align-self-start align-self-md-center">
+          Ir para transação manual
+        </Link>
         </div>
 
         <MensagemAlerta mensagem={erroGeral} tipo="danger" />
