@@ -96,7 +96,7 @@ const NovaConta: React.FC = () => {
 
       await registrarConta(novaConta);
 
-      setSucesso('Conta bancária cadastrada com sucesso.');
+      setSucesso('Conta bancária cadastrada com sucesso. Agora ela já pode ser usada em transações manuais.');
       setCampos(valoresIniciais);
       setErros({});
     } catch (err: any) {
