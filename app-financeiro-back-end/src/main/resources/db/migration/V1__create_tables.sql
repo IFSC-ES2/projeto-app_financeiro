@@ -13,12 +13,12 @@
 -- ─── USUARIOS ───────────────────────────────────────────────
 
 CREATE TABLE usuario(
-                          id         CHAR(36)     NOT NULL,
-                          nome       VARCHAR(100) NOT NULL,
-                          email      VARCHAR(150) NOT NULL,
-                          senha_hash VARCHAR(255) NOT NULL,
+                          id         UUID     NOT NULL,
+                          nome       VARCHAR(255) NOT NULL,
+                          email      VARCHAR(255) NOT NULL UNIQUE,
+                          senha      VARCHAR(255) NOT NULL,
                           cpf        CHAR(11)     NOT NULL,
-                          criado_em  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                          created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
                           CONSTRAINT pk_usuarios        PRIMARY KEY (id),
                           CONSTRAINT uk_usuarios_email  UNIQUE (email),
@@ -28,17 +28,12 @@ CREATE TABLE usuario(
 -- ─── CONTAS ─────────────────────────────────────────────────
 
 CREATE TABLE contas (
-                        id         CHAR(36)     NOT NULL,
-                        usuario_id CHAR(36)     NOT NULL,
+                        id         UUID     NOT NULL,
+                        usuario_id UUID     NOT NULL,
                         nome       VARCHAR(80)  NOT NULL,
-                        banco      VARCHAR(80)      NULL,
-                        tipo       ENUM(
-                   'CORRENTE',
-                   'POUPANCA',
-                   'CARTAO_CREDITO',
-                   'CARTEIRA'
-               )            NOT NULL,
-                        descricao  VARCHAR(255)     NULL,
+                        banco      VARCHAR(80),
+                        tipo       VARCHAR(20)  NOT NULL,
+                        descricao  VARCHAR(255),
 
                         CONSTRAINT pk_contas        PRIMARY KEY (id),
                         CONSTRAINT fk_contas_usuario FOREIGN KEY (usuario_id)
@@ -52,11 +47,11 @@ CREATE TABLE contas (
 -- limite é opcional — fora do escopo do MVP atual (R04).
 
 CREATE TABLE cartao_credito (
-                                 id              CHAR(36)       NOT NULL,
-                                 conta_id        CHAR(36)       NOT NULL,
+                                 id              UUID       NOT NULL,
+                                 conta_id        UUID       NOT NULL,
                                  dia_fechamento  INT            NOT NULL,
                                  dia_vencimento  INT            NOT NULL,
-                                 limite          DECIMAL(10, 2)     NULL,
+                                 limite          DECIMAL(10, 2),
 
                                  CONSTRAINT pk_cartoes_credito        PRIMARY KEY (id),
                                  CONSTRAINT uk_cartoes_credito_conta  UNIQUE (conta_id),
@@ -69,11 +64,11 @@ CREATE TABLE cartao_credito (
 -- usuario_id é NULL para categorias padrão do sistema.
 
 CREATE TABLE categoria (
-                            id         CHAR(36)    NOT NULL,
-                            usuario_id CHAR(36)        NULL,
+                            id         UUID    NOT NULL,
+                            usuario_id UUID,
                             nome       VARCHAR(60) NOT NULL,
-                            icone      VARCHAR(10)     NULL,
-                            cor        VARCHAR(7)      NULL,
+                            icone      VARCHAR(10),
+                            cor        VARCHAR(7),
                             padrao     BOOLEAN     NOT NULL DEFAULT FALSE,
 
                             CONSTRAINT pk_categorias          PRIMARY KEY (id),
@@ -85,22 +80,12 @@ CREATE TABLE categoria (
 -- ─── IMPORTACOES ────────────────────────────────────────────
 
 CREATE TABLE importacao (
-                             id           CHAR(36)     NOT NULL,
-                             usuario_id   CHAR(36)     NOT NULL,
+                             id           UUID     NOT NULL,
+                             usuario_id   UUID     NOT NULL,
                              nome_arquivo VARCHAR(255) NOT NULL,
-                             formato      ENUM(
-                     'CSV',
-                     'XML',
-                     'TXT',
-                     'NFE'
-                 )            NOT NULL,
-                             status       ENUM(
-                     'PENDENTE',
-                     'PROCESSANDO',
-                     'CONCLUIDO',
-                     'ERRO'
-                 )            NOT NULL DEFAULT 'PENDENTE',
-                             importado_em DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                             formato      VARCHAR(10)  NOT NULL,
+                             status       VARCHAR(20)  NOT NULL DEFAULT 'PENDENTE',
+                             importado_em TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
                              total_linhas INT  NOT NULL DEFAULT 0,
                              sucessos     INT  NOT NULL DEFAULT 0,
                              falhas       INT  NOT NULL DEFAULT 0,
@@ -115,16 +100,12 @@ CREATE TABLE importacao (
 -- ─── FATURAS ────────────────────────────────────────────────
 
 CREATE TABLE fatura (
-                         id              CHAR(36)       NOT NULL,
-                         conta_id        CHAR(36)       NOT NULL,
+                         id              UUID       NOT NULL,
+                         conta_id        UUID       NOT NULL,
                          mes_referencia  VARCHAR(7)     NOT NULL,
                          data_vencimento DATE           NOT NULL,
                          valor_total     DECIMAL(10, 2) NOT NULL,
-                         status          ENUM(
-                        'ABERTA',
-                        'FECHADA',
-                        'PAGA'
-                    )              NOT NULL DEFAULT 'ABERTA',
+                         status          VARCHAR(10)    NOT NULL DEFAULT 'ABERTA',
 
                          CONSTRAINT pk_faturas        PRIMARY KEY (id),
                          CONSTRAINT fk_faturas_conta  FOREIGN KEY (conta_id)
@@ -138,28 +119,16 @@ CREATE TABLE fatura (
 -- fatura_id: NULL para transações que não são de cartão de crédito.
 
 CREATE TABLE transacoes (
-                            id              CHAR(36)       NOT NULL,
-                            conta_id        CHAR(36)       NOT NULL,
-                            categoria_id    CHAR(36)           NULL,
-                            importacao_id   CHAR(36)           NULL,
-                            fatura_id       CHAR(36)           NULL,
+                            id              UUID       NOT NULL,
+                            conta_id        UUID       NOT NULL,
+                            categoria_id    UUID,
+                            importacao_id   UUID,
+                            fatura_id       UUID,
                             valor           DECIMAL(10, 2) NOT NULL,
                             data            DATE           NOT NULL,
-                            descricao       VARCHAR(255)       NULL,
-                            tipo            ENUM(
-                        'DEBITO',
-                        'CREDITO',
-                        'PARCELAMENTO',
-                        'BOLETO'
-                    )              NOT NULL,
-                            forma_pagamento ENUM(
-                        'PIX',
-                        'CARTAO_DEBITO',
-                        'CARTAO_CREDITO',
-                        'DINHEIRO',
-                        'BOLETO',
-                        'TED_DOC'
-                    )                  NULL,
+                            descricao       VARCHAR(255),
+                            tipo            VARCHAR(20)    NOT NULL,
+                            forma_pagamento VARCHAR(20),
                             categorizada    BOOLEAN        NOT NULL DEFAULT FALSE,
                             futura          BOOLEAN        NOT NULL DEFAULT FALSE,
 
