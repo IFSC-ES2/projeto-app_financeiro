@@ -21,9 +21,9 @@ public class Transacao {
     @Column(nullable = false, updatable = false)
     private UUID id;
 
-    // Obrigatória — toda transação pertence a uma conta
+    // Opcional — transações em dinheiro podem não estar vinculadas a uma conta bancária
     @ManyToOne
-    @JoinColumn(name = "conta_id", nullable = false)
+    @JoinColumn(name = "conta_id", nullable = true)
     private Conta conta;
 
     // Nullable — preenchida após categorização
