@@ -1,5 +1,6 @@
 package bcd.appfinanceirobackend.controller;
 
+import bcd.appfinanceirobackend.dto.categoria.CategorizarTransacaoRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.model.Usuario;
@@ -32,10 +33,10 @@ public class TransacaoController {
     @PatchMapping("/{transacaoId}/categoria")
     public ResponseEntity<TransacaoResponseDTO> categorizarTransacaoManual (
             @PathVariable UUID transacaoId,
-            @RequestBody UUID categoriaId,
+            @RequestBody CategorizarTransacaoRequestDTO request,
             @AuthenticationPrincipal Usuario usuarioAutenticado) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(transacaoService.categorizar(
-                transacaoId, categoriaId, usuarioAutenticado
+        return ResponseEntity.status(HttpStatus.OK).body(transacaoService.categorizar(
+                transacaoId, request.getCategoriaId(), usuarioAutenticado
         ));
     }
 }
