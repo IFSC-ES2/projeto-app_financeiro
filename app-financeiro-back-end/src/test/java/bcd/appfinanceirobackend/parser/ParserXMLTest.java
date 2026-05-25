@@ -375,6 +375,20 @@ class ParserXMLTest {
         }
 
         @Test
+        @DisplayName("XML com tag conhecida e todos os nós inválidos retorna resultado vazio sem lançar exception")
+        void parsear_tagConhecidaComTodosOsNosInvalidos_retornaResultadoVazioSemLancarException() throws IOException {
+            MockMultipartFile arquivo = fromFixture("extrato-todos-nos-invalidos.xml");
+
+            ResultadoParser resultado = assertDoesNotThrow(() -> parser.parsear(arquivo, conta));
+
+            assertAll(
+                    () -> assertEquals(2, resultado.getTotalLinhas()),
+                    () -> assertEquals(2, resultado.getLinhasInvalidas()),
+                    () -> assertTrue(resultado.getTransacoes().isEmpty())
+            );
+        }
+
+        @Test
         @DisplayName("transação com valor inválido incrementa linhasInvalidas sem interromper o parse")
         void transacaoComValorInvalido_incrementaLinhasInvalidas() throws IOException {
             MockMultipartFile arquivo = fromFixture("extrato-com-valor-invalido.xml");
