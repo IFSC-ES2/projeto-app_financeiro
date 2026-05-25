@@ -149,17 +149,23 @@ public class ParserXML implements ParserExtrato {
 
     /** Extrai o texto de uma tag filha pelo nome, retornando "" se ausente. */
     private String texto(Element elemento, String tag) {
-        // tenta com namespace wildcard
-        NodeList nos = elemento.getElementsByTagNameNS("*", tag);
-        if (nos.getLength() > 0) return nos.item(0).getTextContent().trim();
+        // busca case-insensitive nos filhos diretos e descendentes
+        NodeList todos = elemento.getElementsByTagNameNS("*", "*");
+        for (int i = 0; i < todos.getLength(); i++) {
+            if (todos.item(i).getLocalName() != null &&
+                    todos.item(i).getLocalName().equalsIgnoreCase(tag)) {
+                return todos.item(i).getTextContent().trim();
+            }
+        }
 
-        // tenta minúsculo sem namespace
-        nos = elemento.getElementsByTagName(tag);
-        if (nos.getLength() > 0) return nos.item(0).getTextContent().trim();
-
-        // tenta maiúsculo sem namespace
-        nos = elemento.getElementsByTagName(tag.toUpperCase());
-        if (nos.getLength() > 0) return nos.item(0).getTextContent().trim();
+        // fallback sem namespace
+        NodeList todos2 = elemento.getElementsByTagName("*");
+        for (int i = 0; i < todos2.getLength(); i++) {
+            todos2.item(i);
+            if (todos2.item(i).getNodeName().equalsIgnoreCase(tag)) {
+                return todos2.item(i).getTextContent().trim();
+            }
+        }
 
         return "";
     }
