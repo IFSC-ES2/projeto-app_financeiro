@@ -76,9 +76,7 @@ public class TransacaoService {
         responseDTO.setFormaPagamento(transacao.getFormaPagamento());
         responseDTO.setTipoTransacao(transacao.getTipo());
         responseDTO.setDescricao(transacao.getDescricao());
-        responseDTO.setContaId(
-                transacao.getConta() != null ? transacao.getConta().getId() : null
-        );
+        responseDTO.setContaId(transacao.getConta().getId());
         responseDTO.setCategoriaId(
                     transacao.getCategoria() != null ? transacao.getCategoria().getId() : null
         );
