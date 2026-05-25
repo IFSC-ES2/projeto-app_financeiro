@@ -325,7 +325,7 @@ class ParserTXTTest {
                     () -> assertEquals(1, resultado.getTransacoes().size()),
                     () -> assertEquals(1, resultado.getTotalLinhas()),
                     () -> assertEquals(0, resultado.getLinhasInvalidas()),
-                    () -> assertEquals("Compra mercado", resultado.getTransacoes().get(0).getDescricao()),
+                    () -> assertEquals("Compra mercado", resultado.getTransacoes().getFirst().getDescricao()),
                     () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(0).getTipo()),
                     () -> assertEquals(0, resultado.getTransacoes().get(0).getValor()
                             .compareTo(new BigDecimal("123.45")))
