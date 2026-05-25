@@ -6,6 +6,7 @@ import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
+import bcd.appfinanceirobackend.model.enums.TipoConta;
 import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.springframework.http.HttpStatus;
@@ -41,9 +42,11 @@ public class TransacaoService {
             throw new IllegalArgumentException("O valor informado deve ser maior que zero");
         }
 
-        Conta conta = null;
+        Conta conta;
 
-        if (dto.getContaId() != null) {
+        if (pagamentoEmDinheiro) {
+            conta = obterOuCriarContaDinheiro(usuarioAutenticado);
+        } else {
             conta = contaRepository.findById(dto.getContaId())
                     .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
 
@@ -85,5 +88,25 @@ public class TransacaoService {
         );
         return responseDTO;
     }
+    
+    private Conta obterOuCriarContaDinheiro(Usuario usuario) {
+        return contaRepository
+                .findByUsuarioIdAndTipoContaAndNome(
+                        usuario.getId(),
+                        TipoConta.CARTEIRA,
+                        "Dinheiro / Carteira"
+                )
+                .orElseGet(() -> {
+                    Conta conta = new Conta();
+                    conta.setNome("Dinheiro / Carteira");
+                    conta.setTipoConta(TipoConta.CARTEIRA);
+                    conta.setBanco("Dinheiro");
+                    conta.setDescricao("Conta automática para transações em dinheiro");
+                    conta.setUsuario(usuario);
+
+                    return contaRepository.save(conta);
+                });
+    }
+
 
 }
