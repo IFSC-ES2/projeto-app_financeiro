@@ -62,7 +62,7 @@ public class ParserXML implements ParserExtrato {
 
         // Lê os primeiros bytes para verificar se NÃO é uma NF-e
         try (InputStream is = arquivo.getInputStream()) {
-            byte[] preview = is.readNBytes(500);
+            byte[] preview = is.readNBytes(2000);
             String inicio = new String(preview).toLowerCase();
             // NF-e é tratada pelo ParserNFe — este parser rejeita
             return !inicio.contains("nfeproc") && !inicio.contains("<nfe");
@@ -81,25 +81,33 @@ public class ParserXML implements ParserExtrato {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             // Desativa DTD externo para evitar XXE
             factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setNamespaceAware(true);
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.parse(arquivo.getInputStream());
             doc.getDocumentElement().normalize();
 
             // Tenta cada tag conhecida até encontrar elementos
-            NodeList nos = null;
+            List<Element> elementos = new ArrayList<>();
             for (String tag : TAGS_TRANSACAO) {
-                nos = doc.getElementsByTagName(tag);
-                if (nos.getLength() > 0) break;
+                // tenta minúsculo com namespace
+                NodeList nos = doc.getElementsByTagNameNS("*", tag);
+                for (int i = 0; i < nos.getLength(); i++) {
+                    elementos.add((Element) nos.item(i));
+                }
+                // tenta maiúsculo com namespace
+                nos = doc.getElementsByTagNameNS("*", tag.toUpperCase());
+                for (int i = 0; i < nos.getLength(); i++) {
+                    elementos.add((Element) nos.item(i));
+                }
             }
 
-            if (nos == null || nos.getLength() == 0) {
+            if (elementos.isEmpty()) {
                 throw new RuntimeException("Nenhuma tag de transação reconhecida no XML. " +
                         "Tags suportadas: " + TAGS_TRANSACAO);
             }
 
-            for (int i = 0; i < nos.getLength(); i++) {
+            for (Element el: elementos) {
                 totalLinhas++;
-                Element el = (Element) nos.item(i);
 
                 LocalDate data = parsearData(texto(el, "data"));
                 if (data == null) {
@@ -141,18 +149,39 @@ public class ParserXML implements ParserExtrato {
 
     /** Extrai o texto de uma tag filha pelo nome, retornando "" se ausente. */
     private String texto(Element elemento, String tag) {
-        NodeList nos = elemento.getElementsByTagName(tag);
-        if (nos.getLength() == 0) return "";
-        return nos.item(0).getTextContent().trim();
+        // tenta com namespace wildcard
+        NodeList nos = elemento.getElementsByTagNameNS("*", tag);
+        if (nos.getLength() > 0) return nos.item(0).getTextContent().trim();
+
+        // tenta minúsculo sem namespace
+        nos = elemento.getElementsByTagName(tag);
+        if (nos.getLength() > 0) return nos.item(0).getTextContent().trim();
+
+        // tenta maiúsculo sem namespace
+        nos = elemento.getElementsByTagName(tag.toUpperCase());
+        if (nos.getLength() > 0) return nos.item(0).getTextContent().trim();
+
+        return "";
     }
 
     private LocalDate parsearData(String valor) {
+        if (valor == null || valor.isBlank()) return null;
+
         for (DateTimeFormatter fmt : FORMATADORES) {
             try {
                 return LocalDate.parse(valor, fmt);
             } catch (DateTimeParseException ignored) {
             }
         }
+
+        // fallback: tenta extrair só a parte da data (yyyy-MM-dd)
+        if (valor.length() >= 10) {
+            try {
+                return LocalDate.parse(valor.substring(0, 10));
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+
         return null;
     }
 
