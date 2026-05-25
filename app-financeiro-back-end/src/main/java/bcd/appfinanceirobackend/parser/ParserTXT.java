@@ -51,8 +51,8 @@ public class ParserTXT implements ParserExtrato {
      */
     private static final Pattern PADRAO_LINHA = Pattern.compile(
             "^(\\d{2}[/\\-]\\d{2}[/\\-]\\d{2,4}|\\d{4}[/\\-]\\d{2}[/\\-]\\d{2})" // data
-                    + "\\s+(.+?)\\s+"                                                // descricao
-                    + "(R\\$\\\\s*)?([+-]?\\d{1,3}(?:[.,]\\d{3})*(?:[.,]\\d{2})?)\\s*$"         // valor
+                    + "\\s+(.+?)\\s+"                                                 // descricao
+                    + "(R\\$\\s*)?([+-]?\\d{1,3}(?:[.,]\\d{3})*(?:[.,]\\d{2})?)\\s*$" // valor
     );
 
     private static final List<DateTimeFormatter> FORMATADORES = List.of(
@@ -132,17 +132,28 @@ public class ParserTXT implements ParserExtrato {
         // Divide por TAB ou por 2+ espaços consecutivos
         String[] partes = linha.split("\t|\\s{2,}");
 
-        if (partes.length < 3) return null;
+        if (partes.length < 3) {
+            partes = linha.split("\\s+");
+        }
 
         LocalDate data = parsearData(partes[0].trim());
         if (data == null) return null;
 
+        String ultimoCampo = partes[partes.length - 1].trim();
+
+        String penultimoCampo = partes[partes.length - 2].trim();
+        int limiteDescricao = partes.length - 1;
+        if (penultimoCampo.equalsIgnoreCase("R$")) {
+            ultimoCampo = penultimoCampo + ultimoCampo; // junta "R$" + "-123,45"
+            limiteDescricao = partes.length - 2; // exclui o "R$" da descrição
+        }
+
         // Valor é sempre o último campo; descrição é tudo no meio
-        BigDecimal valor = parsearValor(partes[partes.length - 1].trim());
+        BigDecimal valor = parsearValor(ultimoCampo);
         if (valor == null) return null;
 
         StringBuilder desc = new StringBuilder();
-        for (int i = 1; i < partes.length - 1; i++) {
+        for (int i = 1; i < limiteDescricao; i++) {
             if (!partes[i].isBlank()) {
                 if (desc.length() > 0) desc.append(" ");
                 desc.append(partes[i].trim());
