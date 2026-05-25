@@ -215,7 +215,7 @@ class ImportacaoServiceTest {
 
             assertAll(
                     () -> assertEquals("Nome do arquivo inválido", ex.getMessage()),
-                    () -> assertNenhumaPersistenciaDeImportacaoOuTransacao(),
+                    ImportacaoServiceTest.this::assertNenhumaPersistenciaDeImportacaoOuTransacao,
                     () -> verify(parserMock, never()).aceita(any()),
                     () -> verify(parserMock, never()).parsear(any(), any())
             );

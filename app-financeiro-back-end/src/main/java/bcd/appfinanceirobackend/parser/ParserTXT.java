@@ -52,7 +52,7 @@ public class ParserTXT implements ParserExtrato {
     private static final Pattern PADRAO_LINHA = Pattern.compile(
             "^(\\d{2}[/\\-]\\d{2}[/\\-]\\d{2,4}|\\d{4}[/\\-]\\d{2}[/\\-]\\d{2})" // data
                     + "\\s+(.+?)\\s+"                                                // descricao
-                    + "([+-]?\\d{1,3}(?:[.,]\\d{3})*(?:[.,]\\d{2})?)\\s*$"         // valor
+                    + "(R\\$\\\\s*)?([+-]?\\d{1,3}(?:[.,]\\d{3})*(?:[.,]\\d{2})?)\\s*$"         // valor
     );
 
     private static final List<DateTimeFormatter> FORMATADORES = List.of(
@@ -119,6 +119,8 @@ public class ParserTXT implements ParserExtrato {
         if (data == null) return null;
 
         String descricao = matcher.group(2).trim();
+
+        String prefixo = matcher.group(3) != null ? matcher.group(3) : "";
         BigDecimal valor = parsearValor(matcher.group(3));
         if (valor == null) return null;
 
