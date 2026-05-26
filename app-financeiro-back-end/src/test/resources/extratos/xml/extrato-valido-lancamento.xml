@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extrato>
+    <lancamento>
+        <data>2024-02-01</data>
+        <descricao>Conta de luz</descricao>
+        <valor>-210.45</valor>
+        <tipo>DEBITO</tipo>
+    </lancamento>
+</extrato>

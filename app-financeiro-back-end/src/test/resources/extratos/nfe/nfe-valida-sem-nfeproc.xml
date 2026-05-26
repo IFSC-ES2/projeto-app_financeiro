@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NFe>
+  <infNFe Id="NFe35140100000000000190550010000000021000000020" versao="4.00">
+    <ide>
+      <dhEmi>2024-01-20T09:15:00-03:00</dhEmi>
+    </ide>
+    <emit>
+      <CNPJ>98765432000110</CNPJ>
+      <xNome>Padaria Exemplo LTDA</xNome>
+    </emit>
+    <det nItem="1">
+      <prod>
+        <xProd>Café Torrado 500g</xProd>
+        <vProd>18.90</vProd>
+      </prod>
+    </det>
+    <det nItem="2">
+      <prod>
+        <xProd>Pao Frances</xProd>
+        <vProd>8.75</vProd>
+      </prod>
+    </det>
+    <total>
+      <ICMSTot>
+        <vNF>27.65</vNF>
+      </ICMSTot>
+    </total>
+  </infNFe>
+</NFe>
