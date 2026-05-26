@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extrato>
+  <transacao>
+    <data>2024-01-01</data>
+    <descricao>XML generico</descricao>
+    <valor>10.00</valor>
+    <tipo>DEBITO</tipo>
+  </transacao>
+</extrato>
