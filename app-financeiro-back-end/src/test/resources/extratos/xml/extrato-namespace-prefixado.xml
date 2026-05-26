@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sb:extrato xmlns:sb="https://smartbudget.local/extrato">
+    <sb:transacao>
+        <sb:data>2024-04-01</sb:data>
+        <sb:descricao>Compra com namespace</sb:descricao>
+        <sb:valor>-45.67</sb:valor>
+        <sb:tipo>DEBITO</sb:tipo>
+    </sb:transacao>
+</sb:extrato>

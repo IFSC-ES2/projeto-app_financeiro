@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nfeProc [
+  <!ENTITY xxe SYSTEM "file:///etc/passwd">
+]>
+<nfeProc versao="4.00">
+  <NFe>
+    <infNFe versao="4.00">
+      <ide><dhEmi>2024-04-13T08:00:00-03:00</dhEmi></ide>
+      <emit><CNPJ>10101010000110</CNPJ><xNome>&xxe;</xNome></emit>
+      <det nItem="1"><prod><xProd>Produto Malicioso</xProd><vProd>10.00</vProd></prod></det>
+      <total><ICMSTot><vNF>10.00</vNF></ICMSTot></total>
+    </infNFe>
+  </NFe>
+</nfeProc>
