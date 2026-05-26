@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extrato>
+    <transacao>
+        <Data>2024-04-02</Data>
+        <Descricao>Pagamento com campos maiúsculos</Descricao>
+        <Valor>-120.00</Valor>
+        <Tipo>DEBITO</Tipo>
+    </transacao>
+</extrato>

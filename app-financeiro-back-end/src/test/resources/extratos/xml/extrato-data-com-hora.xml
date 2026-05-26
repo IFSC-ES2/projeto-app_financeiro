@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extrato>
+    <transacao>
+        <data>2024-04-03T10:15:30</data>
+        <descricao>Compra com data e hora</descricao>
+        <valor>-39.90</valor>
+        <tipo>DEBITO</tipo>
+    </transacao>
+</extrato>

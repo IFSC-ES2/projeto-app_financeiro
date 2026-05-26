@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc versao="4.00">
+  <NFe>
+    <infNFe versao="4.00">
+      <ide><dhEmi>2024-03-05</dhEmi></ide>
+      <emit><CNPJ>33333333000133</CNPJ><xNome>Loja Data Simples</xNome></emit>
+      <det nItem="1"><prod><xProd>Produto Data Simples</xProd><vProd>44.44</vProd></prod></det>
+      <total><ICMSTot><vNF>44.44</vNF></ICMSTot></total>
+    </infNFe>
+  </NFe>
+</nfeProc>
