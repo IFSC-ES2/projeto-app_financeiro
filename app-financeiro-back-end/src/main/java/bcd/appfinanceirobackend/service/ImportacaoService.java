@@ -52,6 +52,8 @@ public class ImportacaoService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Conta não pertence ao usuário autenticado");
         }
 
+        String nome = arquivo.getOriginalFilename();
+        if(nome==null || nome.isBlank()) throw new IllegalArgumentException("Nome do arquivo inválido");
         if(arquivo.isEmpty()) throw new IllegalArgumentException("Arquivo vazio");
 
         boolean verificaNFe = false;
@@ -67,8 +69,6 @@ public class ImportacaoService {
         }
 
 
-        String nome = arquivo.getOriginalFilename();
-        if(nome==null) throw new IllegalArgumentException("Nome do arquivo inválido");
         Importacao importacao = new Importacao();
         importacao.setNome_arquivo(arquivo.getOriginalFilename());
         importacao.setFormatoArquivo(detectarFormato(nome, verificaNFe));
