@@ -3,6 +3,7 @@ import { ProvedorAutenticacao } from './contexts/ContextoAutenticacao';
 import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
 import NovaTransacao from './pages/NovaTransacao';
+import NovaConta from './pages/NovaConta';
 
 // Dashboard provisório — substituir pela tela oficial
 const PainelProvisorio = () => (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/dashboard" element={<PainelProvisorio />} />
           <Route path="/transacoes/nova" element={<NovaTransacao />} />
+          <Route path="/contas/nova" element={<NovaConta />} />
         </Routes>
       </Router>
     </ProvedorAutenticacao>

@@ -8,11 +8,13 @@ import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.repository.CategoriaRepository;
+import bcd.appfinanceirobackend.model.enums.TipoConta;
 import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import bcd.appfinanceirobackend.model.enums.TipoPagamento;
 
 import java.math.BigDecimal;
 import java.text.Normalizer;
@@ -48,21 +50,30 @@ public class TransacaoService {
     );
 
     public TransacaoResponseDTO registrarManual (TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
-        if(dto.getValor() == null ||
-                dto.getContaId() == null ||
+        boolean pagamentoEmDinheiro = dto.getFormaPagamento() == TipoPagamento.DINHEIRO;
+
+        if (dto.getValor() == null ||
                 dto.getData() == null ||
-        dto.getTipoTransacao() == null) throw new IllegalArgumentException(
-                        "Campos obrigatórios não informados");
+                dto.getTipoTransacao() == null ||
+                (!pagamentoEmDinheiro && dto.getContaId() == null)) {
+            throw new IllegalArgumentException("Campos obrigatórios não informados");
+        }
 
         if(dto.getValor().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("O valor informado deve ser maior que zero");
         }
 
-        Conta conta = contaRepository.findById(dto.getContaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
+        Conta conta;
 
-        if(!conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a esta conta");
+        if (pagamentoEmDinheiro) {
+            conta = obterOuCriarContaDinheiro(usuarioAutenticado);
+        } else {
+            conta = contaRepository.findById(dto.getContaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
+
+            if (!conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a esta conta");
+            }
         }
 
         Transacao transacao = new Transacao();
@@ -135,6 +146,26 @@ public class TransacaoService {
         );
         return responseDTO;
     }
+    
+    private Conta obterOuCriarContaDinheiro(Usuario usuario) {
+        return contaRepository
+                .findByUsuarioIdAndTipoContaAndNome(
+                        usuario.getId(),
+                        TipoConta.CARTEIRA,
+                        "Dinheiro / Carteira"
+                )
+                .orElseGet(() -> {
+                    Conta conta = new Conta();
+                    conta.setNome("Dinheiro / Carteira");
+                    conta.setTipoConta(TipoConta.CARTEIRA);
+                    conta.setBanco("Dinheiro");
+                    conta.setDescricao("Conta automática para transações em dinheiro");
+                    conta.setUsuario(usuario);
+
+                    return contaRepository.save(conta);
+                });
+    }
+
 
     private void validarCategoriaPermitida(Categoria categoria, Usuario usuario) {
         boolean categoriaPadrao = categoria.isPadrao();
