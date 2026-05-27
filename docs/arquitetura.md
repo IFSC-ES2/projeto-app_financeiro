@@ -18,30 +18,19 @@ flowchart LR
 
     smartbudget["SmartBudget\nSistema de gerenciamento financeiro pessoal"]
 
-    arquivos["Arquivos financeiros\nCSV, XML, TXT e NF-e"]
-
-    navegador["Navegador Web\nChrome, Firefox, Edge etc."]
-
-    usuario -->|Acessa o sistema| navegador
-    navegador -->|Usa funcionalidades financeiras| smartbudget
-    usuario -->|Envia arquivos para importação| arquivos
-    arquivos -->|São processados pelo sistema| smartbudget
-
-    smartbudget -->|Autentica usuários, registra contas, transações e importações| smartbudget
+    usuario -->|Acessa para cadastrar perfil, gerenciar contas, lançar transações e importar arquivos financeiros| smartbudget
 ```
 
 ### Elementos do contexto
 
 | Elemento | Responsabilidade | Dependências |
 | --- | --- | --- |
-| Pessoa física | Usuário final que deseja controlar gastos, contas, categorias e transações. | Navegador web para acessar o frontend. |
-| Navegador Web | Ambiente usado pelo usuário para interagir com a interface React. | Aplicação frontend servida pelo Vite em ambiente local. |
-| SmartBudget | Sistema que centraliza autenticação, contas, transações, categorias e importações de arquivos financeiros. | Frontend React, backend Spring Boot e banco relacional. |
-| Arquivos financeiros | Fontes de dados enviadas pelo usuário para importação de transações. | Parsers do backend para CSV, TXT, XML genérico e NF-e. |
+| Pessoa física | Usuário final que deseja controlar gastos, contas, categorias, transações e importar arquivos financeiros. | Navegador web para acessar o sistema. |
+| SmartBudget | Sistema que centraliza autenticação, contas, transações, categorias e importações de arquivos financeiros. | Aplicação frontend React, API backend Spring Boot e banco relacional PostgreSQL. |
 
 ### Sistemas externos identificados
 
-No estado atual do projeto, não há integração direta com bancos, provedores de pagamento, serviços externos de autenticação ou APIs de terceiros. Os dados externos entram no sistema por upload manual de arquivos financeiros feito pelo próprio usuário.
+No estado atual do projeto, não há integração direta com bancos, provedores de pagamento, serviços externos de autenticação ou APIs de terceiros. Os arquivos financeiros não são representados como sistema externo no diagrama, pois entram no fluxo como dados enviados manualmente pelo usuário durante o uso da aplicação.
 
 ## 3. C4 — Nível 2: Diagrama de contêineres
 
@@ -55,15 +44,13 @@ flowchart LR
 
     banco[("PostgreSQL\nBanco relacional app_financeiro\nMigrations Flyway")]
 
-    arquivos["Arquivos importados\nCSV, TXT, XML e NF-e"]
-
-    usuario -->|Interage com telas| frontend
+    usuario -->|Interage com telas e seleciona arquivos para importação| frontend
     frontend -->|HTTP/JSON + JWT| backend
+    frontend -->|Upload multipart/form-data para /importacoes| backend
     backend -->|JPA/Hibernate| banco
-    usuario -->|Upload multipart/form-data| frontend
-    frontend -->|Envia arquivo para /importacoes| backend
-    arquivos -->|Conteúdo processado por parsers| backend
 ```
+
+Os arquivos financeiros importados, como CSV, TXT, XML e NF-e, aparecem como dados trafegados entre o frontend e o backend, não como um contêiner próprio. O processamento desses arquivos acontece dentro do backend, por meio dos parsers de importação.
 
 ## 4. Contêineres e responsabilidades
 
