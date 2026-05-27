@@ -1,20 +1,29 @@
 # Como rodar a aplicação
 
-Guia de execução local após a branch `feat/tela-de-cadstro`, que adiciona cadastro/login com JWT, validação de CPF (front + back) e a rota `/register` no SPA.
+Guia de execução local do projeto SmartBudget.
+
+O projeto possui:
+
+- Backend em Spring Boot
+- Frontend em React + Vite
+- Banco de dados PostgreSQL
+- Autenticação com JWT
+- Versionamento de schema com Flyway
 
 ## Pré-requisitos
 
-Java JDK 21
-Node.js 20 ou mais
-npm 10 ou mais
-Docker (Docker Desktop no Windows/Mac, ou Docker Engine no Linux)
+- Java JDK 21
+- Node.js 20 ou mais
+- npm 10 ou mais
+- Docker (Docker Desktop no Windows/Mac, ou Docker Engine no Linux)
 
 > O Gradle Wrapper (`./gradlew`) já está versionado — não precisa instalar Gradle.
-> Não precisa instalar PostgreSQL na máquina: ele vai rodar dentro de um container.
+>
+> Não precisa instalar PostgreSQL na máquina: ele vai rodar dentro de um container Docker.
 
 ## 1. Banco de dados (via Docker)
 
-A ideia aqui é não poluir a sua máquina com uma instalação do Postgres: a gente sobe um container que já vem com tudo configurado e expõe a porta `5432` no `localhost`, exatamente como o backend espera.
+A ideia aqui é não poluir a sua máquina com uma instalação local do PostgreSQL. O projeto utiliza um container que já vem com tudo configurado e expõe a porta `5432` no `localhost`, exatamente como o backend espera.
 
 ### Passo 1 — confirmar que o Docker está rodando
 
@@ -25,11 +34,19 @@ docker --version
 docker info
 ```
 
-Se o `docker info` reclamar que não consegue conectar no daemon, abra o Docker Desktop (ou inicie o serviço com `sudo systemctl start docker` no Linux) e tente de novo.
+Se o `docker info` reclamar que não consegue conectar no daemon, abra o Docker Desktop ou inicie o serviço com:
 
-### Passo 2 — subir o container do Postgres
+```bash
+sudo systemctl start docker
+```
 
-Esse comando baixa a imagem do Postgres 16, cria um container chamado `app-financeiro-db`, define usuário/senha/banco que o backend usa por padrão e mantém os dados persistidos num volume chamado `app-financeiro-pgdata` (assim os dados não somem se você derrubar o container):
+Depois tente novamente.
+
+### Passo 2 — subir o container do PostgreSQL
+
+Esse comando baixa a imagem do PostgreSQL 16, cria um container chamado `app-financeiro-db`, define usuário, senha e banco que o backend usa por padrão e mantém os dados persistidos em um volume chamado `app-financeiro-pgdata`.
+
+Assim, os dados não somem se você derrubar o container.
 
 ```bash
 docker run -d \
@@ -42,7 +59,7 @@ docker run -d \
   postgres:16
 ```
 
-Na primeira vez ele vai baixar a imagem (alguns segundos). Você pode confirmar que está de pé com:
+Na primeira vez ele vai baixar a imagem. Você pode confirmar que o container está rodando com:
 
 ```bash
 docker ps
@@ -58,7 +75,21 @@ Se quiser entrar no banco e dar uma olhada:
 docker exec -it app-financeiro-db psql -U postgres -d app_financeiro
 ```
 
-Comandos úteis dentro do `psql`: `\dt` lista tabelas (depois que o backend subir e o Hibernate criar elas), `\q` sai.
+Comandos úteis dentro do `psql`:
+
+```text
+\dt
+```
+
+Lista as tabelas existentes no banco.
+
+```text
+\q
+```
+
+Sai do `psql`.
+
+As tabelas aparecerão depois que o backend subir e o Flyway executar as migrations.
 
 ### Gerenciamento do container no dia a dia
 
@@ -67,14 +98,86 @@ Comandos úteis dentro do `psql`: `\dt` lista tabelas (depois que o backend subi
 | Parar o banco | `docker stop app-financeiro-db` |
 | Voltar a subir | `docker start app-financeiro-db` |
 | Ver logs | `docker logs -f app-financeiro-db` |
-| Apagar o container (mantém os dados) | `docker rm -f app-financeiro-db` |
-| Apagar TUDO, inclusive os dados | `docker rm -f app-financeiro-db && docker volume rm app-financeiro-pgdata` |
+| Apagar o container, mantendo os dados | `docker rm -f app-financeiro-db` |
+| Apagar tudo, inclusive os dados | `docker rm -f app-financeiro-db && docker volume rm app-financeiro-pgdata` |
 
-As tabelas (incluindo `usuario`, usada pelo cadastro) são criadas automaticamente pelo Hibernate (`spring.jpa.hibernate.ddl-auto=update`) na primeira vez que o backend subir.
+## 2. Versionamento de banco de dados com Flyway
+
+O projeto utiliza Flyway para versionamento e controle do schema do banco de dados.
+
+As tabelas não são mais criadas automaticamente pelo Hibernate. Toda estrutura do banco é criada através das migrations localizadas em:
+
+```text
+app-financeiro-back-end/src/main/resources/db/migration
+```
+
+Ao iniciar a aplicação:
+
+- O Flyway executa automaticamente as migrations pendentes
+- O Hibernate apenas valida o schema existente
+- O parâmetro utilizado é:
+
+```properties
+spring.jpa.hibernate.ddl-auto=validate
+```
+
+### Banco vazio
+
+Ao subir a aplicação em um banco vazio, o Flyway executará automaticamente as migrations existentes, como:
+
+```text
+V1__create_tables.sql
+V2__seed_categorias.sql
+```
+
+Essas migrations criam a estrutura inicial do banco e inserem dados necessários para o funcionamento do sistema.
+
+### Banco já existente
+
+Para bancos criados em versões anteriores do projeto, antes da adoção do Flyway, o sistema utiliza:
+
+```properties
+spring.flyway.baseline-on-migrate=true
+```
+
+Essa configuração permite que o Flyway reconheça um banco já existente como uma versão inicial, evitando recriação de tabelas e perda de dados.
+
+Mesmo com essa configuração, é necessário validar manualmente a subida da aplicação em um banco antigo já populado antes de considerar a migration finalizada.
+
+### Criando novas migrations
+
+Toda alteração futura no schema do banco deve ser feita por uma nova migration SQL.
+
+As migrations devem ser criadas em:
+
+```text
+app-financeiro-back-end/src/main/resources/db/migration
+```
+
+O nome do arquivo deve seguir o padrão:
+
+```text
+V<numero>__descricao_da_migration.sql
+```
+
+Exemplos:
+
+```text
+V3__add_status_to_transacao.sql
+V4__create_table_objetivo_financeiro.sql
+```
+
+Regras importantes:
+
+- Não utilizar `spring.jpa.hibernate.ddl-auto=update`
+- Não alterar tabelas manualmente no banco
+- Não depender do Hibernate para criar tabelas, colunas, índices ou constraints
+- Toda alteração de schema deve possuir uma migration versionada
+- Migrations já aplicadas não devem ser editadas depois de enviadas ao repositório
 
 ### Usando credenciais diferentes
 
-Se preferir outro usuário/senha/nome de banco, troque as três variáveis `POSTGRES_*` no `docker run` e reflita as mesmas escolhas em `app-financeiro-back-end/src/main/resources/application.properties`:
+Se preferir outro usuário, senha ou nome de banco, troque as três variáveis `POSTGRES_*` no `docker run` e reflita as mesmas escolhas em `app-financeiro-back-end/src/main/resources/application.properties`:
 
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/app_financeiro
@@ -82,7 +185,9 @@ spring.datasource.username=postgres
 spring.datasource.password=1234
 ```
 
-## 2. Backend (Spring Boot)
+## 3. Backend (Spring Boot)
+
+Com o banco de dados rodando, suba o backend:
 
 ```bash
 cd app-financeiro-back-end
@@ -93,11 +198,13 @@ cd app-financeiro-back-end
 - Base URL: `http://localhost:8080`
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 
+Ao iniciar, o backend executa as migrations pendentes do Flyway e depois o Hibernate valida se as entidades estão compatíveis com o schema do banco.
+
 ### Variáveis de ambiente opcionais
 
-| Variável | Default | Para que serve                                                                        |
-|---|---|---------------------------------------------------------------------------------------|
-| `JWT_SECRET` | chave de dev em `application.properties` | importante-->> segredo HMAC do JWT — em produção, sobrescrever com no mínimo 32 bytes |
+| Variável | Default | Para que serve |
+|---|---|---|
+| `JWT_SECRET` | chave de dev em `application.properties` | Segredo HMAC do JWT. Em produção, sobrescrever com no mínimo 32 bytes. |
 
 Exemplo:
 
@@ -107,12 +214,16 @@ JWT_SECRET="$(openssl rand -hex 32)" ./gradlew bootRun
 
 ### Endpoints de autenticação
 
-Esta branch expõe duas rotas em `/auth`:
+O backend expõe duas rotas em `/auth`:
 
 - `POST /auth/register` — cria a conta e já devolve o token (`201`)
 - `POST /auth/login` — autentica e devolve o token (`200`)
 
-Erros mapeados: `400` payload inválido (ex.: CPF reprovado), `409` e-mail/CPF já cadastrado, `401` credenciais inválidas.
+Erros mapeados:
+
+- `400` — payload inválido, como CPF reprovado
+- `409` — e-mail ou CPF já cadastrado
+- `401` — credenciais inválidas
 
 Teste rápido via `curl`:
 
@@ -122,7 +233,9 @@ curl -X POST http://localhost:8080/auth/register \
   -d '{"nome":"Alexandre","email":"alex@test.com","cpf":"12345678909","senha":"123456"}'
 ```
 
-## 3. Frontend (React + Vite)
+## 4. Frontend (React + Vite)
+
+Em outro terminal, suba o frontend:
 
 ```bash
 cd app-financeiro-front-end
@@ -135,32 +248,113 @@ npm run dev
 
 ### Rotas disponíveis
 
-- `/login` — tela de login (lê `accessToken` do backend e tem link para cadastro)
+- `/login` — tela de login
 - `/register` — tela de cadastro com máscara de CPF e validação no submit
 
-Mantenha o backend rodando em paralelo: o front faz as chamadas para `http://localhost:8080`.
+Mantenha o backend rodando em paralelo. O frontend faz chamadas para:
 
-## 4. Comandos úteis
+```text
+http://localhost:8080
+```
+
+## 5. Comandos úteis
 
 Backend:
+
 ```bash
-./gradlew build          # compila + roda testes
-./gradlew test           # apenas testes
-./gradlew bootRun        # sobe a aplicação
+./gradlew build
+./gradlew test
+./gradlew bootRun
 ```
 
 Frontend:
+
 ```bash
-npm run dev              # dev server com HMR
-npm run build            # build de produção (tsc + vite build)
-npm run preview          # serve o build
-npm run lint             # ESLint
+npm run dev
+npm run build
+npm run preview
+npm run lint
 ```
 
-## 5. Problemas comuns
+## 6. Problemas comuns
 
-- Connection refused no boot do backend - o container do Postgres não está de pé. Confira com `docker ps`; se não aparecer, rode `docker start app-financeiro-db` (ou refaça o `docker run` do passo 2).
-- port is already allocated ao subir o container - você já tem um Postgres ocupando a `5432` (instalado na máquina ou outro container). Pare o que estiver usando a porta ou troque para `-p 5433:5432` e ajuste a URL em `application.properties`.
-- relation "usuario" does not exist - o backend ainda não subiu uma vez para o Hibernate criar as tabelas. Sobe o backend e tenta de novo.
-- CORS ao chamar do front - confirme que o backend está em `8080` e o front em `5173`; se mudar de porta, atualize a `SecurityConfig`/CORS.
-- JWT inválido logo após login - `JWT_SECRET` mudou entre execuções; tokens emitidos antes deixam de valer.
+### Connection refused no boot do backend
+
+O container do PostgreSQL provavelmente não está de pé.
+
+Confira com:
+
+```bash
+docker ps
+```
+
+Se não aparecer, rode:
+
+```bash
+docker start app-financeiro-db
+```
+
+Ou refaça o comando `docker run` do passo 2.
+
+### port is already allocated ao subir o container
+
+Você já tem um PostgreSQL ocupando a porta `5432`, seja instalado na máquina ou em outro container.
+
+Você pode parar o serviço que está usando a porta ou trocar o mapeamento para `5433`:
+
+```bash
+-p 5433:5432
+```
+
+Nesse caso, ajuste também a URL em `application.properties`:
+
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5433/app_financeiro
+```
+
+### Erro de validação do Hibernate ao iniciar
+
+Como o projeto usa:
+
+```properties
+spring.jpa.hibernate.ddl-auto=validate
+```
+
+O Hibernate não cria nem altera tabelas automaticamente.
+
+Se aparecer erro informando tabela, coluna ou constraint ausente, verifique:
+
+- Se as migrations do Flyway foram executadas
+- Se o banco usado está correto
+- Se existe alguma alteração de entidade JPA sem migration correspondente
+- Se a migration foi criada no diretório correto
+
+```text
+app-financeiro-back-end/src/main/resources/db/migration
+```
+
+### Erro relacionado ao Flyway
+
+Se o Flyway falhar ao iniciar, verifique:
+
+- Se o banco está acessível
+- Se existe erro de SQL em alguma migration
+- Se a ordem das versões está correta
+- Se alguma migration já aplicada foi editada depois de executada
+
+Migrations já aplicadas não devem ser modificadas. Para corrigir uma alteração de schema, crie uma nova migration com uma nova versão.
+
+### CORS ao chamar do frontend
+
+Confirme que:
+
+- O backend está rodando em `8080`
+- O frontend está rodando em `5173`
+
+Se mudar de porta, atualize a configuração de CORS no backend.
+
+### JWT inválido logo após login
+
+O `JWT_SECRET` pode ter mudado entre execuções.
+
+Tokens emitidos antes deixam de valer quando o segredo muda.
