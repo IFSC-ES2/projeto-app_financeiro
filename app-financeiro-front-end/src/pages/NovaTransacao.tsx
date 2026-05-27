@@ -125,10 +125,27 @@ const NovaTransacao: React.FC = () => {
   }
 
   const alterarCampo = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setCampos((prev) => ({ ...prev, [name]: value }));
-    setErros((prev) => ({ ...prev, [name]: undefined }));
-  };
+  const { name, value } = e.target;
+
+  if (name === 'formaPagamento' && value === 'DINHEIRO') {
+    setCampos((prev) => ({
+      ...prev,
+      formaPagamento: value as TipoPagamento,
+      contaId: '',
+    }));
+
+    setErros((prev) => ({
+      ...prev,
+      formaPagamento: undefined,
+      contaId: undefined,
+    }));
+
+    return;
+  }
+
+  setCampos((prev) => ({ ...prev, [name]: value }));
+  setErros((prev) => ({ ...prev, [name]: undefined }));
+};
 
   const validar = () => {
     const novosErros: Partial<Record<keyof CamposTransacao, string>> = {};
@@ -144,9 +161,9 @@ const NovaTransacao: React.FC = () => {
       novosErros.data = 'Data é obrigatória.';
     }
 
-    if (!campos.contaId) {
-      novosErros.contaId = 'Conta é obrigatória.';
-    }
+    if (campos.formaPagamento !== 'DINHEIRO' && !campos.contaId) {
+    novosErros.contaId = 'Conta é obrigatória.';
+    } 
 
     setErros(novosErros);
     return Object.keys(novosErros).length === 0;
@@ -169,7 +186,7 @@ const NovaTransacao: React.FC = () => {
         tipoTransacao: campos.tipoTransacao,
         formaPagamento: campos.formaPagamento,
         categoriaId: campos.categoriaId || null,
-        contaId: campos.contaId,
+        contaId: campos.formaPagamento === 'DINHEIRO' ? null : campos.contaId,
       });
 
       setTransacoes((prev) => [transacaoSalva, ...prev]);
@@ -331,45 +348,49 @@ const NovaTransacao: React.FC = () => {
                         </select>
                       </div>
 
-                      <div className="col-md-6">
-                        <label className="form-label fw-semibold small" htmlFor="contaId">
-                          Conta *
-                        </label>
-                        <select
-                          id="contaId"
-                          name="contaId"
-                          className={`form-select ${erros.contaId ? 'is-invalid' : ''}`}
-                          value={campos.contaId}
-                          onChange={alterarCampo}
-                        >
-                          <option value="">Selecione uma conta</option>
-                          {contas.map((conta) => (
-                            <option key={conta.contaId} value={conta.contaId}>
-                              {conta.nome}
-                              {conta.banco ? ` - ${conta.banco}` : ''}
+                        <div className="col-md-6">
+                          <label className="form-label fw-semibold small" htmlFor="contaId">
+                            Conta {campos.formaPagamento !== 'DINHEIRO' ? '*' : ''}
+                          </label>
+                          <select
+                            id="contaId"
+                            name="contaId"
+                            className={`form-select ${erros.contaId ? 'is-invalid' : ''}`}
+                            value={campos.contaId}
+                            onChange={alterarCampo}
+                            disabled={campos.formaPagamento === 'DINHEIRO'}
+                          >
+                            <option value="">
+                              {campos.formaPagamento === 'DINHEIRO'
+                                ? 'Não necessário para pagamento em dinheiro'
+                                : 'Selecione uma conta'}
                             </option>
-                          ))}
-                        </select>
-                        {erros.contaId && <div className="invalid-feedback">{erros.contaId}</div>}
-                      </div>
+                            {contas.map((conta) => (
+                              <option key={conta.contaId} value={conta.contaId}>
+                                {conta.nome}
+                                {conta.banco ? ` - ${conta.banco}` : ''}
+                              </option>
+                            ))}
+                          </select>
+                          {erros.contaId && <div className="invalid-feedback">{erros.contaId}</div>}
+                        </div>
                     </div>
-
                     <BotaoCarregando
                       type="submit"
                       carregando={salvando}
                       textoCarregando="Salvando..."
                       className="w-100 mt-4 py-2 fw-semibold"
                       style={{ background: 'var(--sb-gradient)', border: 'none', borderRadius: 10 }}
-                      disabled={contas.length === 0}
+                      disabled={contas.length === 0 && campos.formaPagamento !== 'DINHEIRO'}
                     >
                       Salvar transação
                     </BotaoCarregando>
 
-                    {contas.length === 0 && (
-                      <p className="text-muted small mt-3 mb-0">
-                        Cadastre-se com uma conta antes de registrar transações.
-                      </p>
-                    )}
+                    {contas.length === 0 && campos.formaPagamento !== 'DINHEIRO' && (
+                        <p className="text-muted small mt-3 mb-0">
+                          Cadastre uma conta bancária ou selecione Dinheiro como forma de pagamento.
+                        </p>
+                      )}
                   </form>
                 )}
               </div>
@@ -396,7 +417,7 @@ const NovaTransacao: React.FC = () => {
                           <div>
                             <strong>{transacao.descricao || 'Transação manual'}</strong>
                             <div className="text-muted small">
-                              {contaPorId.get(transacao.contaId)?.nome || 'Conta'} •{' '}
+                              {transacao.contaId ? contaPorId.get(transacao.contaId)?.nome || 'Conta' : 'Dinheiro'} •{' '}
                               {transacao.categoriaId
                                 ? categoriaPorId.get(transacao.categoriaId)?.nome || 'Categoria'
                                 : 'Sem categoria'}
