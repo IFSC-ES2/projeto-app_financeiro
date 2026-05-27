@@ -1,27 +1,25 @@
-# ADR-0005 — Padrões de Projeto (Design Patterns) na Camada de Negócio
+# ADR-0005 — Padrões de Projeto (Design Patterns)
 
 ## Status
 Aceito
 
 ## Contexto
-Com o avanço do desenvolvimento na Sprint 2, surgiu a necessidade de padronizar a forma como os dados trafegam entre o frontend (React) e o backend (Spring Boot), além de isolar as regras de negócio das operações diretas de banco de dados para manter o código limpo e testável.
+Com o avanço do desenvolvimento na Sprint 2 e novas integrações na Sprint 3, surgiu a necessidade de definir e documentar os padrões de projeto adotados na arquitetura do sistema para padronizar a comunicação entre camadas e a resolução de lógicas específicas (como leitura de diferentes tipos de arquivos).
 
 ## Decisão
-A equipe decidiu adotar o padrão **Camada de Serviço (Service Layer)** combinado com o **Repository Pattern** e o uso de **DTOs (Data Transfer Objects)** para a transferência de dados.
+A equipe decidiu formalizar o uso dos seguintes padrões de projeto no backend:
+- **Service Layer e Repository Pattern:** Para isolar a lógica de negócio do acesso a dados.
+- **DTO (Data Transfer Object):** Para trafegar dados de forma segura entre a API e o frontend.
+- **Dependency Injection (Injeção de Dependência):** Gerenciada nativamente pelo Spring Boot.
+- **Strategy Pattern:** Utilizado especificamente para orquestrar os parsers de importação de extratos, permitindo trocar o algoritmo de leitura dinamicamente de acordo com o tipo de arquivo.
 
 ## Alternativas consideradas
-- Manipulação de entidades diretamente nos Controllers.
-- Uso de queries SQL brutas direto nas rotas sem camada de abstração.
+- Utilizar apenas a estrutura MVC básica sem padrões adicionais para regras de negócio (descartado por gerar alto acoplamento).
 
 ## Consequências
 ### Positivas
-- Isolamento total da lógica de negócio nos Services.
-- Segurança aprimorada, expondo apenas os dados necessários através de DTOs, evitando expor entidades do banco de dados diretamente para o cliente React.
-- Facilidade para criação de testes unitários mockando os Repositories.
+- Código altamente testável e desacoplado.
+- Facilidade de expansão: o Strategy Pattern permite adicionar novos formatos de importação no futuro sem alterar o código principal.
 
 ### Negativas / trade-offs
-- Aumento da quantidade de arquivos e classes no projeto (necessidade de criar classes DTO e mapeadores).
-- Pequena verbosidade inicial para converter Entidade em DTO e vice-versa.
-
-## Revisão futura
-A decisão poderá ser revista caso a complexidade de mapeamento de objetos se torne um gargalo de performance ou caso surjam padrões mais eficientes com a evolução do ecossistema.
+- Aumento da complexidade estrutural e maior quantidade de classes/interfaces no projeto.
