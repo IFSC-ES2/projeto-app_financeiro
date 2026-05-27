@@ -23,3 +23,6 @@ A equipe decidiu formalizar o uso dos seguintes padrões de projeto no backend:
 
 ### Negativas / trade-offs
 - Aumento da complexidade estrutural e maior quantidade de classes/interfaces no projeto.
+
+## Justificativa
+A adoção destes padrões foi considerada superior a uma implementação direta nos controllers porque garante a separação de responsabilidades, facilita a criação de testes unitários isolados e permite que a aplicação escale de forma mais sustentável. O Strategy Pattern, em particular, evita o uso de múltiplos "if/else" para verificar o tipo de ficheiro, tornando o código mais limpo e preparado para novos formatos no futuro.
