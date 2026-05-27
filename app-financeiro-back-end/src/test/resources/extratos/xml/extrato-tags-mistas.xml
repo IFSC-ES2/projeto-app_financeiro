@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extrato>
+    <transacao>
+        <data>2024-04-04</data>
+        <descricao>Transação padrão</descricao>
+        <valor>-10.00</valor>
+        <tipo>DEBITO</tipo>
+    </transacao>
+    <lancamento>
+        <data>2024-04-05</data>
+        <descricao>Lançamento misto</descricao>
+        <valor>-20.00</valor>
+        <tipo>DEBITO</tipo>
+    </lancamento>
+</extrato>

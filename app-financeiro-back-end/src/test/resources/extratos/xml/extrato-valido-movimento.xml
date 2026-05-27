@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extrato>
+    <movimento>
+        <data>2024-02-02</data>
+        <descricao>Transferência recebida</descricao>
+        <valor>500.00</valor>
+        <tipo>CREDITO</tipo>
+    </movimento>
+</extrato>
