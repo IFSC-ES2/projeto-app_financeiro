@@ -4,20 +4,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import Login from './Login';
 
-// 1. Criamos os mocks (simulações) das funções externas
-const mockLogin = vi.fn();
-const mockNavigate = vi.fn();
+const { mockLogin, mockNavigate } = vi.hoisted(() => ({
+  mockLogin: vi.fn(),
+  mockNavigate: vi.fn(),
+}));
 
-//mock do Contexto de Autenticação
 vi.mock('../contexts/ContextoAutenticacao', () => ({
   useAutenticacao: () => ({
     login: mockLogin,
   }),
 }));
 
-//mock do React Router para simular o useNavigate
 vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -26,11 +25,9 @@ vi.mock('react-router-dom', async () => {
 
 describe('Tela de Login', () => {
   beforeEach(() => {
-    //limpa os mocks antes de cada teste para não vazar estado
     vi.clearAllMocks();
   });
 
-  //renderiza o componente dentro do BrowserRouter porque usamos <Link> na tela
   const renderizarComponente = () =>
     render(
       <BrowserRouter>
@@ -41,7 +38,6 @@ describe('Tela de Login', () => {
   it('deve renderizar os campos de e-mail, senha e o botão de entrar', () => {
     renderizarComponente();
 
-    //verifica se os inputs e o botão estão na tela usando as labels/textos do seu componente
     expect(screen.getByLabelText(/Usuário ou e-mail/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Senha/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /entrar/i })).toBeInTheDocument();
@@ -54,10 +50,8 @@ describe('Tela de Login', () => {
     const botaoEntrar = screen.getByRole('button', { name: /entrar/i });
     await user.click(botaoEntrar);
 
-    //como o form não é válido, a função de login não deve ser chamada
     expect(mockLogin).not.toHaveBeenCalled();
 
-    //verifica se as mensagens da função `validar` apareceram na tela
     await waitFor(() => {
       expect(screen.getByText('E-mail é obrigatório.')).toBeInTheDocument();
       expect(screen.getByText('Senha é obrigatória.')).toBeInTheDocument();
@@ -67,21 +61,18 @@ describe('Tela de Login', () => {
   it('deve chamar a função login e redirecionar para o dashboard ao preencher dados válidos', async () => {
     renderizarComponente();
     const user = userEvent.setup();
+    
     await user.type(screen.getByLabelText(/Usuário ou e-mail/i), 'teste@email.com');
     await user.type(screen.getByLabelText(/Senha/i), 'senha123');
     await user.click(screen.getByRole('button', { name: /entrar/i }));
 
-    //verifica se o mock do login foi chamado com os dados digitados
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith('teste@email.com', 'senha123');
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });
-
-    //verifica se o redirecionamento aconteceu (caminho feliz)
-    expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
   });
 
   it('deve exibir mensagem de alerta na tela caso a API de login retorne erro', async () => {
-    //simula a API devolvendo um erro
     mockLogin.mockRejectedValueOnce({
       response: { data: { erro: 'Credenciais inválidas. Verifique seu e-mail e senha.' } }
     });
@@ -93,12 +84,10 @@ describe('Tela de Login', () => {
     await user.type(screen.getByLabelText(/Senha/i), 'senhaerrada');
     await user.click(screen.getByRole('button', { name: /entrar/i }));
 
-    //verifica se a mensagem de erro customizada da API aparece no componente <MensagemAlerta>
     await waitFor(() => {
       expect(screen.getByText('Credenciais inválidas. Verifique seu e-mail e senha.')).toBeInTheDocument();
     });
     
-    //garante que não redirecionou se deu erro
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 });
