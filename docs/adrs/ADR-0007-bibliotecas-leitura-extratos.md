@@ -1,0 +1,27 @@
+# ADR-0007 — Bibliotecas de Leitura de Extratos (CSV e XML)
+
+## Status
+Aceito
+
+## Contexto
+Na Sprint 3, o projeto passou a contemplar a funcionalidade de importação de extratos bancários. Foi necessário definir as ferramentas adequadas no backend (Java/Spring Boot) para realizar o *parsing* (leitura e extração de dados) de arquivos contendo o histórico financeiro dos usuários.
+O fluxo do sistema também contempla a leitura de arquivos nos formatos TXT e NF-e, porém estes são processados por meio de lógica nativa da aplicação. Sendo assim, este documento foca exclusivamente na definição das bibliotecas externas necessárias para o parsing de CSV e XML.
+
+## Decisão
+A equipe decidiu adotar as seguintes bibliotecas para apoiar a importação de extratos:
+- **OpenCSV:** Para leitura e processamento de arquivos `.csv`.
+- **Jackson XML:** Para leitura e processamento de arquivos `.xml`.
+
+## Alternativas consideradas
+- Criar rotinas nativas usando `java.io` e manipulação manual de strings (descartado pelo alto risco de erros e complexidade).
+
+## Consequências
+### Positivas
+- Processamento robusto, rápido e maduro de formatos padrão do mercado.
+- Integração facilitada com o padrão Strategy adotado pela equipe.
+
+### Negativas / trade-offs
+- Inclusão de novas dependências externas no `pom.xml` (ou `build.gradle`), aumentando ligeiramente o tamanho do build da aplicação.
+
+## Justificativa
+A utilização das bibliotecas OpenCSV e Jackson XML justifica-se pela sua maturidade, performance e ampla adoção pela comunidade Java. Desenvolver leitores customizados "do zero" consumiria tempo valioso da sprint e estaria muito mais suscetível a falhas no tratamento de caracteres especiais ou formatações inconsistentes comuns em extratos bancários.
