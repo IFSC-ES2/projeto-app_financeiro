@@ -104,6 +104,7 @@ const NovaConta: React.FC = () => {
       setErros({});
 
       setTimeout(() => {
+        sair();
         navigate('/login');
       }, 1200);
 
