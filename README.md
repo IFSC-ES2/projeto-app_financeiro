@@ -16,46 +16,50 @@ Projeto proposto pelo Clayrton em Extensão II:
 
 ### a) qual problema o sistema pretende resolver?
 
-O sistema pretende resolver a falta de organização financeira e a falta de controle sobre o pŕoprio dinheiro do usuario. Um possível usuário pode usar diferentes bancos, diferentes cartões de crédito, mas falta um sistema central, que una e mostre os seus gastos totais em todos os aspectos da sua vida, com o SmartBudget o usuário vai poder organizar e visualizar melhor sua vida financeira.
+O sistema pretende resolver a falta de organização financeira e a falta de controle sobre o próprio dinheiro do usuário. Um possível usuário pode usar diferentes bancos, diferentes cartões de crédito, mas falta um sistema central, que una e mostre os seus gastos totais em todos os aspectos da sua vida. Com o SmartBudget, o usuário vai poder organizar e visualizar melhor sua vida financeira.
 
 ### b) quem são os usuários?
 
-O sistema é focado em pessoas físicas, não empresas. Os usuários são pessoas que querem ter um maior controle de gastos, pode ser uma pessoa que usa muito cartão de crédito e quer informações mais práticas dos gastos, ou um chefe de família que quer ver em quais aspectos da sua vida o dinheiro está sendo mais utilizado (lazer, alimentação, saúde e entre outros).
+O sistema é focado em pessoas físicas, não empresas. Os usuários são pessoas que querem ter um maior controle de gastos, pode ser uma pessoa que usa muito cartão de crédito e quer informações mais práticas dos gastos, ou um chefe de família que quer ver em quais aspectos da sua vida o dinheiro está sendo mais utilizado, como lazer, alimentação, saúde, entre outros.
 
 ### c) qual a proposta do sistema para resolver esse problema?
 
-A proposta é ser um assistente financeiro prático e inteligente que elimina o trabalho de anotar gastos na mão, sendo necessário apenas enviar extratos bancários e notas fiscais para leitura automática. Ele resolve a falta de controle e vizualização de gastos centralizando tudo em um único lugar, separando despesas por categoria e criando um 'extrato futuro', que avisa com antecedência o valor das faturas do cartão e o vencimento de boletos.
+A proposta é ser um assistente financeiro prático e inteligente que elimina o trabalho de anotar gastos na mão, sendo necessário apenas enviar extratos bancários e notas fiscais para leitura automática. Ele resolve a falta de controle e visualização de gastos centralizando tudo em um único lugar, separando despesas por categoria e criando um "extrato futuro", que avisa com antecedência o valor das faturas do cartão e o vencimento de boletos.
 
 ## 3. MVP
 
 ### a) o que o MVP fará?
 
-O sistema vai permitir a leitura de extratos bancários e notas fiscais (.xml, .csv, .txt), separando os gastos em categorias (automaticamente, ou manualmente se necessário). Informará o 'extrato futuro', baseando-se nos extratos bancários enviados (irá considerar vencimento de boletos, parcelamentos, financiamentos e entre outros).
+O sistema vai permitir a leitura de extratos bancários e notas fiscais (.xml, .csv, .txt), separando os gastos em categorias automaticamente ou manualmente, se necessário. Também informará o "extrato futuro", baseando-se nos extratos bancários enviados, considerando vencimento de boletos, parcelamentos, financiamentos, entre outros.
 
 ### b) quais são as funcionalidades principais?
 
 1. Criação de perfil pessoal, com autenticação;
 1. Adicionar gastos manualmente;
 1. Leitura de extratos bancários e notas fiscais (xml, csv, txt);
-1. Categorizar os gastos em subdivisões (lazer, alimentação etc);
-1. Categorizar os gastos a partir de como o dinheiro foi utilizado (cartão, pix, dinheiro, boleto);
+1. Categorizar os gastos em subdivisões, como lazer, alimentação etc.;
+1. Categorizar os gastos a partir de como o dinheiro foi utilizado, como cartão, pix, dinheiro e boleto;
 1. Categorizar os gastos a partir do cartão e banco utilizado;
 1. Visualização de gastos do mês em texto, gráficos e dashboards;
-1. Visualição do extrato dos próximos meses em texto, gráficos e dashboards;
-
+1. Visualização do extrato dos próximos meses em texto, gráficos e dashboards.
 
 ### c) o que ficará fora do escopo no momento
 
 1. Integração direta com a conta bancária;
 1. Inteligência Artificial para organizar a categorização;
-1. Investimentos e Criptomoedas;
-1. Conversão para outras moedas (dólar, euro, libras etc), será apenas o Real.
+1. Investimentos e criptomoedas;
+1. Conversão para outras moedas, como dólar, euro e libra. O sistema será apenas em Real.
 
-### 4. Situação atual do projeto
+## 4. Situação atual do projeto
 
-Sprint 1 com a funcionalidade de cadastro e autenticação implementada, conforme MVP.
+O projeto possui backend em Spring Boot, frontend em React + Vite, autenticação com JWT, banco PostgreSQL e versionamento de schema com Flyway.
 
-Para rodar os testes, execute: `./gradlew test --tests "bcd.appfinanceirobackend.service.RegistrarLoginTests"`
+Para rodar os testes, execute:
+
+```bash
+cd app-financeiro-back-end
+./gradlew test
+```
 
 Para rodar banco de dados:
 
@@ -92,13 +96,66 @@ cd app-financeiro-back-end
 - Base URL: `http://localhost:8080`
 
 Para testar autenticação via curl:
+
 ```bash
 curl -X POST http://localhost:8080/auth/register \
   -H "Content-Type: application/json" \
   -d '{"nome":"Alexandre","email":"alex@test.com","cpf":"12345678909","senha":"123456"}'
 ```
 
-Informações mais detalhadas disponível em [docs/como-rodar.md](docs/como-rodar.md)
+Informações mais detalhadas disponíveis em [docs/como-rodar.md](docs/como-rodar.md).
+
+## Migrations e versionamento do banco
+
+O projeto utiliza Flyway para controlar as versões do banco de dados.
+
+A partir da adoção do Flyway, o Hibernate não deve mais criar ou alterar tabelas automaticamente. O Hibernate deve apenas validar se as entidades JPA estão compatíveis com o schema existente no banco.
+
+A configuração esperada é:
+
+```properties
+spring.jpa.hibernate.ddl-auto=validate
+```
+
+As migrations ficam no diretório:
+
+```text
+app-financeiro-back-end/src/main/resources/db/migration
+```
+
+### Criando uma nova migration
+
+Toda alteração estrutural no banco deve ser feita através de uma nova migration SQL.
+
+O nome do arquivo deve seguir o padrão:
+
+```text
+V<numero>__descricao_da_migration.sql
+```
+
+Exemplos:
+
+```text
+V3__add_status_to_transacao.sql
+V4__create_table_objetivo_financeiro.sql
+V5__add_indice_data_transacao.sql
+```
+
+### Regras para alterações de schema
+
+- Não utilizar `spring.jpa.hibernate.ddl-auto=update`
+- Não alterar tabelas manualmente no banco de dados
+- Não depender do Hibernate para criar tabelas, colunas, índices ou constraints
+- Toda alteração de tabela, coluna, índice ou constraint deve possuir uma migration versionada
+- Migrations já aplicadas não devem ser editadas depois de enviadas para o repositório
+
+### Fluxo recomendado para novas alterações no banco
+
+1. Criar uma nova migration em `app-financeiro-back-end/src/main/resources/db/migration`
+2. Executar a aplicação localmente
+3. Validar se o Flyway executou a migration com sucesso
+4. Validar se o Hibernate iniciou corretamente com `ddl-auto=validate`
+5. Conferir se a alteração não causa perda de dados em bancos já existentes
 
 ## Rodando os testes localmente
 
@@ -127,17 +184,19 @@ npm install
 npm test --if-present
 ```
 
-> O frontend ainda está construindo a sua suíte de testes; enquanto não houver script `test` no `package.json`, o comando acima é um no-op proposital, mesma forma como o CI se comporta. O passo está versionado para que a primeira suíte adicionada já entre como gate obrigatório, sem precisar mexer no workflow.
+> O frontend ainda está construindo a sua suíte de testes. Enquanto não houver script `test` no `package.json`, o comando acima é um no-op proposital, da mesma forma como o CI se comporta. O passo está versionado para que a primeira suíte adicionada já entre como gate obrigatório, sem precisar mexer no workflow.
 
 ## Integração contínua (CI)
 
-O workflow `.github/workflows/ci.yml` é disparado em cada pull request (`opened`, `synchronize`, `reopened`) e roda quatro jobs: build e testes do backend (com Postgres efêmero), build e testes do frontend, validação de YAML e verificação de arquivos obrigatórios. Qualquer falha derruba o check do PR e impede o merge.
+O workflow `.github/workflows/ci.yml` é disparado em cada pull request (`opened`, `synchronize`, `reopened`) e roda quatro jobs: build e testes do backend com Postgres efêmero, build e testes do frontend, validação de YAML e verificação de arquivos obrigatórios.
 
-A proteção da branch `main` no GitHub já exige os quatro jobs (`Backend (build & test)`, `Frontend (build & test)`, `YAML syntax validation` e `Required files check`) como **required status checks** e exige ao menos 1 review aprovador, garantindo que nenhum PR seja mergeado com testes vermelhos.
+Qualquer falha derruba o check do PR e impede o merge.
 
+A proteção da branch `main` no GitHub já exige os quatro jobs (`Backend (build & test)`, `Frontend (build & test)`, `YAML syntax validation` e `Required files check`) como required status checks e exige ao menos 1 review aprovador, garantindo que nenhum PR seja mergeado com testes vermelhos.
 
--------
-### Documentos 
+---
+
+## Documentos
 
 - [Visão do Produto e MVP](docs/inception.md)
 - [Arquitetura C4](docs/arquitetura.md)
@@ -151,7 +210,7 @@ A proteção da branch `main` no GitHub já exige os quatro jobs (`Backend (buil
 - [ADR-0007 — Bibliotecas de Leitura de Extratos](docs/adrs/ADR-0007-bibliotecas-leitura-extratos.md)
 - [Board](https://github.com/orgs/IFSC-ES2/projects/20)
 - [Backlog](https://github.com/IFSC-ES2/projeto-app_financeiro/issues)
-- [Estimativas](docs\estimativas.md)
-- [Metricas](docs/metricas.md)
-- [Metricas](docs/baseline.md)
-- [Como rodar Sprint 1](docs/como-rodar.md)
+- [Estimativas](docs/estimativas.md)
+- [Métricas](docs/metricas.md)
+- [Baseline](docs/baseline.md)
+- [Como rodar](docs/como-rodar.md)
