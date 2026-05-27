@@ -139,7 +139,8 @@ A proteção da branch `main` no GitHub já exige os quatro jobs (`Backend (buil
 -------
 ### Documentos 
 
-- [Visão do Produto e MVP](docs/inception.md) 
+- [Visão do Produto e MVP](docs/inception.md)
+- [Arquitetura C4](docs/arquitetura.md)
 - [Definition of Done](docs/dod.md) 
 - [ADR-0001 — Stack Frontend](docs/adrs/ADR-0001-Tipo-de-Aplicacao.md) 
 - [ADR-0002 — Stack Backend](docs/adrs/ADR-0002-Linguagem-e-Framework.md) 
