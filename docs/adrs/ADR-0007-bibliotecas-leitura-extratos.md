@@ -5,6 +5,7 @@ Aceito
 
 ## Contexto
 Na Sprint 3, o projeto passou a contemplar a funcionalidade de importação de extratos bancários. Foi necessário definir as ferramentas adequadas no backend (Java/Spring Boot) para realizar o *parsing* (leitura e extração de dados) de arquivos contendo o histórico financeiro dos usuários.
+O fluxo do sistema também contempla a leitura de arquivos nos formatos TXT e NF-e, porém estes são processados por meio de lógica nativa da aplicação. Sendo assim, este documento foca exclusivamente na definição das bibliotecas externas necessárias para o parsing de CSV e XML.
 
 ## Decisão
 A equipe decidiu adotar as seguintes bibliotecas para apoiar a importação de extratos:
