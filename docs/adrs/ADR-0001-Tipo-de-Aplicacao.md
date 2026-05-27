@@ -1,7 +1,7 @@
 # ADR-0001 — Tipo de Aplicação
 
 ## Status
-Aceito
+Revisado
 
 ## Contexto
 Precisa ser definido o tipo de aplicação o projeto será.
