@@ -21,3 +21,6 @@ A equipe decidiu adotar as seguintes bibliotecas para apoiar a importação de e
 
 ### Negativas / trade-offs
 - Inclusão de novas dependências externas no `pom.xml` (ou `build.gradle`), aumentando ligeiramente o tamanho do build da aplicação.
+
+## Justificativa
+A utilização das bibliotecas OpenCSV e Jackson XML justifica-se pela sua maturidade, performance e ampla adoção pela comunidade Java. Desenvolver leitores customizados "do zero" consumiria tempo valioso da sprint e estaria muito mais suscetível a falhas no tratamento de caracteres especiais ou formatações inconsistentes comuns em extratos bancários.

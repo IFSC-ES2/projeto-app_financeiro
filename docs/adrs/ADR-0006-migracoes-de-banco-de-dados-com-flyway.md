@@ -21,3 +21,6 @@ A equipe decidiu adotar o **Flyway** integrado ao Spring Boot para realizar o ve
 ### Negativas / trade-offs
 - Exigência de disciplina rigorosa na nomenclatura dos arquivos (`V1__...`).
 - Arquivos de migração já executados não podem ser alterados; correções exigem novas migrações.
+
+## Justificativa
+O uso do Flyway foi escolhido em detrimento do auto-ddl do Hibernate porque o auto-ddl é voltado para ambientes de desenvolvimento iniciais e não oferece controlo seguro sobre mudanças de estrutura, podendo levar a perda de dados ou conflitos entre a equipa. O Flyway garante que todos tenham exatamente a mesma base de dados, passo a passo.
