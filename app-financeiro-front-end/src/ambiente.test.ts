@@ -1,7 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
 describe('Configuração do Ambiente de Testes', () => {
-  it('deve rodar o Vitest e passar no teste de sanidade com sucesso', () => {
-    expect(true).toBe(true);
+  it('deve disponibilizar jsdom e matchers do jest-dom', () => {
+    const elemento = document.createElement('div');
+    elemento.textContent = 'SmartBudget';
+    document.body.appendChild(elemento);
+
+    expect(elemento).toBeInTheDocument();
   });
 });
