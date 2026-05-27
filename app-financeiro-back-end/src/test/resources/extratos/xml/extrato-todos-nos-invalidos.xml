@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extrato>
+    <transacao>
+        <data></data>
+        <descricao>Sem data</descricao>
+        <valor>10.00</valor>
+        <tipo>DEBITO</tipo>
+    </transacao>
+    <transacao>
+        <data>2024-01-15</data>
+        <descricao>Valor inválido</descricao>
+        <valor>abc</valor>
+        <tipo>DEBITO</tipo>
+    </transacao>
+</extrato>

@@ -73,7 +73,7 @@ public class ParserCSV implements ParserExtrato {
                 String[] linha;
                 while ((linha = reader.readNext()) != null) {
                     totalLinhas++;
-                    if (linha.length < 4) {
+                    if (linha.length != 4) {
                         linhasInvalidas++;
                         continue;
                     }

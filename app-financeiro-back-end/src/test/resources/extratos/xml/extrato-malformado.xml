@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extrato>
+    <transacao>
+        <data>2024-03-08</data>
+        <descricao>XML malformado</descricao>
+        <valor>10.00</valor>
+        <tipo>CREDITO</tipo>
+    </transacao>
