@@ -23,7 +23,8 @@ public class Fatura {
     @JoinColumn(name = "conta_id")
     private Conta conta;
 
-    @Column
+    @Convert(converter = YearMonthStringConverter.class)
+    @Column(name = "mes_referencia", length = 7)
     private YearMonth mesReferencia;
 
     @Column
@@ -32,7 +33,20 @@ public class Fatura {
     @Column
     private BigDecimal valorTotal;
 
+    @Enumerated(EnumType.STRING)
     @Column
     private StatusFatura status;
 
+    @Converter
+    static class YearMonthStringConverter implements AttributeConverter<YearMonth, String> {
+        @Override
+        public String convertToDatabaseColumn(YearMonth ym) {
+            return ym == null ? null : ym.toString();
+        }
+
+        @Override
+        public YearMonth convertToEntityAttribute(String s) {
+            return s == null ? null : YearMonth.parse(s);
+        }
+    }
 }

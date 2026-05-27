@@ -2,10 +2,7 @@ package bcd.appfinanceirobackend.service;
 
 import bcd.appfinanceirobackend.dto.importacao.ImportacaoResponseDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
-import bcd.appfinanceirobackend.model.Conta;
-import bcd.appfinanceirobackend.model.Importacao;
-import bcd.appfinanceirobackend.model.Transacao;
-import bcd.appfinanceirobackend.model.Usuario;
+import bcd.appfinanceirobackend.model.*;
 import bcd.appfinanceirobackend.model.enums.FormatoArquivo;
 import bcd.appfinanceirobackend.model.enums.StatusImportacao;
 import bcd.appfinanceirobackend.parser.ParserExtrato;
@@ -13,8 +10,6 @@ import bcd.appfinanceirobackend.parser.ResultadoParser;
 import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.ImportacaoRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,15 +27,18 @@ public class ImportacaoService {
     private final ImportacaoRepository importacaoRepository;
     private final TransacaoRepository transacaoRepository;
     private final ContaRepository contaRepository;
+    private final TransacaoService transacaoService;
 
     public ImportacaoService(List<ParserExtrato> parsers,
                              ImportacaoRepository importacaoRepository,
                              TransacaoRepository transacaoRepository,
-                             ContaRepository contaRepository){
+                             ContaRepository contaRepository,
+                             TransacaoService transacaoService){
         this.contaRepository = contaRepository;
         this.transacaoRepository = transacaoRepository;
         this.parsers = parsers;
         this.importacaoRepository = importacaoRepository;
+        this.transacaoService = transacaoService;
     }
 
     public ImportacaoResponseDTO processar(MultipartFile arquivo,
@@ -94,8 +92,12 @@ public class ImportacaoService {
             falhas = resultado.getLinhasInvalidas();
             for (Transacao t: resultado.getTransacoes()){
                 try {
+                    Categoria categoria = transacaoService.sugerirCategoria(t.getDescricao());
+                    if(categoria != null){
+                        t.setCategoria(categoria);
+                        t.setCategorizada(true);
+                    }
                     t.setImportacao(importacao);
-                    t.setCategorizada(false);
                     transacaoRepository.save(t);
                     sucessos++;
                 }catch (Exception e){

@@ -1,5 +1,6 @@
 package bcd.appfinanceirobackend.controller;
 
+import bcd.appfinanceirobackend.dto.categoria.CategorizarTransacaoRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.model.Usuario;
@@ -7,10 +8,9 @@ import bcd.appfinanceirobackend.service.TransacaoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/transacoes")
@@ -28,5 +28,15 @@ public class TransacaoController {
             @AuthenticationPrincipal Usuario usuarioAutenticado) {
         return ResponseEntity.status(HttpStatus.CREATED).body(transacaoService.registrarManual(
                 requestDTO, usuarioAutenticado));
+    }
+
+    @PatchMapping("/{transacaoId}/categoria")
+    public ResponseEntity<TransacaoResponseDTO> categorizarTransacaoManual (
+            @PathVariable UUID transacaoId,
+            @RequestBody CategorizarTransacaoRequestDTO request,
+            @AuthenticationPrincipal Usuario usuarioAutenticado) {
+        return ResponseEntity.status(HttpStatus.OK).body(transacaoService.categorizar(
+                transacaoId, request.getCategoriaId(), usuarioAutenticado
+        ));
     }
 }

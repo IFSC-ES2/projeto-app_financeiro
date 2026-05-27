@@ -29,10 +29,12 @@ public class Importacao {
     @Column(nullable = false)
     private String nome_arquivo;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "formato", nullable = false)
     private FormatoArquivo formatoArquivo;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     private StatusImportacao statusImportacao;
 
     @Column(nullable = false)
