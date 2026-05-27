@@ -45,6 +45,7 @@ class ImportacaoServiceTest {
     @Mock private ContaRepository contaRepository;
     @Mock private ImportacaoRepository importacaoRepository;
     @Mock private TransacaoRepository transacaoRepository;
+    @Mock private TransacaoService transacaoService;
     @Mock private ParserExtrato parserMock;
 
     private ImportacaoService service;
@@ -59,7 +60,8 @@ class ImportacaoServiceTest {
                 List.of(parserMock),
                 importacaoRepository,
                 transacaoRepository,
-                contaRepository
+                contaRepository,
+                transacaoService
         );
 
         usuarioDono = new Usuario();

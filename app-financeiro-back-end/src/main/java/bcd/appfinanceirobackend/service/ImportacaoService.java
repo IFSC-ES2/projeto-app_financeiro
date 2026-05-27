@@ -95,9 +95,9 @@ public class ImportacaoService {
                     Categoria categoria = transacaoService.sugerirCategoria(t.getDescricao());
                     if(categoria != null){
                         t.setCategoria(categoria);
+                        t.setCategorizada(true);
                     }
                     t.setImportacao(importacao);
-                    t.setCategorizada(true);
                     transacaoRepository.save(t);
                     sucessos++;
                 }catch (Exception e){
