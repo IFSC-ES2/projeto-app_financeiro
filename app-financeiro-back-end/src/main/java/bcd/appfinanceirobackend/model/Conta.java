@@ -30,7 +30,8 @@ public class Conta {
     @Column(nullable = true)
     private String banco;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo", nullable = false)
     private TipoConta tipoConta;
 
     @Column(nullable = true)

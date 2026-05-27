@@ -30,7 +30,7 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String senha;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 11)
     private String cpf;
 
     @Column(nullable = false)
