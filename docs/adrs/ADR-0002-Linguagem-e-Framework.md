@@ -1,7 +1,7 @@
 # ADR-0002 — Linguagem e Framework Principal
 
 ## Status
-Aceito
+Revisado — decisão permanece aceita
 
 ## Contexto
 O projeto precisa de uma linguagem principal definida
