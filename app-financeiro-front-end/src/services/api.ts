@@ -58,6 +58,17 @@ export interface TransacaoResponse extends TransacaoRequest {
   transacaoId: string;
 }
 
+export type StatusImportacao = 'PENDENTE' | 'PROCESSANDO' | 'CONCLUIDO' | 'ERRO';
+
+export interface ImportacaoResponse {
+  id: string;
+  status: StatusImportacao;
+  sucessos: number;
+  falhas: number;
+  importadoEm: string;
+  mensagemErro?: string | null;
+}
+
 export const listarContas = async () => {
   const { data } = await api.get<ContaResponse[]>('/contas');
   return data;
@@ -75,6 +86,22 @@ export const listarCategorias = async () => {
 
 export const registrarTransacaoManual = async (transacao: TransacaoRequest) => {
   const { data } = await api.post<TransacaoResponse>('/transacoes/manual', transacao);
+  return data;
+};
+
+export const criarImportacao = async (arquivo: File, contaId: string) => {
+  const formData = new FormData();
+  formData.append('arquivo', arquivo);
+  formData.append('contaId', contaId);
+
+  const { data } = await api.post<ImportacaoResponse>('/importacoes', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+};
+
+export const consultarStatusImportacao = async (importacaoId: string) => {
+  const { data } = await api.get<StatusImportacao>(`/importacoes/${importacaoId}/status`);
   return data;
 };
 
