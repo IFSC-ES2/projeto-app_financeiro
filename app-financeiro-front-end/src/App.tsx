@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { ProvedorAutenticacao } from './contexts/ContextoAutenticacao';
 import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
@@ -11,6 +11,18 @@ const PainelProvisorio = () => (
   <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'system-ui, sans-serif' }}>
     <h2>Painel</h2>
     <p>Login realizado com sucesso! (Tela oficial em construção)</p>
+    <Link
+      to="/importacoes/nova"
+      className="btn fw-semibold mt-3"
+      style={{
+        background: 'var(--sb-gradient)',
+        color: '#fff',
+        borderRadius: 8,
+        padding: '0.6rem 1.4rem',
+      }}
+    >
+      Importar extrato ou NF-e
+    </Link>
   </div>
 );
 
