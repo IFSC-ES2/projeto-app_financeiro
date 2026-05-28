@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
 import NovaTransacao from './pages/NovaTransacao';
 import NovaConta from './pages/NovaConta';
+import ImportarExtrato from './pages/ImportarExtrato';
 
 // Dashboard provisório — substituir pela tela oficial
 const PainelProvisorio = () => (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/dashboard" element={<PainelProvisorio />} />
           <Route path="/transacoes/nova" element={<NovaTransacao />} />
           <Route path="/contas/nova" element={<NovaConta />} />
+          <Route path="/importacoes/nova" element={<ImportarExtrato />} />
         </Routes>
       </Router>
     </ProvedorAutenticacao>
