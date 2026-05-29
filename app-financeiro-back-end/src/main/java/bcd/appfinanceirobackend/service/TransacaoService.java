@@ -83,6 +83,7 @@ public class TransacaoService {
 
         transacao.setData(dto.getData());
         if(transacao.getData().isAfter(LocalDate.now())) transacao.setFutura(true);
+        transa
         transacao.setDescricao(dto.getDescricao());
         transacao.setTipo(dto.getTipoTransacao());
         transacao.setFormaPagamento(dto.getFormaPagamento());
@@ -90,6 +91,13 @@ public class TransacaoService {
 
         return toResponse(transacaoSalva);
 
+    }
+
+    public List<TransacaoResponseDTO> listarTransacoesPorUsuario (Usuario usuarioAutenticado) {
+        return transacaoRepository.findAllByContaUsuarioId(usuarioAutenticado.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     public TransacaoResponseDTO categorizar(UUID transacaoId, UUID categoriaId, Usuario usuarioAutenticado){
