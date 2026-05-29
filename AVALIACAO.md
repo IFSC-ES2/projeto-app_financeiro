@@ -11,16 +11,21 @@
 | 5       | Lucas de Leon Rodrigues | dd7c536 | 10/05/26 | 24/05/26 | 7,5  | 10   |
 | 5       | Victor Blum             | dd7c536 | 10/05/26 | 24/05/26 | 7,2  | 10   |
 | 5       | Victor Gabriel Lacerda  | dd7c536 | 10/05/26 | 24/05/26 | 7,0  | 10   |
+| 6       | Alexandre Villela       | cb1e539 | 17/05/26 | 27/05/26 | 6,8  | 10   |
+| 6       | João Pedro Callegaro    | cb1e539 | 17/05/26 | 27/05/26 | 5,8  | 10   |
+| 6       | Lucas de Leon Rodrigues | cb1e539 | 17/05/26 | 27/05/26 | 6,1  | 10   |
+| 6       | Victor Blum             | cb1e539 | 17/05/26 | 27/05/26 | 7,1  | 10   |
+| 6       | Victor Gabriel Lacerda  | cb1e539 | 17/05/26 | 27/05/26 | 7,3  | 10   |
 
 ## Nota parcial
 
 | aluno                   | nota parcial |
 | ----------------------- | ------------ |
-| Alexandre Villela       | 8,0          |
-| João Pedro Callegaro    | 7,7          |
-| Lucas de Leon Rodrigues | 8,1          |
-| Victor Blum             | 7,9          |
-| Victor Gabriel Lacerda  | 7,8          |
+| Alexandre Villela       | 7,6          |
+| João Pedro Callegaro    | 7,1          |
+| Lucas de Leon Rodrigues | 7,4          |
+| Victor Blum             | 7,6          |
+| Victor Gabriel Lacerda  | 7,6          |
 
 ## Comentários
 
@@ -113,5 +118,48 @@
    - A documentação usa `/register` como rota de frontend em `como-rodar.md`, mas a aplicação expõe a tela de cadastro em `/cadastro`.
    - A documentação e decisões anteriores ainda carregam inconsistências residuais de banco/ambiente, apesar da execução real estar em PostgreSQL.
 8. Release do marco: atendido com atraso.
-   - A tag anotada `v0.1.0` existe e aponta para o commit `dd7c536`.
-   - A release `v0.1.0` foi publicada com notas da Sprint 1.
+    - A tag anotada `v0.1.0` existe e aponta para o commit `dd7c536`.
+    - A release `v0.1.0` foi publicada com notas da Sprint 1.
+
+### Entrega 6
+
+1. Incremento funcional do MVP: parcial.
+   - Funcionalidade declaradas para entrega na Sprint 2:
+      - Registro manual de transações, com frontend, backend, persistência e endpoints auxiliares de contas e categorias.
+   - O backend expõe `POST /transacoes/manual`, `GET /contas`, `POST /contas/registrar` e `GET /categorias`, com autenticação por JWT e verificação de posse da conta antes de registrar a transação.
+   - O frontend possui a tela `NovaTransacao`, carrega contas e categorias, valida valor, data e conta, envia a transação para a API e exibe o registro recém-criado no estado local da tela, mas não está acessível diretamente pela aplicação.
+   - O fluxo representa uma evolução real em relação à Sprint 1, pois adiciona um caso de uso novo do domínio financeiro. Ainda assim, o histórico exibido não é persistente no frontend e depende de uma conta previamente cadastrada; a própria descrição do PR registra que a listagem completa de transações ficou para issue futura.
+   - Há inconsistências de modelagem e validação: `tipoTransacao` mistura tipo de lançamento e forma/condição de pagamento (`DEBITO`, `CREDITO`, `PARCELAMENTO`, `BOLETO`), e o backend da tag avaliada não valida valor zero/negativo além dos campos obrigatórios.
+2. Testes automatizados: parcial.
+   - Existem apenas `RegistrarLoginTests.java` e `AppFinanceiroBackEndApplicationTests.java`; não há testes versionados para `TransacaoService`, `TransacaoController`, endpoints de contas/categorias ou frontend.
+   - A suíte completa ainda depende de um PostgreSQL real para `contextLoads()`, em vez de uma configuração isolada de testes.
+3. Integração contínua mínima: parcial.
+   - O pipeline não executa `npm run lint`, falha com cinco erros em `ContextoAutenticacao.tsx`, `Cadastro.tsx`, `Login.tsx` e `NovaTransacao.tsx`.
+   - O CI usa Gradle instalado pela action e não detecta que o `gradle-wrapper.jar` está ausente, embora o README e a forma usual de execução local usem `./gradlew`.
+4. Pull requests com revisão: atendido.
+   - Algumas fragilidades: alguns reviews são muito superficiais, e o PR `#85` de testes ficou fora da tag avaliada apesar de constar no registro de contribuições como trabalho da sprint.
+5. Aplicação justificada de padrões OO/arquitetura: parcial.
+   - A ADR `ADR-0004` registra a decisão por MVC/camadas, com alternativas e consequências.
+   - A implementação segue a separação comum de Spring entre controllers, services, repositories, DTOs e entidades, o que melhora organização e testabilidade.
+   - A justificativa fica genérica e trata mais de arquitetura em camadas/framework do que de um padrão OO específico aplicado a um problema de design do domínio.
+6. Atualização das métricas: parcial.
+   - A atualização melhorou em relação às entregas anteriores, mas há inconsistências importantes: a análise qualitativa menciona issues da Sprint 1 (`#22`, `#25`, `#26`, `#27`) em vez do escopo real da Sprint 2, a velocidade não foi medida, e algumas métricas de produto são marcadas com valores pouco sustentados, como 100% de sucesso de importação mesmo sem importação implementada neste recorte.
+   - A cobertura informada considera apenas backend; o próprio documento reconhece ausência de testes automatizados no frontend.
+7. Atualização dos riscos: atendido.
+   - A matriz visual de riscos e a documentação de qualidade também foram corrigidas em PR próprio durante a sprint.
+8. Release do marco: parcial.
+   - A tag `v0.2.0` aponta para o commit `cb1e539`, e a release foi publicada com descrição do incremento, CI, métricas, riscos e documentação.
+   - O estado da tag não é plenamente reprodutível pelos comandos documentados porque `./gradlew test` e `./gradlew bootRun` falham pela ausência de `gradle-wrapper.jar`.
+   - As instruções exigem que o usuário crie manualmente o container PostgreSQL com nome, porta, usuário, senha e banco corretos. Isso poderia ter sido automatizado com um `docker-compose.yml` versionado, reduzindo erros de configuração e conflitos como o de container já existente observado na avaliação.
+9. Registro das contribuições individuais: parcial.
+   - `sprint2.md` registra contribuições por integrante e referencia PRs/issues, mas é mais um registro de contribuições do que um relatório completo da sprint.
+   - Contribuições individuais:
+      - Alexandre: contribuiu com o CI (`#79`) e com métricas/cobertura (`#83`). A contribuição é relevante para processo e qualidade, com checks verdes, mas a atualização de métricas contém inconsistências e o CI não captura lint nem o problema de wrapper Gradle.
+      - João Pedro: contribuiu principalmente com a atualização de riscos (`#84`). O documento de riscos foi efetivamente atualizado, mas a participação rastreável é mais restrita e pouco conectada ao incremento funcional principal.
+      - Lucas: atuou em reviews/merges e no registro de contribuições; também abriu o PR de testes `#85`. No entanto, esses testes não entraram na tag/release `v0.2.0`, deixando a funcionalidade principal sem cobertura automatizada no marco avaliado.
+      - Victor Blum: contribuiu de forma central no backend do registro manual (`#81`), autenticação JWT, validação de posse da conta e correções de runtime, além de documentação de riscos/qualidade (`#80`). A nota é limitada por lacunas de validação/testes na tag e pelo problema de reprodutibilidade do wrapper.
+      - Victor Gabriel: contribuiu de forma central no frontend e nos endpoints auxiliares (`#86`), integrou contas/categorias/transações e participou de merges/reviews. A nota é a maior da entrega por protagonismo no fluxo entregue, mas limitada pelo lint quebrado, histórico apenas local e ausência de testes frontend.
+10. Documentação atualizada: parcial.
+    - As instruções continuam comprometidas pela ausência do `gradle-wrapper.jar`, problema já identificado na Entrega 5 e ainda presente na Entrega 6.
+    - A execução local do banco também depende de passos manuais que poderiam estar encapsulados em `docker compose up -d`, especialmente porque a aplicação e os testes dependem de PostgreSQL disponível em `localhost:5432`.
+    - O documento de contribuições cita o PR de testes como ainda aberto, enquanto ele não entrou na tag avaliada; isso ajuda a explicar a lacuna, mas também evidencia que a release foi feita antes de concluir essa parte da sprint.
