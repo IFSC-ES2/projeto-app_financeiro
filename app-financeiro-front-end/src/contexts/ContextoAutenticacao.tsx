@@ -21,9 +21,15 @@ export const ProvedorAutenticacao = ({ children }: PropsProvedorAutenticacao) =>
 
   useEffect(() => {
     const aoPerderAutorizacao = () => setSessao(null);
-    window.addEventListener('smartbudget:unauthorized', aoPerderAutorizacao);
+    const aoAutenticar = () => setSessao(recuperarSessaoValida());
 
-    return () => window.removeEventListener('smartbudget:unauthorized', aoPerderAutorizacao);
+    window.addEventListener('smartbudget:unauthorized', aoPerderAutorizacao);
+    window.addEventListener('smartbudget:authenticated', aoAutenticar);
+
+    return () => {
+      window.removeEventListener('smartbudget:unauthorized', aoPerderAutorizacao);
+      window.removeEventListener('smartbudget:authenticated', aoAutenticar);
+    };
   }, []);
 
   const login = useCallback(async (email: string, senha: string) => {
