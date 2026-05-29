@@ -1,5 +1,25 @@
 # Sprint 3
 
+A Sprint 3 representou um avanço importante na consolidação técnica do MVP. O projeto deixou de estar concentrado apenas na fundação de autenticação e registro manual e passou a atacar funcionalidades centrais do que queremos propor para o SmartBudget, como importação de arquivos financeiros e categorização de transações.
+
+## Incremento funcional da Sprint 3
+
+A importação de extratos e NF-e teve avanço técnico relevante no backend. Essa funcionalidade está evidenciada pela presença do `ImportacaoController`, do `ImportacaoService` e dos parsers para arquivos CSV, TXT, XML e NF-e.
+
+A categorização de transações foi implementada no backend. O recurso está representado pelo `CategoriaController`, pelo `CategoriaService`, pelos DTOs relacionados à categorização e pelo endpoint de atualização de categoria nas transações.
+
+A criação de conta bancária pelo frontend também foi implementada. A funcionalidade está presente na tela `src/pages/NovaConta.tsx`, com integração ao backend.
+
+O registro manual de transações foi mantido e integrado ao fluxo autenticado da aplicação. Essa parte envolve o `TransacaoController`, o `TransacaoService` e a tela `src/pages/NovaTransacao.tsx`.
+
+A autenticação com JWT foi mantida e utilizada pelas rotas protegidas do sistema. A estrutura está evidenciada pelo `JwtAuthFilter`, pelo `JwtUtil`, pelo `SecurityConfig` e pelo `ContextoAutenticacao.tsx` no frontend.
+
+As migrations de banco com Flyway foram implementadas para organizar a criação e preparação inicial da base de dados. As evidências principais são os arquivos `V1__create_tables.sql`, `V2__seed_categorias.sql` e `V3__seed_usuarios.sql`.
+
+Os testes de parsers e importação foram implementados no backend. Essa base de testes inclui `ParserCSVTest`, `ParserTXTTest`, `ParserXMLTest`, `ParserNFETest`, `ImportacaoServiceTest` e `ImportacaoControllerTest`.
+
+No frontend, os testes foram configurados e iniciados. Essa estrutura está evidenciada pelos arquivos `vitest.config.ts`, `setupTests.ts`, `ambiente.test.ts` e `Login.test.tsx`.
+
 ## Registro de contribuição individual
 
 ### Lucas de Leon Rodrigues Coelho
