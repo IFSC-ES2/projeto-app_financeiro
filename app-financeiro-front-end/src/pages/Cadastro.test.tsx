@@ -79,4 +79,23 @@ describe('Tela de Cadastro', () => {
       expect(screen.getByText('As senhas não coincidem.')).toBeInTheDocument();
     });
   });
+
+  it('deve chamar a funcao cadastrar e redirecionar para login ao preencher dados validos', async () => {
+    mockCadastrar.mockResolvedValueOnce(undefined);
+    renderizarComponente();
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText(/Nome Completo/i), 'Fulano de Tal');
+    await user.type(screen.getByLabelText(/Usuário ou e-mail/i), 'fulano@teste.com');
+    await user.type(screen.getByLabelText(/^Senha$/i), 'senhaValida123');
+    await user.type(screen.getByLabelText(/Confirmar Senha/i), 'senhaValida123');
+
+    const botaoCadastrar = screen.getByRole('button', { name: /Cadastrar/i });
+    await user.click(botaoCadastrar);
+
+    await waitFor(() => {
+      expect(mockCadastrar).toHaveBeenCalledWith('Fulano de Tal', 'fulano@teste.com', 'senhaValida123');
+      expect(mockNavigate).toHaveBeenCalledWith('/login');
+    });
+  });
 });
