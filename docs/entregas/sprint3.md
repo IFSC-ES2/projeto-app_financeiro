@@ -131,4 +131,31 @@ No frontend, os testes foram configurados e iniciados. Essa estrutura está evid
 
 ### Pontos adicionais
 
-- Arquitetura foi criado em [docs/arquitetura](../arquitetura.md);
+- Arquitetura foi criado em [docs/arquitetura.md](../arquitetura.md);
+- ADRs podem ser localizadas em [docs/adrs](../adrs);
+- Métricas atualizadas em [docs/metricas.md](../metricas.md);
+- Workflow valida pontos mínimos:
+    - instala dependências do frontend com `npm ci`;
+    - configura Java e Gradle para o backend;
+    - executa build do backend com `gradle build -x test`;
+    - executa testes do backend com `gradle test`;
+    - gera resumo de cobertura via JaCoCo;
+    - executa build do frontend com `npm run build`;
+    - executa testes do frontend com `npm test --if-present`;
+    - valida sintaxe YAML;
+- Testes identificados no backend:
+    - `AppFinanceiroBackEndApplicationTests`;
+    - `ImportacaoControllerTest`;
+    - `RegistrarManualIntegrationTests`;
+    - `ParserCSVTest`;
+    - `ParserNFETest`;
+    - `ParserTXTTest`;
+    - `ParserXMLTest`;
+    - `ImportacaoServiceTest`;
+    - `RegistrarLoginTests`;
+    - `RegistrarManualTransacaoTests`.
+- Frontend:
+    - `vitest.config.ts`;
+    - `src/setupTests.ts`;
+    - `src/ambiente.test.ts`;
+    - `src/pages/Login.test.tsx`.
