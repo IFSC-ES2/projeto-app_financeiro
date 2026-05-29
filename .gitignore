@@ -1,7 +1,6 @@
 HELP.md
 .gradle
 build/
-!gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 
@@ -289,5 +288,7 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+!app-financeiro-back-end/gradle/wrapper/gradle-wrapper.jar
 
 # End of https://www.toptal.com/developers/gitignore/api/react,windows,linux,java,groovy,git,visualstudiocode,intellij
