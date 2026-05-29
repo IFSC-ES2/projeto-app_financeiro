@@ -2,6 +2,20 @@
 
 A Sprint 3 representou um avanço importante na consolidação técnica do MVP. O projeto deixou de estar concentrado apenas na fundação de autenticação e registro manual e passou a atacar funcionalidades centrais do que queremos propor para o SmartBudget, como importação de arquivos financeiros e categorização de transações.
 
+Das 12 issues/PRs previstas, 8 foram feitas complemente feitas e mais 3 estão, atualmente, mapeadas como parcialmente implementadas. Totalizando 11/12 completas ou parcialmente completas.
+
+## Decisões durante a Sprint 3
+
+A equipe adotou migrations versionadas para evitar que o Hibernate altere automaticamente a estrutura do banco. Com isso, o banco passa a ter histórico rastreável e reproduzível.
+
+- `app-financeiro-back-end/src/main/resources/db/migration/V1__create_tables.sql`;
+- `app-financeiro-back-end/src/main/resources/db/migration/V2__seed_categorias.sql`;
+- `app-financeiro-back-end/src/main/resources/db/migration/V3__seed_usuarios.sql`
+
+Com Flyway para evitar inconsistências entre ambientes locais e manter o schema versionado no Git.
+
+Também adotamos OpenCSV para arquivos CSV e Jackson XML para arquivos XML. Arquivos TXT e NF-e são processados com lógica própria da aplicação. Essa decisão reduz o risco técnico de implementar parsers frágeis do zero.
+
 ## Incremento funcional da Sprint 3
 
 A importação de extratos e NF-e teve avanço técnico relevante no backend. Essa funcionalidade está evidenciada pela presença do `ImportacaoController`, do `ImportacaoService` e dos parsers para arquivos CSV, TXT, XML e NF-e.
