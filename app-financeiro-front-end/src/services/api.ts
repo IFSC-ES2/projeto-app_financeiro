@@ -94,9 +94,7 @@ export const criarImportacao = async (arquivo: File, contaId: string) => {
   formData.append('arquivo', arquivo);
   formData.append('contaId', contaId);
 
-  const { data } = await api.post<ImportacaoResponse>('/importacoes', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  const { data } = await api.post<ImportacaoResponse>('/importacoes', formData);
   return data;
 };
 
