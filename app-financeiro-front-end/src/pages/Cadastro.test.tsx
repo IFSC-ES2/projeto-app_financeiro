@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import Cadastro from './Cadastro';
@@ -42,5 +43,40 @@ describe('Tela de Cadastro', () => {
     expect(screen.getByLabelText(/^Senha$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Confirmar Senha/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Cadastrar/i })).toBeInTheDocument();
+  });
+
+  it('deve exibir erros de validacao ao tentar submeter o formulario vazio', async () => {
+    renderizarComponente();
+    const user = userEvent.setup();
+
+    const botaoCadastrar = screen.getByRole('button', { name: /Cadastrar/i });
+    await user.click(botaoCadastrar);
+
+    expect(mockCadastrar).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(screen.getByText('Nome é obrigatório.')).toBeInTheDocument();
+      expect(screen.getByText('E-mail é obrigatório.')).toBeInTheDocument();
+      expect(screen.getByText('Senha é obrigatória.')).toBeInTheDocument();
+    });
+  });
+
+  it('deve exibir erro de validacao quando as senhas nao coincidem', async () => {
+    renderizarComponente();
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText(/Nome Completo/i), 'Dev de Sucesso');
+    await user.type(screen.getByLabelText(/Usuário ou e-mail/i), 'dev@teste.com');
+    await user.type(screen.getByLabelText(/^Senha$/i), 'senha123');
+    await user.type(screen.getByLabelText(/Confirmar Senha/i), 'senhaDiferente');
+
+    const botaoCadastrar = screen.getByRole('button', { name: /Cadastrar/i });
+    await user.click(botaoCadastrar);
+
+    expect(mockCadastrar).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(screen.getByText('As senhas não coincidem.')).toBeInTheDocument();
+    });
   });
 });
