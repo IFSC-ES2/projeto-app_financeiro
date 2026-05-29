@@ -118,6 +118,8 @@ export const loginUsuario = async (credenciais: LoginRequest) => {
   return data;
 };
 
+export const login = async (email: string, senha: string) => loginUsuario({ email, senha });
+
 export const cadastrarUsuario = async (cadastro: CadastroRequest) => {
   const { data } = await api.post<TokenDTO>('/auth/register', cadastro);
   return data;

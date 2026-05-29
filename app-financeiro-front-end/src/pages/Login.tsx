@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAutenticacao } from '../hooks/useAutenticacao';
 import LayoutAutenticacao from '../components/layout/LayoutAutenticacao';
 import CampoFormulario from '../components/ui/CampoFormulario';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { obterMensagemErroApi } from '../services/api';
+import { login, obterMensagemErroApi } from '../services/api';
+import { salvarSessao } from '../utils/authStorage';
 import { useFormulario } from '../hooks/useFormulario';
 
 const validar = (valores: { email: string; senha: string }) => {
@@ -17,7 +17,6 @@ const validar = (valores: { email: string; senha: string }) => {
 };
 
 const Login: React.FC = () => {
-  const { login } = useAutenticacao();
   const navigate = useNavigate();
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
@@ -34,10 +33,14 @@ const Login: React.FC = () => {
 
     setCarregando(true);
     try {
-      await login(valores.email, valores.senha);
+      const token = await login(valores.email, valores.senha);
+      if (token?.accessToken) {
+        salvarSessao(token);
+        window.dispatchEvent(new Event('smartbudget:authenticated'));
+      }
       navigate('/dashboard');
     } catch (err: unknown) {
-      setErro(obterMensagemErroApi(err, 'E-mail ou senha inválidos. Tente novamente.'));
+      setErro(obterMensagemErroApi(err, 'Credenciais inválidas. Verifique seu e-mail e senha.'));
     } finally {
       setCarregando(false);
     }
