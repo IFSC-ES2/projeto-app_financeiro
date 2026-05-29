@@ -1,0 +1,278 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import LayoutPrivado from '../components/layout/LayoutPrivado';
+import EstadoVazio from '../components/ui/EstadoVazio';
+import MensagemAlerta from '../components/ui/MensagemAlerta';
+import { listarCategorias, listarContas, listarTransacoes, obterMensagemErroApi } from '../services/api';
+import type { CategoriaResponse, ContaResponse, TransacaoResponse } from '../services/api';
+import { formatarData, formatarMoeda } from '../utils/formatacao';
+import {
+  calcularResumoTransacoes,
+  filtrarTransacoes,
+  ordenarTransacoesPorDataDesc,
+} from '../utils/transacoes';
+import type { FiltroPeriodo, FiltroTipo, FiltrosTransacao } from '../utils/transacoes';
+
+interface EstadoNavegacaoTransacoes {
+  mensagem?: string;
+  transacaoCriada?: TransacaoResponse;
+}
+
+const filtrosIniciais: FiltrosTransacao = {
+  periodo: 'MES_ATUAL',
+  tipo: 'TODAS',
+  categoriaId: '',
+  contaId: '',
+};
+
+const obterRotuloTipo = (tipo: TransacaoResponse['tipoTransacao']) => {
+  const rotulos: Record<TransacaoResponse['tipoTransacao'], string> = {
+    CREDITO: 'Receita',
+    DEBITO: 'Despesa',
+    PARCELAMENTO: 'Parcelamento',
+    BOLETO: 'Boleto',
+  };
+
+  return rotulos[tipo];
+};
+
+const obterRotuloFormaPagamento = (forma?: TransacaoResponse['formaPagamento']) => {
+  if (!forma) return 'Não informado';
+
+  const rotulos: Record<NonNullable<TransacaoResponse['formaPagamento']>, string> = {
+    PIX: 'Pix',
+    CARTAO_DEBITO: 'Cartão de débito',
+    CARTAO_CREDITO: 'Cartão de crédito',
+    DINHEIRO: 'Dinheiro',
+    BOLETO: 'Boleto',
+    TED_DOC: 'TED/DOC',
+  };
+
+  return rotulos[forma];
+};
+
+const Transacoes = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const estado = location.state as EstadoNavegacaoTransacoes | null;
+
+  const [transacoes, setTransacoes] = useState<TransacaoResponse[]>(() =>
+    estado?.transacaoCriada ? [estado.transacaoCriada] : []
+  );
+  const [contas, setContas] = useState<ContaResponse[]>([]);
+  const [categorias, setCategorias] = useState<CategoriaResponse[]>([]);
+  const [filtros, setFiltros] = useState<FiltrosTransacao>(filtrosIniciais);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState('');
+  const [mensagemSucesso] = useState(estado?.mensagem ?? '');
+
+  useEffect(() => {
+    if (estado?.mensagem || estado?.transacaoCriada) {
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [estado?.mensagem, estado?.transacaoCriada, location.pathname, navigate]);
+
+  useEffect(() => {
+    let ativo = true;
+
+    const carregarApoio = async () => {
+      try {
+        const [contasCarregadas, categoriasCarregadas] = await Promise.all([listarContas(), listarCategorias()]);
+
+        if (!ativo) return;
+        setContas(contasCarregadas);
+        setCategorias(categoriasCarregadas);
+      } catch (erroCapturado) {
+        if (!ativo) return;
+        obterMensagemErroApi(erroCapturado, 'Não foi possível carregar contas e categorias.');
+      }
+    };
+
+    const carregarTransacoes = async () => {
+      setCarregando(true);
+      setErro('');
+
+      try {
+        const transacoesCarregadas = await listarTransacoes();
+        if (!ativo) return;
+        setTransacoes(ordenarTransacoesPorDataDesc(transacoesCarregadas));
+      } catch (erroCapturado) {
+        if (!ativo) return;
+
+        setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível carregar as transações.'));
+      } finally {
+        if (ativo) setCarregando(false);
+      }
+    };
+
+    carregarApoio();
+    carregarTransacoes();
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  const contaPorId = useMemo(() => new Map(contas.map((conta) => [conta.contaId, conta])), [contas]);
+  const categoriaPorId = useMemo(
+    () => new Map(categorias.map((categoria) => [categoria.categoriaId, categoria])),
+    [categorias]
+  );
+
+  const transacoesFiltradas = useMemo(
+    () => ordenarTransacoesPorDataDesc(filtrarTransacoes(transacoes, filtros)),
+    [filtros, transacoes]
+  );
+
+  const resumo = useMemo(() => calcularResumoTransacoes(transacoesFiltradas), [transacoesFiltradas]);
+
+  const alterarFiltro = (campo: keyof FiltrosTransacao, valor: string) => {
+    setFiltros((atuais) => ({ ...atuais, [campo]: valor }));
+  };
+
+  return (
+    <LayoutPrivado titulo="Transações" subtitulo="Visualize e registre movimentações financeiras da sua conta.">
+      <MensagemAlerta mensagem={mensagemSucesso} tipo="success" />
+      <MensagemAlerta mensagem={erro} tipo="danger" />
+      <section className="filters-panel" aria-label="Filtros de transações">
+        <label>
+          <span>Período</span>
+          <select
+            value={filtros.periodo}
+            onChange={(evento) => alterarFiltro('periodo', evento.target.value as FiltroPeriodo)}
+          >
+            <option value="MES_ATUAL">Este mês</option>
+            <option value="TODAS">Todos os períodos</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Tipo</span>
+          <select value={filtros.tipo} onChange={(evento) => alterarFiltro('tipo', evento.target.value as FiltroTipo)}>
+            <option value="TODAS">Todas as transações</option>
+            <option value="RECEITAS">Receitas</option>
+            <option value="DESPESAS">Despesas</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Conta</span>
+          <select value={filtros.contaId} onChange={(evento) => alterarFiltro('contaId', evento.target.value)}>
+            <option value="">Todas as contas</option>
+            {contas.map((conta) => (
+              <option key={conta.contaId} value={conta.contaId}>
+                {conta.nome}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Categoria</span>
+          <select value={filtros.categoriaId} onChange={(evento) => alterarFiltro('categoriaId', evento.target.value)}>
+            <option value="">Todas as categorias</option>
+            {categorias.map((categoria) => (
+              <option key={categoria.categoriaId} value={categoria.categoriaId}>
+                {categoria.nome}
+              </option>
+            ))}
+          </select>
+        </label>
+      </section>
+
+      <section className="summary-grid" aria-label="Resumo das transações filtradas">
+        <article className="summary-card">
+          <span>Total</span>
+          <strong>{resumo.total}</strong>
+        </article>
+        <article className="summary-card summary-card-positive">
+          <span>Receitas</span>
+          <strong>{formatarMoeda(resumo.receitas)}</strong>
+        </article>
+        <article className="summary-card summary-card-negative">
+          <span>Despesas</span>
+          <strong>{formatarMoeda(resumo.despesas)}</strong>
+        </article>
+        <article className={resumo.saldo >= 0 ? 'summary-card summary-card-positive' : 'summary-card summary-card-negative'}>
+          <span>Saldo</span>
+          <strong>{formatarMoeda(resumo.saldo)}</strong>
+        </article>
+      </section>
+
+      <section className="transactions-panel">
+        <div className="transactions-header">
+          <div>
+            <h2>Movimentações</h2>
+            <p>Resultados filtrados pela seleção acima.</p>
+          </div>
+
+          <Link to="/transacoes/nova" className="sb-button sb-button-primary sb-button-sm">
+            <span aria-hidden="true">+</span>
+            Nova transação
+          </Link>
+        </div>
+
+        {carregando ? (
+          <div className="loading-inline" aria-live="polite">
+            Carregando transações...
+          </div>
+        ) : transacoesFiltradas.length === 0 ? (
+          <EstadoVazio
+            titulo="Nenhuma transação encontrada"
+            descricao="Nenhuma movimentação encontrada para os filtros selecionados."
+            acao={
+              <Link to="/transacoes/nova" className="sb-button sb-button-primary sb-button-sm">
+                Criar transação
+              </Link>
+            }
+          />
+        ) : (
+          <div className="transactions-table-wrapper">
+            <table className="transactions-table">
+              <thead>
+                <tr>
+                  <th>Descrição</th>
+                  <th>Categoria</th>
+                  <th>Conta</th>
+                  <th>Data</th>
+                  <th className="text-end">Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transacoesFiltradas.map((transacao) => {
+                  const receita = transacao.tipoTransacao === 'CREDITO';
+                  const categoria = transacao.categoriaId ? categoriaPorId.get(transacao.categoriaId) : undefined;
+                  const conta = transacao.contaId ? contaPorId.get(transacao.contaId) : undefined;
+
+                  return (
+                    <tr key={transacao.transacaoId}>
+                      <td>
+                        <div className="transaction-description">
+                          <span className={receita ? 'transaction-dot positive' : 'transaction-dot negative'} />
+                          <div>
+                            <strong>{transacao.descricao || 'Transação manual'}</strong>
+                            <small>
+                              {obterRotuloTipo(transacao.tipoTransacao)} • {obterRotuloFormaPagamento(transacao.formaPagamento)}
+                            </small>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{categoria?.nome || 'Sem categoria'}</td>
+                      <td>{conta?.nome || 'Dinheiro'}</td>
+                      <td>{formatarData(transacao.data)}</td>
+                      <td className={receita ? 'text-end amount-positive' : 'text-end amount-negative'}>
+                        {formatarMoeda(transacao.valor)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </LayoutPrivado>
+  );
+};
+
+export default Transacoes;

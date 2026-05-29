@@ -1,22 +1,18 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import LayoutPrivado from '../components/layout/LayoutPrivado';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { useAutenticacao } from '../contexts/ContextoAutenticacao';
 import {
   listarCategorias,
   listarContas,
+  obterMensagemErroApi,
   registrarTransacaoManual,
 } from '../services/api';
-import type {
-  CategoriaResponse,
-  ContaResponse,
-  TipoPagamento,
-  TipoTransacao,
-  TransacaoResponse,
-} from '../services/api';
+import type { CategoriaResponse, ContaResponse, TipoPagamento, TipoTransacao } from '../services/api';
 
-type CamposTransacao = {
+interface CamposTransacao {
   valor: string;
   data: string;
   descricao: string;
@@ -24,7 +20,7 @@ type CamposTransacao = {
   formaPagamento: TipoPagamento;
   categoriaId: string;
   contaId: string;
-};
+}
 
 const valoresIniciais: CamposTransacao = {
   valor: '',
@@ -52,100 +48,72 @@ const formasPagamento: Array<{ valor: TipoPagamento; rotulo: string }> = [
   { valor: 'TED_DOC', rotulo: 'TED/DOC' },
 ];
 
-const obterRotuloTipoTransacao = (valor: TipoTransacao) =>
-  tiposTransacao.find((tipo) => tipo.valor === valor)?.rotulo || valor;
+const NovaTransacao = () => {
+  const navigate = useNavigate();
 
-const obterRotuloFormaPagamento = (valor?: TipoPagamento | null) =>
-  formasPagamento.find((forma) => forma.valor === valor)?.rotulo || valor || 'Não informado';
-
-const formatarMoeda = (valor: number | string) =>
-  Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-const NovaTransacao: React.FC = () => {
-  const { estaAutenticado, sair } = useAutenticacao();
   const [campos, setCampos] = useState<CamposTransacao>(valoresIniciais);
   const [contas, setContas] = useState<ContaResponse[]>([]);
   const [categorias, setCategorias] = useState<CategoriaResponse[]>([]);
-  const [transacoes, setTransacoes] = useState<TransacaoResponse[]>([]);
   const [erros, setErros] = useState<Partial<Record<keyof CamposTransacao, string>>>({});
   const [erroGeral, setErroGeral] = useState('');
-  const [sucesso, setSucesso] = useState('');
-  const [carregandoDados, setCarregandoDados] = useState(false);
+  const [carregandoDados, setCarregandoDados] = useState(true);
   const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
-    if (!estaAutenticado) return;
+    let ativo = true;
 
     const carregarDados = async () => {
       setCarregandoDados(true);
       setErroGeral('');
 
       try {
-        const [contasCarregadas, categoriasCarregadas] = await Promise.all([
-          listarContas(),
-          listarCategorias(),
-        ]);
+        const [contasCarregadas, categoriasCarregadas] = await Promise.all([listarContas(), listarCategorias()]);
 
+        if (!ativo) return;
         setContas(contasCarregadas);
         setCategorias(categoriasCarregadas);
-
-        setCampos((prev) => ({
-          ...prev,
-          contaId: prev.contaId || contasCarregadas[0]?.contaId || '',
-          categoriaId: prev.categoriaId || categoriasCarregadas[0]?.categoriaId || '',
+        setCampos((atual) => ({
+          ...atual,
+          contaId: atual.contaId || contasCarregadas[0]?.contaId || '',
         }));
-      } catch (err: any) {
-        if (err?.response?.status === 401 || err?.response?.status === 403) {
-          setErroGeral('Sua sessão expirou. Faça login novamente.');
-          sair();
-          return;
-        }
-
-        setErroGeral('Não foi possível carregar contas e categorias.');
+      } catch (err) {
+        if (!ativo) return;
+        setErroGeral(obterMensagemErroApi(err, 'Não foi possível carregar contas e categorias.'));
       } finally {
-        setCarregandoDados(false);
+        if (ativo) setCarregandoDados(false);
       }
     };
 
     carregarDados();
-  }, [estaAutenticado, sair]);
 
-  const categoriaPorId = useMemo(
-    () => new Map(categorias.map((categoria) => [categoria.categoriaId, categoria])),
-    [categorias]
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  const permiteSalvar = useMemo(
+    () => campos.formaPagamento === 'DINHEIRO' || contas.length > 0,
+    [campos.formaPagamento, contas.length]
   );
 
-  const contaPorId = useMemo(
-    () => new Map(contas.map((conta) => [conta.contaId, conta])),
-    [contas]
-  );
+  const alterarCampo = (evento: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = evento.target;
 
-  if (!estaAutenticado) {
-    return <Navigate to="/login" replace />;
-  }
+    setCampos((atual) => {
+      if (name === 'formaPagamento') {
+        const formaPagamento = value as TipoPagamento;
+        return {
+          ...atual,
+          formaPagamento,
+          contaId: formaPagamento === 'DINHEIRO' ? '' : atual.contaId || contas[0]?.contaId || '',
+        };
+      }
 
-  const alterarCampo = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-  const { name, value } = e.target;
+      return { ...atual, [name]: value };
+    });
 
-  if (name === 'formaPagamento' && value === 'DINHEIRO') {
-    setCampos((prev) => ({
-      ...prev,
-      formaPagamento: value as TipoPagamento,
-      contaId: '',
-    }));
-
-    setErros((prev) => ({
-      ...prev,
-      formaPagamento: undefined,
-      contaId: undefined,
-    }));
-
-    return;
-  }
-
-  setCampos((prev) => ({ ...prev, [name]: value }));
-  setErros((prev) => ({ ...prev, [name]: undefined }));
-};
+    setErros((atuais) => ({ ...atuais, [name]: undefined }));
+  };
 
   const validar = () => {
     const novosErros: Partial<Record<keyof CamposTransacao, string>> = {};
@@ -154,7 +122,7 @@ const NovaTransacao: React.FC = () => {
     if (!campos.valor) {
       novosErros.valor = 'Valor é obrigatório.';
     } else if (Number.isNaN(valorNumerico) || valorNumerico <= 0) {
-      novosErros.valor = 'Informe um valor positivo.';
+      novosErros.valor = 'Informe um valor maior que zero.';
     }
 
     if (!campos.data) {
@@ -162,24 +130,23 @@ const NovaTransacao: React.FC = () => {
     }
 
     if (campos.formaPagamento !== 'DINHEIRO' && !campos.contaId) {
-    novosErros.contaId = 'Conta é obrigatória.';
-    } 
+      novosErros.contaId = 'Conta é obrigatória para esta forma de pagamento.';
+    }
 
     setErros(novosErros);
     return Object.keys(novosErros).length === 0;
   };
 
-  const enviar = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const enviar = async (evento: FormEvent) => {
+    evento.preventDefault();
     setErroGeral('');
-    setSucesso('');
 
     if (!validar()) return;
 
     setSalvando(true);
 
     try {
-      const transacaoSalva = await registrarTransacaoManual({
+      const transacaoCriada = await registrarTransacaoManual({
         valor: Number(campos.valor),
         data: campos.data,
         descricao: campos.descricao.trim() || undefined,
@@ -189,258 +156,165 @@ const NovaTransacao: React.FC = () => {
         contaId: campos.formaPagamento === 'DINHEIRO' ? null : campos.contaId,
       });
 
-      setTransacoes((prev) => [transacaoSalva, ...prev]);
-      setSucesso('Transação registrada com sucesso.');
-
-      setCampos((prev) => ({
-        ...valoresIniciais,
-        data: new Date().toISOString().slice(0, 10),
-        contaId: prev.contaId,
-        categoriaId: prev.categoriaId,
-      }));
-    } catch (err: any) {
-      const msg = err?.response?.data?.erro || err?.response?.data?.message;
-      setErroGeral(msg || 'Não foi possível registrar a transação.');
+      navigate('/transacoes', {
+        replace: true,
+        state: {
+          mensagem: 'Transação registrada com sucesso.',
+          transacaoCriada,
+        },
+      });
+    } catch (err) {
+      setErroGeral(obterMensagemErroApi(err, 'Não foi possível registrar a transação.'));
     } finally {
       setSalvando(false);
     }
   };
 
   return (
-    <main className="min-vh-100 py-4" style={{ background: 'var(--sb-bg)' }}>
-      <div className="container" style={{ maxWidth: 1100 }}>
-        <div className="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4">
-          <div>
-            <span className="badge rounded-pill mb-2" style={{ background: 'var(--sb-primary)' }}>
-              SmartBudget
-            </span>
-            <h1 className="fw-bold mb-1" style={{ color: 'var(--sb-text)' }}>
-              Nova transação
-            </h1>
-            <p className="text-muted mb-0">
-              Registre manualmente gastos que não vieram de extrato ou nota fiscal.
-            </p>
+    <LayoutPrivado
+      titulo="Nova transação"
+      subtitulo="Registre manualmente uma movimentação financeira."
+      acaoPrimaria={
+        <Link to="/transacoes" className="sb-button sb-button-secondary sb-button-sm">
+          Voltar
+        </Link>
+      }
+    >
+      <MensagemAlerta mensagem={erroGeral} tipo="danger" />
+
+      <section className="form-panel">
+        <div className="form-panel-header">
+          <h2>Dados da transação</h2>
+          <p>Campos marcados com asterisco são obrigatórios pelo contrato atual do backend.</p>
+        </div>
+
+        {carregandoDados ? (
+          <div className="loading-inline" aria-live="polite">
+            Carregando dados de apoio...
           </div>
+        ) : (
+          <form onSubmit={enviar} noValidate className="sb-form">
+            <div className="form-grid">
+              <label>
+                <span>Valor *</span>
+                <input
+                  name="valor"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={campos.valor}
+                  onChange={alterarCampo}
+                  className={erros.valor ? 'invalid' : ''}
+                  placeholder="0,00"
+                />
+                {erros.valor && <small className="field-error">{erros.valor}</small>}
+              </label>
 
-          <Link to="/dashboard" className="btn btn-outline-secondary align-self-start align-self-md-center">
-            Voltar ao painel
-          </Link>
-        </div>
+              <label>
+                <span>Data *</span>
+                <input
+                  name="data"
+                  type="date"
+                  value={campos.data}
+                  onChange={alterarCampo}
+                  className={erros.data ? 'invalid' : ''}
+                />
+                {erros.data && <small className="field-error">{erros.data}</small>}
+              </label>
 
-        <MensagemAlerta mensagem={erroGeral} tipo="danger" />
-        <MensagemAlerta mensagem={sucesso} tipo="success" />
+              <label className="span-2">
+                <span>Descrição</span>
+                <input
+                  name="descricao"
+                  type="text"
+                  maxLength={120}
+                  value={campos.descricao}
+                  onChange={alterarCampo}
+                  placeholder="Ex.: mercado, salário, transporte"
+                />
+              </label>
 
-        <div className="row g-4">
-          <section className="col-lg-7">
-            <div className="card border-0 shadow-sm" style={{ borderRadius: 18 }}>
-              <div className="card-body p-4">
-                <h2 className="h5 fw-bold mb-3">Dados da transação</h2>
+              <label>
+                <span>Tipo *</span>
+                <select name="tipoTransacao" value={campos.tipoTransacao} onChange={alterarCampo}>
+                  {tiposTransacao.map((tipo) => (
+                    <option key={tipo.valor} value={tipo.valor}>
+                      {tipo.rotulo}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-                {carregandoDados ? (
-                  <p className="text-muted mb-0">Carregando contas e categorias...</p>
-                ) : (
-                  <form onSubmit={enviar} noValidate>
-                    <div className="row g-3">
-                      <div className="col-md-6">
-                        <label className="form-label fw-semibold small" htmlFor="valor">
-                          Valor *
-                        </label>
-                        <input
-                          id="valor"
-                          name="valor"
-                          type="number"
-                          min="0.01"
-                          step="0.01"
-                          className={`form-control ${erros.valor ? 'is-invalid' : ''}`}
-                          value={campos.valor}
-                          onChange={alterarCampo}
-                          placeholder="0,00"
-                        />
-                        {erros.valor && <div className="invalid-feedback">{erros.valor}</div>}
-                      </div>
+              <label>
+                <span>Forma de pagamento</span>
+                <select name="formaPagamento" value={campos.formaPagamento} onChange={alterarCampo}>
+                  {formasPagamento.map((forma) => (
+                    <option key={forma.valor} value={forma.valor}>
+                      {forma.rotulo}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-                      <div className="col-md-6">
-                        <label className="form-label fw-semibold small" htmlFor="data">
-                          Data *
-                        </label>
-                        <input
-                          id="data"
-                          name="data"
-                          type="date"
-                          className={`form-control ${erros.data ? 'is-invalid' : ''}`}
-                          value={campos.data}
-                          onChange={alterarCampo}
-                        />
-                        {erros.data && <div className="invalid-feedback">{erros.data}</div>}
-                      </div>
+              <label>
+                <span>Categoria</span>
+                <select name="categoriaId" value={campos.categoriaId} onChange={alterarCampo}>
+                  <option value="">Sem categoria</option>
+                  {categorias.map((categoria) => (
+                    <option key={categoria.categoriaId} value={categoria.categoriaId}>
+                      {categoria.nome}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-                      <div className="col-12">
-                        <label className="form-label fw-semibold small" htmlFor="descricao">
-                          Descrição
-                        </label>
-                        <input
-                          id="descricao"
-                          name="descricao"
-                          type="text"
-                          className="form-control"
-                          value={campos.descricao}
-                          onChange={alterarCampo}
-                          placeholder="Ex.: mercado, almoço, transporte..."
-                        />
-                      </div>
-
-                      <div className="col-md-6">
-                        <label className="form-label fw-semibold small" htmlFor="tipoTransacao">
-                          Tipo
-                        </label>
-                        <select
-                          id="tipoTransacao"
-                          name="tipoTransacao"
-                          className="form-select"
-                          value={campos.tipoTransacao}
-                          onChange={alterarCampo}
-                        >
-                          {tiposTransacao.map((tipo) => (
-                            <option key={tipo.valor} value={tipo.valor}>
-                              {tipo.rotulo}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="col-md-6">
-                        <label className="form-label fw-semibold small" htmlFor="formaPagamento">
-                          Forma de pagamento
-                        </label>
-                        <select
-                          id="formaPagamento"
-                          name="formaPagamento"
-                          className="form-select"
-                          value={campos.formaPagamento}
-                          onChange={alterarCampo}
-                        >
-                          {formasPagamento.map((forma) => (
-                            <option key={forma.valor} value={forma.valor}>
-                              {forma.rotulo}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="col-md-6">
-                        <label className="form-label fw-semibold small" htmlFor="categoriaId">
-                          Categoria
-                        </label>
-                        <select
-                          id="categoriaId"
-                          name="categoriaId"
-                          className="form-select"
-                          value={campos.categoriaId}
-                          onChange={alterarCampo}
-                        >
-                          <option value="">Sem categoria</option>
-                          {categorias.map((categoria) => (
-                            <option key={categoria.categoriaId} value={categoria.categoriaId}>
-                              {categoria.nome}
-                              {categoria.padrao ? ' (padrão)' : ''}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                        <div className="col-md-6">
-                          <label className="form-label fw-semibold small" htmlFor="contaId">
-                            Conta {campos.formaPagamento !== 'DINHEIRO' ? '*' : ''}
-                          </label>
-                          <select
-                            id="contaId"
-                            name="contaId"
-                            className={`form-select ${erros.contaId ? 'is-invalid' : ''}`}
-                            value={campos.contaId}
-                            onChange={alterarCampo}
-                            disabled={campos.formaPagamento === 'DINHEIRO'}
-                          >
-                            <option value="">
-                              {campos.formaPagamento === 'DINHEIRO'
-                                ? 'Não necessário para pagamento em dinheiro'
-                                : 'Selecione uma conta'}
-                            </option>
-                            {contas.map((conta) => (
-                              <option key={conta.contaId} value={conta.contaId}>
-                                {conta.nome}
-                                {conta.banco ? ` - ${conta.banco}` : ''}
-                              </option>
-                            ))}
-                          </select>
-                          {erros.contaId && <div className="invalid-feedback">{erros.contaId}</div>}
-                        </div>
-                    </div>
-                    <BotaoCarregando
-                      type="submit"
-                      carregando={salvando}
-                      textoCarregando="Salvando..."
-                      className="w-100 mt-4 py-2 fw-semibold"
-                      style={{ background: 'var(--sb-gradient)', border: 'none', borderRadius: 10 }}
-                      disabled={contas.length === 0 && campos.formaPagamento !== 'DINHEIRO'}
-                    >
-                      Salvar transação
-                    </BotaoCarregando>
-
-                    {contas.length === 0 && campos.formaPagamento !== 'DINHEIRO' && (
-                        <p className="text-muted small mt-3 mb-0">
-                          Cadastre uma conta bancária ou selecione Dinheiro como forma de pagamento.
-                        </p>
-                      )}
-                  </form>
-                )}
-              </div>
+              <label>
+                <span>Conta {campos.formaPagamento !== 'DINHEIRO' ? '*' : ''}</span>
+                <select
+                  name="contaId"
+                  value={campos.contaId}
+                  onChange={alterarCampo}
+                  disabled={campos.formaPagamento === 'DINHEIRO'}
+                  className={erros.contaId ? 'invalid' : ''}
+                >
+                  <option value="">
+                    {campos.formaPagamento === 'DINHEIRO' ? 'Conta automática em dinheiro' : 'Selecione uma conta'}
+                  </option>
+                  {contas.map((conta) => (
+                    <option key={conta.contaId} value={conta.contaId}>
+                      {conta.nome}
+                      {conta.banco ? ` - ${conta.banco}` : ''}
+                    </option>
+                  ))}
+                </select>
+                {erros.contaId && <small className="field-error">{erros.contaId}</small>}
+              </label>
             </div>
-          </section>
 
-          <section className="col-lg-5">
-            <div className="card border-0 shadow-sm" style={{ borderRadius: 18 }}>
-              <div className="card-body p-4">
-                <h2 className="h5 fw-bold mb-3">Histórico recém-criado</h2>
+            {!permiteSalvar && (
+              <p className="helper-text">
+                Cadastre uma conta bancária antes de salvar ou selecione Dinheiro como forma de pagamento.
+              </p>
+            )}
 
-                {transacoes.length === 0 ? (
-                  <p className="text-muted mb-0">
-                    As transações salvas nesta tela aparecerão aqui sem recarregar a página.
-                  </p>
-                ) : (
-                  <div className="d-flex flex-column gap-3">
-                    {transacoes.map((transacao) => (
-                      <article
-                        key={transacao.transacaoId}
-                        className="border rounded-3 p-3 bg-light"
-                      >
-                        <div className="d-flex justify-content-between gap-3">
-                          <div>
-                            <strong>{transacao.descricao || 'Transação manual'}</strong>
-                            <div className="text-muted small">
-                              {transacao.contaId ? contaPorId.get(transacao.contaId)?.nome || 'Conta' : 'Dinheiro'} •{' '}
-                              {transacao.categoriaId
-                                ? categoriaPorId.get(transacao.categoriaId)?.nome || 'Categoria'
-                                : 'Sem categoria'}
-                            </div>
-                          </div>
-
-                          <strong>{formatarMoeda(transacao.valor)}</strong>
-                        </div>
-
-                        <div className="text-muted small mt-2">
-                          {transacao.data} • {obterRotuloTipoTransacao(transacao.tipoTransacao)} •{' '} 
-                          {obterRotuloFormaPagamento(transacao.formaPagamento)}
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </div>
+            <div className="form-actions">
+              <Link to="/transacoes" className="sb-button sb-button-secondary">
+                Cancelar
+              </Link>
+              <BotaoCarregando
+                type="submit"
+                carregando={salvando}
+                textoCarregando="Salvando..."
+                className="sb-button sb-button-primary"
+                disabled={!permiteSalvar}
+              >
+                Salvar transação
+              </BotaoCarregando>
             </div>
-          </section>
-        </div>
-      </div>
-    </main>
+          </form>
+        )}
+      </section>
+    </LayoutPrivado>
   );
 };
 

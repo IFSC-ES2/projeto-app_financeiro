@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { limparSessao, obterAccessToken } from '../utils/authStorage';
 
 const api = axios.create({
   baseURL: 'http://localhost:8080',
@@ -7,19 +8,49 @@ const api = axios.create({
   },
 });
 
-// Interceptor: injeta o token em toda requisição autenticada
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = obterAccessToken();
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (erro: unknown) => {
+    if (axios.isAxiosError(erro) && (erro.response?.status === 401 || erro.response?.status === 403)) {
+      limparSessao();
+      window.dispatchEvent(new Event('smartbudget:unauthorized'));
+    }
+
+    return Promise.reject(erro);
+  }
+);
+
 export type TipoTransacao = 'DEBITO' | 'CREDITO' | 'PARCELAMENTO' | 'BOLETO';
 export type TipoPagamento = 'PIX' | 'CARTAO_DEBITO' | 'CARTAO_CREDITO' | 'DINHEIRO' | 'BOLETO' | 'TED_DOC';
-
 export type TipoConta = 'CORRENTE' | 'POUPANCA' | 'CARTAO_CREDITO' | 'CARTEIRA';
+
+export interface TokenDTO {
+  accessToken: string;
+  tipo: string;
+  expiracao?: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  senha: string;
+}
+
+export interface CadastroRequest {
+  nome: string;
+  email: string;
+  cpf: string;
+  senha: string;
+}
 
 export interface ContaRequest {
   nome: string;
@@ -31,7 +62,7 @@ export interface ContaRequest {
 export interface ContaResponse {
   contaId: string;
   nome: string;
-  tipoConta: string;
+  tipoConta: TipoConta;
   banco?: string;
   descricao?: string;
 }
@@ -54,9 +85,43 @@ export interface TransacaoRequest {
   contaId: string | null;
 }
 
-export interface TransacaoResponse extends TransacaoRequest {
+export interface TransacaoResponse {
   transacaoId: string;
+  valor: number;
+  data: string;
+  descricao?: string;
+  tipoTransacao: TipoTransacao;
+  formaPagamento?: TipoPagamento;
+  importacaoId?: string | null;
+  categoriaId?: string | null;
+  contaId: string | null;
 }
+
+interface ErroApiPayload {
+  erro?: unknown;
+  message?: unknown;
+}
+
+const obterTextoSeguro = (valor: unknown) => (typeof valor === 'string' && valor.trim() ? valor : undefined);
+
+export const obterMensagemErroApi = (erro: unknown, fallback: string) => {
+  if (!axios.isAxiosError(erro)) return fallback;
+
+  const dados = erro.response?.data as ErroApiPayload | undefined;
+  return obterTextoSeguro(dados?.erro) || obterTextoSeguro(dados?.message) || fallback;
+};
+
+export const obterStatusHttp = (erro: unknown) => (axios.isAxiosError(erro) ? erro.response?.status : undefined);
+
+export const loginUsuario = async (credenciais: LoginRequest) => {
+  const { data } = await api.post<TokenDTO>('/auth/login', credenciais);
+  return data;
+};
+
+export const cadastrarUsuario = async (cadastro: CadastroRequest) => {
+  const { data } = await api.post<TokenDTO>('/auth/register', cadastro);
+  return data;
+};
 
 export const listarContas = async () => {
   const { data } = await api.get<ContaResponse[]>('/contas');
@@ -75,6 +140,11 @@ export const listarCategorias = async () => {
 
 export const registrarTransacaoManual = async (transacao: TransacaoRequest) => {
   const { data } = await api.post<TransacaoResponse>('/transacoes/manual', transacao);
+  return data;
+};
+
+export const listarTransacoes = async () => {
+  const { data } = await api.get<TransacaoResponse[]>('/transacoes');
   return data;
 };
 
