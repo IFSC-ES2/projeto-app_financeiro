@@ -128,3 +128,7 @@ No frontend, os testes foram configurados e iniciados. Essa estrutura está evid
 - Recebeu 33 comentários.
 - Victor Blum e Victor Gabriel trabalharam ativamente para melhorar essa implementação.
 - As reviews foram válidas e houve comunicação clara durante o processo.
+
+### Pontos adicionais
+
+- Arquitetura foi criado em [docs/arquitetura](../arquitetura.md);
