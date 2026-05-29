@@ -199,10 +199,11 @@ A proteção da branch `main` no GitHub já exige os quatro jobs (`Backend (buil
 ## Documentos
 
 - [Visão do Produto e MVP](docs/inception.md)
-- [Definition of Done](docs/dod.md)
-- [ADR-0001 — Stack Frontend](docs/adrs/ADR-0001-Tipo-de-Aplicacao.md)
-- [ADR-0002 — Stack Backend](docs/adrs/ADR-0002-Linguagem-e-Framework.md)
-- [ADR-0003 — Banco de Dados](docs/adrs/ADR-0003-Abordagem-de-persistência-de-dados.md)
+- [Arquitetura C4](docs/arquitetura.md)
+- [Definition of Done](docs/dod.md) 
+- [ADR-0001 — Stack Frontend](docs/adrs/ADR-0001-Tipo-de-Aplicacao.md) 
+- [ADR-0002 — Stack Backend](docs/adrs/ADR-0002-Linguagem-e-Framework.md) 
+- [ADR-0003 — Banco de Dados](docs/adrs/ADR-0003-Abordagem-de-persistência-de-dados.md) 
 - [ADR-0004 — Arquitetura Geral](docs/adrs/ADR-0004-Estrategia-de-arquiteturas-e-camadas.md)
 - [ADR-0005 — Padrões de Projeto](docs/adrs/ADR-0005-padroes-de-projeto.md)
 - [ADR-0006 — Versionamento de Banco de Dados com Flyway](docs/adrs/ADR-0006-migracoes-de-banco-de-dados-com-flyway.md)
