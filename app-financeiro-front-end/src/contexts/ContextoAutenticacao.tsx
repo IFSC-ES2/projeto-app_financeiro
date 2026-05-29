@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { cadastrarUsuario, loginUsuario } from '../services/api';
 import { ContextoAutenticacao } from './contextoAutenticacaoBase';
@@ -59,4 +60,14 @@ export const ProvedorAutenticacao = ({ children }: PropsProvedorAutenticacao) =>
   );
 
   return <ContextoAutenticacao.Provider value={valor}>{children}</ContextoAutenticacao.Provider>;
+};
+
+export const useAutenticacao = () => {
+  const contexto = useContext(ContextoAutenticacao);
+
+  if (!contexto) {
+    throw new Error('useAutenticacao deve ser usado dentro de ProvedorAutenticacao.');
+  }
+
+  return contexto;
 };
