@@ -4,8 +4,8 @@ import LayoutAutenticacao from '../components/layout/LayoutAutenticacao';
 import CampoFormulario from '../components/ui/CampoFormulario';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { login, obterMensagemErroApi } from '../services/api';
-import { salvarSessao } from '../utils/authStorage';
+import { obterMensagemErroApi } from '../services/api';
+import { useAutenticacao } from '../contexts/ContextoAutenticacao';
 import { useFormulario } from '../hooks/useFormulario';
 
 const validar = (valores: { email: string; senha: string }) => {
@@ -20,6 +20,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const { login } = useAutenticacao();
 
   const { valores, erros, tocados, aoAlterar, aoSair, eValido } = useFormulario({
     valoresIniciais: { email: '', senha: '' },
@@ -33,11 +34,7 @@ const Login: React.FC = () => {
 
     setCarregando(true);
     try {
-      const token = await login(valores.email, valores.senha);
-      if (token?.accessToken) {
-        salvarSessao(token);
-        window.dispatchEvent(new Event('smartbudget:authenticated'));
-      }
+      await login(valores.email, valores.senha);
       navigate('/dashboard');
     } catch (err: unknown) {
       setErro(obterMensagemErroApi(err, 'Credenciais inválidas. Verifique seu e-mail e senha.'));
