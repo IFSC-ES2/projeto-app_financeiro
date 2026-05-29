@@ -98,4 +98,27 @@ describe('Tela de Cadastro', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/login');
     });
   });
+
+  it('deve exibir mensagem de alerta na tela caso a API de cadastro retorne erro', async () => {
+    mockCadastrar.mockRejectedValueOnce({
+      response: { data: { erro: 'E-mail já cadastrado no sistema.' } }
+    });
+
+    renderizarComponente();
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText(/Nome Completo/i), 'Fulano Repetido');
+    await user.type(screen.getByLabelText(/Usuário ou e-mail/i), 'jaexiste@teste.com');
+    await user.type(screen.getByLabelText(/^Senha$/i), 'senha123');
+    await user.type(screen.getByLabelText(/Confirmar Senha/i), 'senha123');
+
+    const botaoCadastrar = screen.getByRole('button', { name: /Cadastrar/i });
+    await user.click(botaoCadastrar);
+
+    await waitFor(() => {
+      expect(screen.getByText('E-mail já cadastrado no sistema.')).toBeInTheDocument();
+    });
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
 });
