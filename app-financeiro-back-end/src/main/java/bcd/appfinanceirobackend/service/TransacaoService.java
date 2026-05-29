@@ -83,7 +83,6 @@ public class TransacaoService {
 
         transacao.setData(dto.getData());
         if(transacao.getData().isAfter(LocalDate.now())) transacao.setFutura(true);
-        transa
         transacao.setDescricao(dto.getDescricao());
         transacao.setTipo(dto.getTipoTransacao());
         transacao.setFormaPagamento(dto.getFormaPagamento());
