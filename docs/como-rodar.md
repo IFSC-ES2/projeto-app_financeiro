@@ -254,13 +254,7 @@ npm run dev
 
 - `/login` - tela de login
 - `/register` - tela de cadastro com máscara de CPF e validação no submit
-- `/categorias` - lista todas as categorias do sistema (avalia o usuário logado para mostrar categorias de usuários)
-- `/contas` - lista todas as contas do usuário autenticado
 - `/contas/registrar` - tela de cadastro de conta para o usuário autenticado
-- `/importacoes` - tela de importações de extratos bancarios e notas fiscais
-- `/importacoes/{id}/status` - tela que verifica o status de uma importação, valida se ela pertence ao usuário autenticado
-- `/transacoes/manual` - tela de registro manual de uma transação
-- `/transacoes/{transacaoId}/categoria` - tela de categorização de uma transação que pertence ao usuário autenticado.
 
 Mantenha o backend rodando em paralelo. O frontend faz chamadas para:
 
