@@ -63,6 +63,11 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
+
+    if (System.getProperty('os.name').toLowerCase().contains('linux')) {
+        systemProperty 'api.version', '1.40'
+        systemProperty 'docker.host', 'unix:///var/run/docker.sock'
+    }
 }
 
 jacoco {
