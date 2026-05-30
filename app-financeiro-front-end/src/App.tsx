@@ -5,6 +5,7 @@ import RotaPublica from './routes/RotaPublica';
 import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
 import NovaConta from './pages/NovaConta';
+import ImportarExtrato from './pages/ImportarExtrato';
 import Dashboard from './pages/Dashboard';
 import Transacoes from './pages/Transacoes';
 import NovaTransacao from './pages/NovaTransacao';
@@ -30,6 +31,7 @@ function App() {
             <Route path="/transacoes/nova" element={<NovaTransacao />} />
             <Route path="/categorias" element={<Categorias />} />
             <Route path="/parcelamentos" element={<Parcelamentos />} />
+            <Route path="/importacoes/nova" element={<ImportarExtrato />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/login" replace />} />
