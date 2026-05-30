@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import LayoutAutenticacao from '../components/layout/LayoutAutenticacao';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { useAutenticacao } from '../contexts/ContextoAutenticacao';
-import { registrarConta } from '../services/api';
+import { registrarConta, obterMensagemErroApi } from '../services/api';
 import type { ContaRequest, TipoConta } from '../services/api';
 
 type CamposConta = {
@@ -39,7 +38,6 @@ const bancos = [
 ];
 
 const NovaConta: React.FC = () => {
-  const { estaAutenticado, sair } = useAutenticacao();
   const navigate = useNavigate();
 
   const [campos, setCampos] = useState<CamposConta>(valoresIniciais);
@@ -48,9 +46,6 @@ const NovaConta: React.FC = () => {
   const [sucesso, setSucesso] = useState('');
   const [salvando, setSalvando] = useState(false);
 
-  if (!estaAutenticado) {
-    return <Navigate to="/login" replace />;
-  }
 
   const alterarCampo = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -99,24 +94,16 @@ const NovaConta: React.FC = () => {
 
       await registrarConta(novaConta);
 
-      setSucesso('Conta bancária cadastrada com sucesso. Redirecionando para o login...');
+      setSucesso('Conta bancária cadastrada com sucesso. Redirecionando para o Dashboard...');
       setCampos(valoresIniciais);
       setErros({});
 
       setTimeout(() => {
-        sair();
-        navigate('/login');
-      }, 1200);
+        navigate('/dashboard', { replace: true });
+      }, 900);
 
-    } catch (err: any) {
-      if (err?.response?.status === 401 || err?.response?.status === 403) {
-        setErroGeral('Sua sessão expirou. Faça login novamente.');
-        sair();
-        return;
-      }
-
-      const msg = err?.response?.data?.erro || err?.response?.data?.message;
-      setErroGeral(msg || 'Não foi possível cadastrar a conta bancária.');
+    } catch (err: unknown) {
+      setErroGeral(obterMensagemErroApi(err, 'Não foi possível cadastrar a conta bancária.'));
     } finally {
       setSalvando(false);
     }
