@@ -105,6 +105,62 @@ curl -X POST http://localhost:8080/auth/register \
 
 Informações mais detalhadas disponíveis em [docs/como-rodar.md](docs/como-rodar.md).
 
+## Banco de dados local com Docker
+
+O projeto possui um arquivo `docker-compose.yml` na raiz para subir um banco PostgreSQL local usado pelo backend.
+
+### Configurações do banco
+
+- Banco: `app_financeiro`
+- Usuário: `postgres`
+- Senha: `1234`
+- Porta: `5432`
+- Imagem Docker: `postgres:16`
+
+### Subir o banco
+
+Na raiz do projeto, execute:
+
+```bash
+docker compose up -d
+```
+
+### Verificar se o banco está rodando
+
+```bash
+docker compose ps
+```
+
+O serviço `postgres` deve aparecer como iniciado. Após alguns segundos, o status de saúde deve ficar como `healthy`.
+
+### Acessar o banco pelo terminal
+
+```bash
+docker exec -it smartbudget-postgres psql -U postgres -d app_financeiro
+```
+
+Para sair do PostgreSQL:
+
+```sql
+\q
+```
+
+### Parar o banco
+
+```bash
+docker compose down
+```
+
+### Apagar os dados locais do banco
+
+Use este comando apenas se quiser remover também o volume com os dados persistidos:
+
+```bash
+docker compose down -v
+```
+
+Depois disso, ao subir novamente com `docker compose up -d`, o banco será recriado do zero.
+
 ## Migrations e versionamento do banco
 
 O projeto utiliza Flyway para controlar as versões do banco de dados.
