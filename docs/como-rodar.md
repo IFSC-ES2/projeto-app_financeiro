@@ -21,11 +21,13 @@ O projeto possui:
 >
 > Não precisa instalar PostgreSQL na máquina: ele vai rodar dentro de um container Docker.
 
-## 1. Banco de dados (via Docker)
+## 1. Banco de dados (via Docker Compose)
 
-A ideia aqui é não poluir a sua máquina com uma instalação local do PostgreSQL. O projeto utiliza um container que já vem com tudo configurado e expõe a porta `5432` no `localhost`, exatamente como o backend espera.
+A ideia aqui é não poluir a sua máquina com uma instalação local do PostgreSQL. O projeto utiliza o arquivo `docker-compose.yml`, localizado na raiz do repositório, para subir um container PostgreSQL já configurado com as credenciais esperadas pelo backend.
 
-### Passo 1 — confirmar que o Docker está rodando
+O banco fica disponível em `localhost:5432` e os dados são mantidos em um volume Docker, então eles não somem ao parar o container.
+
+### Passo 1: confirmar que o Docker está rodando
 
 Antes de qualquer coisa, abra o terminal e rode:
 
@@ -42,37 +44,36 @@ sudo systemctl start docker
 
 Depois tente novamente.
 
-### Passo 2 — subir o container do PostgreSQL
+### Passo 2: subir o PostgreSQL
 
-Esse comando baixa a imagem do PostgreSQL 16, cria um container chamado `app-financeiro-db`, define usuário, senha e banco que o backend usa por padrão e mantém os dados persistidos em um volume chamado `app-financeiro-pgdata`.
-
-Assim, os dados não somem se você derrubar o container.
+Na raiz do projeto, execute:
 
 ```bash
-docker run -d \
-  --name app-financeiro-db \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=1234 \
-  -e POSTGRES_DB=app_financeiro \
-  -p 5432:5432 \
-  -v app-financeiro-pgdata:/var/lib/postgresql/data \
-  postgres:16
+docker compose up -d
 ```
 
-Na primeira vez ele vai baixar a imagem. Você pode confirmar que o container está rodando com:
+Esse comando baixa a imagem do PostgreSQL 16, cria o container definido no `docker-compose.yml` e sobe o banco com as configurações usadas pelo backend:
+
+- Banco: `app_financeiro`
+- Usuário: `postgres`
+- Senha: `1234`
+- Porta: `5432`
+- Container: `smartbudget-postgres`
+
+Você pode confirmar que o container está rodando com:
 
 ```bash
-docker ps
+docker compose ps
 ```
 
-Deve aparecer uma linha do `app-financeiro-db` com a porta `0.0.0.0:5432->5432/tcp`.
+O serviço `postgres` deve aparecer como iniciado. Após alguns segundos, o status de saúde deve ficar como `healthy`.
 
-### Passo 3 — testar a conexão (opcional)
+### Passo 3: testar a conexão opcionalmente
 
 Se quiser entrar no banco e dar uma olhada:
 
 ```bash
-docker exec -it app-financeiro-db psql -U postgres -d app_financeiro
+docker exec -it smartbudget-postgres psql -U postgres -d app_financeiro
 ```
 
 Comandos úteis dentro do `psql`:
@@ -91,15 +92,17 @@ Sai do `psql`.
 
 As tabelas aparecerão depois que o backend subir e o Flyway executar as migrations.
 
-### Gerenciamento do container no dia a dia
+### Gerenciamento do banco no dia a dia
 
 | O que você quer | Comando |
 |---|---|
-| Parar o banco | `docker stop app-financeiro-db` |
-| Voltar a subir | `docker start app-financeiro-db` |
-| Ver logs | `docker logs -f app-financeiro-db` |
-| Apagar o container, mantendo os dados | `docker rm -f app-financeiro-db` |
-| Apagar tudo, inclusive os dados | `docker rm -f app-financeiro-db && docker volume rm app-financeiro-pgdata` |
+| Subir o banco | `docker compose up -d` |
+| Verificar o status | `docker compose ps` |
+| Ver logs | `docker compose logs -f postgres` |
+| Parar o banco | `docker compose down` |
+| Parar e apagar os dados locais | `docker compose down -v` |
+
+Atenção: o comando `docker compose down -v` remove o volume Docker e apaga os dados locais do banco.
 
 ## 2. Versionamento de banco de dados com Flyway
 
