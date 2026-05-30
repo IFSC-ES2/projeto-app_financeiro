@@ -1,43 +1,73 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import api from '../services/api';
+/* eslint-disable react-refresh/only-export-components */
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
+import { cadastrarUsuario, loginUsuario } from '../services/api';
+import { ContextoAutenticacao } from './contextoAutenticacaoBase';
+import type { DadosContextoAutenticacao } from './tiposAutenticacao';
+import { limparSessao, recuperarSessaoValida, salvarSessao } from '../utils/authStorage';
+import type { SessaoAutenticacao } from '../utils/authStorage';
 
-interface DadosContextoAutenticacao {
-  token: string | null;
-  estaAutenticado: boolean;
-  login: (email: string, senha: string) => Promise<void>;
-  cadastrar: (nome: string, email: string, senha: string, cpf: string) => Promise<void>;
-  sair: () => void;
+interface PropsProvedorAutenticacao {
+  children: ReactNode;
 }
 
-const ContextoAutenticacao = createContext<DadosContextoAutenticacao>({} as DadosContextoAutenticacao);
+export const ProvedorAutenticacao = ({ children }: PropsProvedorAutenticacao) => {
+  const [sessao, setSessao] = useState<SessaoAutenticacao | null>(() => recuperarSessaoValida());
+  const [autenticacaoPronta] = useState(true);
 
-export const ProvedorAutenticacao: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const sair = useCallback(() => {
+    limparSessao();
+    setSessao(null);
+  }, []);
+
+  useEffect(() => {
+    const aoPerderAutorizacao = () => setSessao(null);
+    const aoAutenticar = () => setSessao(recuperarSessaoValida());
+
+    window.addEventListener('smartbudget:unauthorized', aoPerderAutorizacao);
+    window.addEventListener('smartbudget:authenticated', aoAutenticar);
+
+    return () => {
+      window.removeEventListener('smartbudget:unauthorized', aoPerderAutorizacao);
+      window.removeEventListener('smartbudget:authenticated', aoAutenticar);
+    };
+  }, []);
 
   const login = useCallback(async (email: string, senha: string) => {
-    const { data } = await api.post('/auth/login', { email, senha });
-    if (!data?.accessToken) throw new Error('Resposta inesperada do servidor.');
-    localStorage.setItem('token', data.accessToken);
-    setToken(data.accessToken);
+    const token = await loginUsuario({ email, senha });
+    if (!token?.accessToken) throw new Error('Resposta inesperada do servidor.');
+
+    setSessao(salvarSessao(token));
   }, []);
 
   const cadastrar = useCallback(async (nome: string, email: string, senha: string, cpf: string) => {
-    const { data } = await api.post('/auth/register', { nome, email, senha, cpf });
-    if (!data?.accessToken) throw new Error('Resposta inesperada do servidor.');
-    localStorage.setItem('token', data.accessToken);
-    setToken(data.accessToken);
+    const token = await cadastrarUsuario({ nome, email, senha, cpf });
+    if (!token?.accessToken) throw new Error('Resposta inesperada do servidor.');
+
+    setSessao(salvarSessao(token));
   }, []);
 
-  const sair = useCallback(() => {
-    localStorage.removeItem('token');
-    setToken(null);
-  }, []);
-
-  return (
-    <ContextoAutenticacao.Provider value={{ token, estaAutenticado: !!token, login, cadastrar, sair }}>
-      {children}
-    </ContextoAutenticacao.Provider>
+  const valor = useMemo<DadosContextoAutenticacao>(
+    () => ({
+      token: sessao?.accessToken ?? null,
+      estaAutenticado: Boolean(sessao?.accessToken),
+      autenticacaoPronta,
+      login,
+      cadastrar,
+      sair,
+    }),
+    [autenticacaoPronta, cadastrar, login, sair, sessao?.accessToken]
   );
+
+  return <ContextoAutenticacao.Provider value={valor}>{children}</ContextoAutenticacao.Provider>;
 };
 
-export const useAutenticacao = () => useContext(ContextoAutenticacao);
+export const useAutenticacao = () => {
+  const contexto = useContext(ContextoAutenticacao);
+
+  if (!contexto) {
+    throw new Error('useAutenticacao deve ser usado dentro de ProvedorAutenticacao.');
+  }
+
+  return contexto;
+};
