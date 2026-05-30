@@ -43,14 +43,14 @@ describe('Tela de Cadastro', () => {
     expect(screen.getByLabelText(/CPF/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^Senha$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Confirmar senha/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Cadastrar/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Criar conta/i })).toBeInTheDocument();
   });
 
   it('deve exibir erros de validacao ao tentar submeter o formulario vazio', async () => {
     renderizarComponente();
     const user = userEvent.setup();
 
-    const botaoCadastrar = screen.getByRole('button', { name: /Cadastrar/i });
+    const botaoCadastrar = screen.getByRole('button', { name: /Criar conta/i });
     await user.click(botaoCadastrar);
 
     expect(mockCadastrar).not.toHaveBeenCalled();
@@ -73,7 +73,7 @@ describe('Tela de Cadastro', () => {
     await user.type(screen.getByLabelText(/^Senha$/i), 'senha123');
     await user.type(screen.getByLabelText(/Confirmar senha/i), 'senhaDiferente');
 
-    const botaoCadastrar = screen.getByRole('button', { name: /Cadastrar/i });
+    const botaoCadastrar = screen.getByRole('button', { name: /Criar conta/i });
     await user.click(botaoCadastrar);
 
     expect(mockCadastrar).not.toHaveBeenCalled();
@@ -94,7 +94,7 @@ describe('Tela de Cadastro', () => {
     await user.type(screen.getByLabelText(/^Senha$/i), 'senhaValida123');
     await user.type(screen.getByLabelText(/Confirmar senha/i), 'senhaValida123');
 
-    const botaoCadastrar = screen.getByRole('button', { name: /Cadastrar/i });
+    const botaoCadastrar = screen.getByRole('button', { name: /Criar conta/i });
     await user.click(botaoCadastrar);
 
     await waitFor(() => {
@@ -125,7 +125,7 @@ describe('Tela de Cadastro', () => {
     await user.type(screen.getByLabelText(/^Senha$/i), 'senha123');
     await user.type(screen.getByLabelText(/Confirmar senha/i), 'senha123');
 
-    const botaoCadastrar = screen.getByRole('button', { name: /Cadastrar/i });
+    const botaoCadastrar = screen.getByRole('button', { name: /Criar conta/i });
     await user.click(botaoCadastrar);
 
     await waitFor(() => {
