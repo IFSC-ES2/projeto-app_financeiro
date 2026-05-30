@@ -41,7 +41,7 @@ jobs:
           ./gradlew --version
 
       - name: Build
-        run: ./gradlew build --no-daemon
+        run: ./gradlew assemble --no-daemon
 
       - name: Tests
         run: ./gradlew test --no-daemon
