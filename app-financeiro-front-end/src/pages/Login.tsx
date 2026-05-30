@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAutenticacao } from '../contexts/ContextoAutenticacao';
 import LayoutAutenticacao from '../components/layout/LayoutAutenticacao';
 import CampoFormulario from '../components/ui/CampoFormulario';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
+import { obterMensagemErroApi } from '../services/api';
+import { useAutenticacao } from '../contexts/ContextoAutenticacao';
 import { useFormulario } from '../hooks/useFormulario';
 
 const validar = (valores: { email: string; senha: string }) => {
@@ -16,10 +17,10 @@ const validar = (valores: { email: string; senha: string }) => {
 };
 
 const Login: React.FC = () => {
-  const { login } = useAutenticacao();
   const navigate = useNavigate();
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const { login } = useAutenticacao();
 
   const { valores, erros, tocados, aoAlterar, aoSair, eValido } = useFormulario({
     valoresIniciais: { email: '', senha: '' },
@@ -35,9 +36,8 @@ const Login: React.FC = () => {
     try {
       await login(valores.email, valores.senha);
       navigate('/dashboard');
-    } catch (err: any) {
-      const msg = err?.response?.data?.erro;
-      setErro(msg || 'E-mail ou senha inválidos. Tente novamente.');
+    } catch (err: unknown) {
+      setErro(obterMensagemErroApi(err, 'Credenciais inválidas. Verifique seu e-mail e senha.'));
     } finally {
       setCarregando(false);
     }
@@ -117,22 +117,6 @@ const Login: React.FC = () => {
           }
         />
 
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <div className="form-check mb-0">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id="lembrarMe"
-              style={{ accentColor: 'var(--sb-primary)' }}
-            />
-            <label className="form-check-label small text-muted" htmlFor="lembrarMe">
-              Lembrar-me
-            </label>
-          </div>
-          <a href="#" className="small text-decoration-none" style={{ color: 'var(--sb-primary)' }}>
-            Esqueceu a senha?
-          </a>
-        </div>
 
         <BotaoCarregando
           type="submit"

@@ -92,6 +92,13 @@ public class TransacaoService {
 
     }
 
+    public List<TransacaoResponseDTO> listarTransacoesPorUsuario (Usuario usuarioAutenticado) {
+        return transacaoRepository.findAllByContaUsuarioId(usuarioAutenticado.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     public TransacaoResponseDTO categorizar(UUID transacaoId, UUID categoriaId, Usuario usuarioAutenticado){
         Transacao transacao = transacaoRepository.findById(transacaoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Transacao não encontrada"));

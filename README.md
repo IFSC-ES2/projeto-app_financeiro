@@ -180,15 +180,16 @@ Frontend (React + Vite):
 
 ```bash
 cd app-financeiro-front-end
-npm install
+npm ci
+npm run lint
 npm test --if-present
 ```
 
-> O frontend ainda está construindo a sua suíte de testes. Enquanto não houver script `test` no `package.json`, o comando acima é um no-op proposital, da mesma forma como o CI se comporta. O passo está versionado para que a primeira suíte adicionada já entre como gate obrigatório, sem precisar mexer no workflow.
+O frontend deve passar pelo lint antes do merge. O pipeline de CI executa `npm run lint`, `npm run build` e `npm test --if-present`, garantindo que problemas de padronização e erros estáticos sejam detectados automaticamente.
 
 ## Integração contínua (CI)
 
-O workflow `.github/workflows/ci.yml` é disparado em cada pull request (`opened`, `synchronize`, `reopened`) e roda quatro jobs: build e testes do backend com Postgres efêmero, build e testes do frontend, validação de YAML e verificação de arquivos obrigatórios.
+O workflow `.github/workflows/ci.yml` é disparado em cada pull request (`opened`, `synchronize`, `reopened`) e roda quatro jobs: build e testes do backend com Postgres efêmero usando Gradle Wrapper, lint/build/testes do frontend, validação de YAML e verificação de arquivos obrigatórios.
 
 Qualquer falha derruba o check do PR e impede o merge.
 
@@ -199,10 +200,11 @@ A proteção da branch `main` no GitHub já exige os quatro jobs (`Backend (buil
 ## Documentos
 
 - [Visão do Produto e MVP](docs/inception.md)
-- [Definition of Done](docs/dod.md)
-- [ADR-0001 — Stack Frontend](docs/adrs/ADR-0001-Tipo-de-Aplicacao.md)
-- [ADR-0002 — Stack Backend](docs/adrs/ADR-0002-Linguagem-e-Framework.md)
-- [ADR-0003 — Banco de Dados](docs/adrs/ADR-0003-Abordagem-de-persistência-de-dados.md)
+- [Arquitetura C4](docs/arquitetura.md)
+- [Definition of Done](docs/dod.md) 
+- [ADR-0001 — Stack Frontend](docs/adrs/ADR-0001-Tipo-de-Aplicacao.md) 
+- [ADR-0002 — Stack Backend](docs/adrs/ADR-0002-Linguagem-e-Framework.md) 
+- [ADR-0003 — Banco de Dados](docs/adrs/ADR-0003-Abordagem-de-persistência-de-dados.md) 
 - [ADR-0004 — Arquitetura Geral](docs/adrs/ADR-0004-Estrategia-de-arquiteturas-e-camadas.md)
 - [ADR-0005 — Padrões de Projeto](docs/adrs/ADR-0005-padroes-de-projeto.md)
 - [ADR-0006 — Versionamento de Banco de Dados com Flyway](docs/adrs/ADR-0006-migracoes-de-banco-de-dados-com-flyway.md)
