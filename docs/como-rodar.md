@@ -290,24 +290,6 @@ npm test
 
 ## 6. Problemas comuns
 
-### Connection refused no boot do backend
-
-O container do PostgreSQL provavelmente não está de pé.
-
-Confira com:
-
-```bash
-docker ps
-```
-
-Se não aparecer, rode:
-
-```bash
-docker start app-financeiro-db
-```
-
-Ou refaça o comando `docker run` do passo 2.
-
 ### port is already allocated ao subir o container
 
 Você já tem um PostgreSQL ocupando a porta `5432`, seja instalado na máquina ou em outro container.
@@ -370,60 +352,3 @@ Se mudar de porta, atualize a configuração de CORS no backend.
 O `JWT_SECRET` pode ter mudado entre execuções.
 
 Tokens emitidos antes deixam de valer quando o segredo muda.
-
-## 7. Subindo o banco de dados com Docker
-
-Na raiz do projeto, execute:
-
-```
-docker compose up -d
-```
-
-Esse comando sobe um container PostgreSQL 16 com as configurações esperadas pelo backend.
-
-Configurações do banco:
-
-- Banco: `app_financeiro`
-- Usuário: `postgres`
-- Senha: `1234`
-- Porta: `5432`
-
-Para verificar se o banco está rodando:
-
-```bsh
-docker compose ps
-```
-
-O serviço `postgres` deve estar iniciado. Após alguns segundos, o container deve ficar saudável.
-
-Caso queira acessar o PostgreSQL pelo terminal:
-
-```
-docker exec -it smartbudget-postgres psql -U postgres -d app_financeiro
-```
-
-Para sair:
-
-```sql
-\q
-```
-
-Para parar o container do banco:
-
-```
-docker compose down
-```
-
-aso precise apagar todos os dados locais do banco, execute:
-
-```
-docker compose down -v
-```
-
-Depois suba novamente:
-
-```
-docker compose up -d
-```
-
-Atenção: o comando `docker compose down -v` remove o volume do banco e apaga os dados locais.
