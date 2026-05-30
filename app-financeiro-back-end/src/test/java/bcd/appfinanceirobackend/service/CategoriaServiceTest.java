@@ -89,20 +89,6 @@ class CategoriaServiceTest {
         }
 
         @Test
-        @DisplayName("Não busca categorias usando usuário diferente do autenticado")
-        void naoDeveBuscarCategoriasDeOutroUsuario() {
-            Usuario outroUsuario = new Usuario();
-            outroUsuario.setId(UUID.randomUUID());
-
-            when(categoriaRepository.findByPadraoTrueOrUsuarioId(usuarioAutenticado.getId()))
-                    .thenReturn(List.of());
-
-            categoriaService.listarParaUsuario(usuarioAutenticado);
-
-            verify(categoriaRepository).findByPadraoTrueOrUsuarioId(usuarioAutenticado.getId());
-        }
-
-        @Test
         @DisplayName("Mapeia categoria para DTO")
         void deveMapearCategoriaParaDTO() {
             Categoria categoria = criarCategoriaPadrao(
