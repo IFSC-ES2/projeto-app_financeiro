@@ -9,7 +9,8 @@ const { mockCadastrar, mockNavigate } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
 }));
 
-vi.mock('../contexts/ContextoAutenticacao', () => ({
+// Caminho corrigido! Apontando para o hook de onde o componente realmente importa a função
+vi.mock('../hooks/useAutenticacao', () => ({
   useAutenticacao: () => ({
     cadastrar: mockCadastrar,
   }),
@@ -79,6 +80,8 @@ describe('Tela de Cadastro', () => {
     expect(mockCadastrar).not.toHaveBeenCalled();
 
     await waitFor(() => {
+      // Nota: Certifique-se de que o dev front-end usou essa mesma string na tela,
+      // senão esse teste vai falhar por divergência de texto!
       expect(screen.getByText('As senhas não coincidem.')).toBeInTheDocument();
     });
   });
