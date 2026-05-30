@@ -20,6 +20,8 @@ repositories {
     mavenCentral()
 }
 
+ext['testcontainers.version'] = '1.20.4'
+
 dependencies {
     // Core Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -30,9 +32,8 @@ dependencies {
     implementation 'org.postgresql:postgresql:42.7.3'
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'
-    
+
     // Documentação e Utilidades
-    // 3.x do springdoc puxa Spring Boot 4; manter 2.6.x alinhado ao Boot 3.3
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
     implementation 'com.opencsv:opencsv:5.9'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
@@ -41,15 +42,19 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
-    
+
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    
+
     // Testes
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    // AQUI ESTÁ A CORREÇÃO FINAL DOS TESTES:
     testImplementation 'org.springframework.security:spring-security-test'
+
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
@@ -58,6 +63,11 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
+
+    if (System.getProperty('os.name').toLowerCase().contains('linux')) {
+        systemProperty 'api.version', '1.40'
+        systemProperty 'docker.host', 'unix:///var/run/docker.sock'
+    }
 }
 
 jacoco {
