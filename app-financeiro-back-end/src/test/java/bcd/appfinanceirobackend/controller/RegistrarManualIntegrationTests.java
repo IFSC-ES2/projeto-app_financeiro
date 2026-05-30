@@ -225,5 +225,41 @@ class RegistrarManualIntegrationTests {
                             .content("{ json inválido }"))
                     .andExpect(status().isBadRequest());
         }
+
+        @Test
+        @DisplayName("Retorna 400 quando valor é zero")
+        void deveRetornar400QuandoValorZero() throws Exception {
+            dtoValido.setValor(BigDecimal.ZERO);
+
+            when(transacaoService.registrarManual(any(), any()))
+                    .thenThrow(new IllegalArgumentException("O valor informado deve ser maior que zero"));
+
+            mockMvc.perform(post("/transacoes/manual")
+                            .with(user(usuarioAutenticado))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(mapper.writeValueAsString(dtoValido)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                            "O valor informado deve ser maior que zero"
+                    )));
+        }
+
+        @Test
+        @DisplayName("Retorna 400 quando valor é negativo")
+        void deveRetornar400QuandoValorNegativo() throws Exception {
+            dtoValido.setValor(new BigDecimal("-50.00"));
+
+            when(transacaoService.registrarManual(any(), any()))
+                    .thenThrow(new IllegalArgumentException("O valor informado deve ser maior que zero"));
+
+            mockMvc.perform(post("/transacoes/manual")
+                            .with(user(usuarioAutenticado))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(mapper.writeValueAsString(dtoValido)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                            "O valor informado deve ser maior que zero"
+                    )));
+        }
     }
 }
