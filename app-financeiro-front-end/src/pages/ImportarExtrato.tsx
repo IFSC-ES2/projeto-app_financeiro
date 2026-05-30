@@ -7,6 +7,8 @@ import {
   consultarStatusImportacao,
   criarImportacao,
   listarContas,
+  obterMensagemErroApi,
+  obterStatusHttp,
 } from '../services/api';
 import type {
   ContaResponse,
@@ -71,8 +73,9 @@ const ImportarExtrato: React.FC = () => {
         const data = await listarContas();
         setContas(data);
         if (data.length === 1) setContaId(data[0].contaId);
-      } catch (err: any) {
-        if (err?.response?.status === 401 || err?.response?.status === 403) {
+      } catch (err) {
+        const status = obterStatusHttp(err);
+        if (status === 401 || status === 403) {
           sair();
           return;
         }
@@ -100,9 +103,10 @@ const ImportarExtrato: React.FC = () => {
         if (cancelado) return;
         setStatusAtual(status);
         if (status === 'CONCLUIDO' || status === 'ERRO') return;
-      } catch (err: any) {
+      } catch (err) {
         if (cancelado) return;
-        if (err?.response?.status === 401 || err?.response?.status === 403) {
+        const status = obterStatusHttp(err);
+        if (status === 401 || status === 403) {
           sair();
           return;
         }
@@ -191,13 +195,13 @@ const ImportarExtrato: React.FC = () => {
       const resultado = await criarImportacao(arquivo!, contaId);
       setImportacao(resultado);
       setStatusAtual(resultado.status);
-    } catch (err: any) {
-      if (err?.response?.status === 401 || err?.response?.status === 403) {
+    } catch (err) {
+      const status = obterStatusHttp(err);
+      if (status === 401 || status === 403) {
         sair();
         return;
       }
-      const msg = err?.response?.data?.erro || err?.response?.data?.message;
-      setErroGeral(msg || 'Não foi possível iniciar a importação. Tente novamente.');
+      setErroGeral(obterMensagemErroApi(err, 'Não foi possível iniciar a importação. Tente novamente.'));
     } finally {
       setEnviando(false);
     }
