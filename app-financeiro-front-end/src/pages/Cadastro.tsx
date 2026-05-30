@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAutenticacao } from '../contexts/ContextoAutenticacao';
+import { useAutenticacao } from '../hooks/useAutenticacao';
 import LayoutAutenticacao from '../components/layout/LayoutAutenticacao';
 import CampoFormulario from '../components/ui/CampoFormulario';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
+import { obterMensagemErroApi, obterStatusHttp } from '../services/api';
 import { useFormulario } from '../hooks/useFormulario';
 import { formatarCpf, isCpfValido } from '../utils/cpf';
 
@@ -57,12 +58,11 @@ const Cadastro: React.FC = () => {
       const cpfSoDigitos = valores.cpf.replace(/\D/g, '');
       await cadastrar(valores.nome, valores.email, valores.senha, cpfSoDigitos);
       navigate('/contas/nova');
-    } catch (err: any) {
-      const status = err?.response?.status;
-      const msg = err?.response?.data?.erro;
-      if (status === 409) setErro(msg || 'E-mail ou CPF já cadastrado.');
-      else if (status === 400) setErro(msg || 'Dados inválidos. Verifique os campos.');
-      else setErro('Não foi possível criar a conta. Tente novamente.');
+    } catch (err: unknown) {
+      const status = obterStatusHttp(err);
+      if (status === 409) setErro(obterMensagemErroApi(err, 'E-mail ou CPF já cadastrado.'));
+      else if (status === 400) setErro(obterMensagemErroApi(err, 'Dados inválidos. Verifique os campos.'));
+      else setErro(obterMensagemErroApi(err, 'Não foi possível criar a conta. Tente novamente.'));
     } finally {
       setCarregando(false);
     }
