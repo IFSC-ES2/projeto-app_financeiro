@@ -261,5 +261,16 @@ class RegistrarManualIntegrationTests {
                             "O valor informado deve ser maior que zero"
                     )));
         }
+
+        @Test
+        @DisplayName("Retorna 401 ou 403 quando usuário não está autenticado")
+        void deveRetornar401Ou403QuandoNaoAutenticado() throws Exception {
+            mockMvc.perform(post("/transacoes/manual")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(mapper.writeValueAsString(dtoValido)))
+                    .andExpect(status().is4xxClientError());
+
+            verify(transacaoService, never()).registrarManual(any(), any());
+        }
     }
 }
