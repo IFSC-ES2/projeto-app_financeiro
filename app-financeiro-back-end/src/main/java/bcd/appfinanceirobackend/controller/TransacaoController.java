@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -28,6 +29,11 @@ public class TransacaoController {
             @AuthenticationPrincipal Usuario usuarioAutenticado) {
         return ResponseEntity.status(HttpStatus.CREATED).body(transacaoService.registrarManual(
                 requestDTO, usuarioAutenticado));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TransacaoResponseDTO>> listar(@AuthenticationPrincipal Usuario usuario) {
+        return ResponseEntity.ok(transacaoService.listarTransacoesPorUsuario(usuario));
     }
 
     @PatchMapping("/{transacaoId}/categoria")
