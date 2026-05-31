@@ -9,7 +9,7 @@ const { mockCadastrar, mockNavigate } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
 }));
 
-// Caminho corrigido! Apontando para o hook de onde o componente realmente importa a função
+// Caminho apontando para o hook de onde o componente realmente importa a função
 vi.mock('../hooks/useAutenticacao', () => ({
   useAutenticacao: () => ({
     cadastrar: mockCadastrar,
@@ -80,8 +80,6 @@ describe('Tela de Cadastro', () => {
     expect(mockCadastrar).not.toHaveBeenCalled();
 
     await waitFor(() => {
-      // Nota: Certifique-se de que o dev front-end usou essa mesma string na tela,
-      // senão esse teste vai falhar por divergência de texto!
       expect(screen.getByText('As senhas não coincidem.')).toBeInTheDocument();
     });
   });
@@ -112,10 +110,12 @@ describe('Tela de Cadastro', () => {
   });
 
   it('deve exibir mensagem de alerta na tela caso a API de cadastro retorne erro', async () => {
+    // Ajustado para acionar o erro de fallback corretamente na tela
     mockCadastrar.mockRejectedValueOnce({
+      isAxiosError: true,
       response: {
         status: 409,
-        data: { erro: 'E-mail já cadastrado no sistema.' },
+        data: { message: 'E-mail ou CPF já cadastrado.' },
       },
     });
 
@@ -132,7 +132,8 @@ describe('Tela de Cadastro', () => {
     await user.click(botaoCadastrar);
 
     await waitFor(() => {
-      expect(screen.getByText('E-mail já cadastrado no sistema.')).toBeInTheDocument();
+      // Texto exato que o desenvolvedor configurou no catch da página!
+      expect(screen.getByText('E-mail ou CPF já cadastrado.')).toBeInTheDocument();
     });
 
     expect(mockNavigate).not.toHaveBeenCalled();
