@@ -275,6 +275,30 @@ npm test
 
 ## 6. Problemas comuns
 
+### Connection refused no boot do backend
+
+O container do PostgreSQL provavelmente não está em execução ou ainda não terminou de inicializar.
+
+Confira o status com:
+
+```bash
+docker compose ps
+```
+
+Se o serviço `postgres` não estiver rodando, suba o banco novamente pela raiz do projeto:
+
+```bash
+docker compose up -d
+```
+
+Se o container estiver rodando, mas ainda aparecer erro de conexão, aguarde alguns segundos e verifique os logs:
+
+```bash
+docker compose logs -f postgres
+```
+
+O backend deve conseguir conectar quando o PostgreSQL estiver pronto para aceitar conexões na porta `5432`.
+
 ### port is already allocated ao subir o container
 
 Você já tem um PostgreSQL ocupando a porta `5432`, seja instalado na máquina ou em outro container.
