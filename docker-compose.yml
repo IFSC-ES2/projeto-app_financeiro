@@ -19,3 +19,4 @@ services:
 
 volumes:
   postgres_data:
+    name: app-financeiro-pgdata
