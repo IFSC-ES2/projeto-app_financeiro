@@ -179,15 +179,6 @@ Regras importantes:
 - Toda alteração de schema deve possuir uma migration versionada
 - Migrations já aplicadas não devem ser editadas depois de enviadas ao repositório
 
-### Usando credenciais diferentes
-
-Se preferir outro usuário, senha ou nome de banco, troque as três variáveis `POSTGRES_*` no `docker run` e reflita as mesmas escolhas em `app-financeiro-back-end/src/main/resources/application.properties`:
-
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/app_financeiro
-spring.datasource.username=postgres
-spring.datasource.password=1234
-```
 
 ## 3. Backend (Spring Boot)
 
