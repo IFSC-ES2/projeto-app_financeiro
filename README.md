@@ -64,16 +64,28 @@ cd app-financeiro-back-end
 Para rodar banco de dados:
 
 ```bash
-docker run -d \
-  --name app-financeiro-db \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=1234 \
-  -e POSTGRES_DB=app_financeiro \
-  -p 5432:5432 \
-  -v app-financeiro-pgdata:/var/lib/postgresql/data \
-  postgres:16
+docker compose up -d
 ```
 
+O banco PostgreSQL será iniciado com as configurações definidas no `docker-compose.yml` da raiz do projeto:
+
+- Banco: `app_financeiro`
+- Usuário: `postgres`
+- Senha: `1234`
+- Porta: `5432`
+- Container: `smartbudget-postgres`
+
+Para parar o banco:
+
+```bash
+docker compose down
+```
+
+Para apagar os dados locais do banco:
+
+```bash
+docker compose down -v
+```
 Para rodar front-end:
 
 ```bash
