@@ -21,6 +21,11 @@ public final class TransacaoSpecs {
         return (root, query, cb) -> cb.equal(root.get("conta").get("usuario").get("id"), usuarioId);
     }
 
+    public static Specification<Transacao> daContaEspecifica(UUID contaId) {
+        if (contaId == null) return null;
+        return (root, query, cb) -> cb.equal(root.get("conta").get("id"), contaId);
+    }
+
     public static Specification<Transacao> dataDe(LocalDate dataInicio) {
         if (dataInicio == null) return null;
         return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get("data"), dataInicio);

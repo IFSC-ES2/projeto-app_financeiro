@@ -44,9 +44,10 @@ public class TransacaoController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
             @RequestParam(required = false) UUID categoriaId,
             @RequestParam(required = false) TipoTransacao tipo,
+            @RequestParam(required = false) UUID contaId,
             @PageableDefault(size = 20, sort = "data", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(
-                transacaoService.listarTransacoesPorUsuario(usuario, dataInicio, dataFim, categoriaId, tipo, pageable));
+                transacaoService.listarTransacoesPorUsuario(usuario, dataInicio, dataFim, categoriaId, tipo, contaId, pageable));
     }
 
     @PatchMapping("/{transacaoId}/categoria")

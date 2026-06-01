@@ -121,6 +121,7 @@ const Transacoes = () => {
           dataInicio: filtros.dataInicio || undefined,
           dataFim: filtros.dataFim || undefined,
           categoriaId: filtros.categoriaId || undefined,
+          contaId: filtros.contaId || undefined,
           tipo: filtros.tipo || undefined,
         });
         if (!ativo) return;

@@ -81,7 +81,7 @@ class ListarTransacoesPaginadoTests {
         when(transacaoRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
 
         PaginaDTO<TransacaoResponseDTO> resultado =
-                transacaoService.listarTransacoesPorUsuario(usuario, null, null, null, null, pageable);
+                transacaoService.listarTransacoesPorUsuario(usuario, null, null, null, null, null, pageable);
 
         assertThat(resultado.conteudo()).hasSize(1);
         assertThat(resultado.totalElementos()).isEqualTo(1);
@@ -101,7 +101,7 @@ class ListarTransacoesPaginadoTests {
         when(transacaoRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
 
         PaginaDTO<TransacaoResponseDTO> resultado =
-                transacaoService.listarTransacoesPorUsuario(usuario, null, null, null, null, pageable);
+                transacaoService.listarTransacoesPorUsuario(usuario, null, null, null, null, null, pageable);
 
         assertThat(resultado.totalElementos()).isEqualTo(25);
         assertThat(resultado.totalPaginas()).isEqualTo(3);
@@ -119,7 +119,7 @@ class ListarTransacoesPaginadoTests {
 
         transacaoService.listarTransacoesPorUsuario(
                 usuario, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31),
-                UUID.randomUUID(), TipoTransacao.CREDITO, pageable);
+                UUID.randomUUID(), TipoTransacao.CREDITO, null, pageable);
 
         ArgumentCaptor<Specification<Transacao>> specCaptor = ArgumentCaptor.forClass(Specification.class);
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);

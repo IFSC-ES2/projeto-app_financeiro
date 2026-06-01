@@ -83,7 +83,7 @@ class ListarTransacoesPaginadoIntegrationTests {
     @DisplayName("Sem filtros, retorna apenas as transações do próprio usuário, ordenadas por data desc")
     void semFiltros_retornaSomenteDoUsuario() {
         PaginaDTO<TransacaoResponseDTO> pagina =
-                transacaoService.listarTransacoesPorUsuario(dono, null, null, null, null, PRIMEIRA_PAGINA);
+                transacaoService.listarTransacoesPorUsuario(dono, null, null, null, null, null, PRIMEIRA_PAGINA);
 
         assertThat(pagina.totalElementos()).isEqualTo(4);
         assertThat(pagina.conteudo()).hasSize(4);
@@ -95,7 +95,7 @@ class ListarTransacoesPaginadoIntegrationTests {
     @DisplayName("Filtra por intervalo de datas")
     void filtraPorData() {
         PaginaDTO<TransacaoResponseDTO> pagina = transacaoService.listarTransacoesPorUsuario(
-                dono, LocalDate.of(2024, 2, 1), LocalDate.of(2024, 3, 21), null, null, PRIMEIRA_PAGINA);
+                dono, LocalDate.of(2024, 2, 1), LocalDate.of(2024, 3, 21), null, null, null, PRIMEIRA_PAGINA);
 
         assertThat(pagina.totalElementos()).isEqualTo(2);
         assertThat(pagina.conteudo()).extracting(TransacaoResponseDTO::getData)
@@ -106,7 +106,7 @@ class ListarTransacoesPaginadoIntegrationTests {
     @DisplayName("Filtra por categoria")
     void filtraPorCategoria() {
         PaginaDTO<TransacaoResponseDTO> pagina = transacaoService.listarTransacoesPorUsuario(
-                dono, null, null, alimentacao.getId(), null, PRIMEIRA_PAGINA);
+                dono, null, null, alimentacao.getId(), null, null, PRIMEIRA_PAGINA);
 
         assertThat(pagina.totalElementos()).isEqualTo(1);
         assertThat(pagina.conteudo().getFirst().getCategoriaId()).isEqualTo(alimentacao.getId());
@@ -116,7 +116,7 @@ class ListarTransacoesPaginadoIntegrationTests {
     @DisplayName("Filtra por tipo de transação")
     void filtraPorTipo() {
         PaginaDTO<TransacaoResponseDTO> pagina = transacaoService.listarTransacoesPorUsuario(
-                dono, null, null, null, TipoTransacao.DEBITO, PRIMEIRA_PAGINA);
+                dono, null, null, null, TipoTransacao.DEBITO, null, PRIMEIRA_PAGINA);
 
         assertThat(pagina.totalElementos()).isEqualTo(2);
         assertThat(pagina.conteudo()).extracting(TransacaoResponseDTO::getTipoTransacao)
@@ -124,10 +124,39 @@ class ListarTransacoesPaginadoIntegrationTests {
     }
 
     @Test
+    @DisplayName("Filtra por contaId: retorna apenas transações da conta selecionada")
+    void filtraPorContaId() {
+        Conta segundaConta = salvarConta(dono);
+        salvarTransacao(segundaConta, LocalDate.of(2024, 4, 5), TipoTransacao.CREDITO, null);
+        salvarTransacao(segundaConta, LocalDate.of(2024, 4, 6), TipoTransacao.DEBITO, null);
+
+        PaginaDTO<TransacaoResponseDTO> pagina = transacaoService.listarTransacoesPorUsuario(
+                dono, null, null, null, null, segundaConta.getId(), PRIMEIRA_PAGINA);
+
+        assertThat(pagina.totalElementos()).isEqualTo(2);
+        assertThat(pagina.conteudo()).extracting(TransacaoResponseDTO::getContaId)
+                .containsOnly(segundaConta.getId());
+    }
+
+    @Test
+    @DisplayName("Filtrar por conta de outro usuário não vaza dados (escopo por usuário sempre aplicado)")
+    void filtraPorContaDeOutroUsuario_naoVazaDados() {
+        Usuario intruso = salvarUsuario("intruso106@test.com", "55566677788");
+        Conta contaIntruso = salvarConta(intruso);
+        salvarTransacao(contaIntruso, LocalDate.of(2024, 5, 1), TipoTransacao.DEBITO, null);
+
+        PaginaDTO<TransacaoResponseDTO> pagina = transacaoService.listarTransacoesPorUsuario(
+                dono, null, null, null, null, contaIntruso.getId(), PRIMEIRA_PAGINA);
+
+        assertThat(pagina.totalElementos()).isZero();
+        assertThat(pagina.conteudo()).isEmpty();
+    }
+
+    @Test
     @DisplayName("Pagina o resultado conforme tamanho solicitado")
     void paginaResultado() {
         PaginaDTO<TransacaoResponseDTO> primeira = transacaoService.listarTransacoesPorUsuario(
-                dono, null, null, null, null, PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "data")));
+                dono, null, null, null, null, null, PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "data")));
 
         assertThat(primeira.conteudo()).hasSize(2);
         assertThat(primeira.totalElementos()).isEqualTo(4);
@@ -136,7 +165,7 @@ class ListarTransacoesPaginadoIntegrationTests {
         assertThat(primeira.ultima()).isFalse();
 
         PaginaDTO<TransacaoResponseDTO> segunda = transacaoService.listarTransacoesPorUsuario(
-                dono, null, null, null, null, PageRequest.of(1, 2, Sort.by(Sort.Direction.DESC, "data")));
+                dono, null, null, null, null, null, PageRequest.of(1, 2, Sort.by(Sort.Direction.DESC, "data")));
 
         assertThat(segunda.conteudo()).hasSize(2);
         assertThat(segunda.primeira()).isFalse();

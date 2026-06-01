@@ -102,12 +102,14 @@ public class TransacaoService {
                                                                       LocalDate dataFim,
                                                                       UUID categoriaId,
                                                                       TipoTransacao tipo,
+                                                                      UUID contaId,
                                                                       Pageable pageable) {
         Specification<Transacao> filtro = Specification.where(TransacaoSpecs.daConta(usuarioAutenticado.getId()))
                 .and(TransacaoSpecs.dataDe(dataInicio))
                 .and(TransacaoSpecs.dataAte(dataFim))
                 .and(TransacaoSpecs.daCategoria(categoriaId))
-                .and(TransacaoSpecs.doTipo(tipo));
+                .and(TransacaoSpecs.doTipo(tipo))
+                .and(TransacaoSpecs.daContaEspecifica(contaId));
 
         return PaginaDTO.de(transacaoRepository.findAll(filtro, pageable), this::toResponse);
     }
