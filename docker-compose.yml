@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: smartbudget-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: app_financeiro
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "1234"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app_financeiro"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    name: app-financeiro-pgdata

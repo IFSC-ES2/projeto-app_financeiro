@@ -52,40 +52,61 @@ O sistema vai permitir a leitura de extratos bancários e notas fiscais (.xml, .
 
 ## 4. Situação atual do projeto
 
-O projeto possui backend em Spring Boot, frontend em React + Vite, autenticação com JWT, banco PostgreSQL e versionamento de schema com Flyway.
+O projeto possui backend em Spring Boot, frontend em React + Vite, autenticação com JWT, banco PostgreSQL, versionamento de schema com Flyway e ambiente local padronizado com Docker Compose.
 
-Para rodar os testes, execute:
+Na versão atual, o MVP já possui:
+
+- cadastro e login de usuários;
+- autenticação com JWT;
+- rotas públicas e privadas no frontend;
+- layout privado com navegação interna;
+- cadastro de contas;
+- cadastro manual de transações;
+- listagem de transações do usuário autenticado;
+- filtros de transações por período, tipo, conta e categoria;
+- listagem de categorias;
+- importação de extratos por arquivo;
+- acompanhamento do status da importação;
+- banco local PostgreSQL executado via Docker Compose;
+- migrations de banco com Flyway;
+- testes automatizados no backend e no frontend;
+- pipeline de CI com validações obrigatórias em pull requests.
+
+Algumas telas ainda estão em evolução, como dashboard, categorias e parcelamentos. Elas já existem como parte da navegação do sistema, mas ainda não representam a versão final dessas funcionalidades.
+
+### Banco de dados local
+
+Para subir o banco de dados:
 
 ```bash
-cd app-financeiro-back-end
-./gradlew test
+docker compose up -d
 ```
 
-Para rodar banco de dados:
+O banco PostgreSQL será iniciado com as configurações definidas no `docker-compose.yml` da raiz do projeto:
+
+- Banco: `app_financeiro`
+- Usuário: `postgres`
+- Senha: `1234`
+- Porta: `5432`
+- Container: `smartbudget-postgres`
+
+Para parar o banco:
 
 ```bash
-docker run -d \
-  --name app-financeiro-db \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=1234 \
-  -e POSTGRES_DB=app_financeiro \
-  -p 5432:5432 \
-  -v app-financeiro-pgdata:/var/lib/postgresql/data \
-  postgres:16
+docker compose down
 ```
 
-Para rodar front-end:
+Para apagar os dados locais do banco:
 
 ```bash
-cd app-financeiro-front-end
-npm install
-npm run dev
+docker compose down -v
 ```
 
-- Porta: 5173 (default do Vite)
-- URL: `http://localhost:5173`
+Atenção: o comando `docker compose down -v` remove o volume Docker e apaga os dados locais do banco.
 
-Para rodar back-end:
+### Backend
+
+Para rodar o backend:
 
 ```bash
 cd app-financeiro-back-end
@@ -95,7 +116,60 @@ cd app-financeiro-back-end
 - Porta: 8080
 - Base URL: `http://localhost:8080`
 
-Para testar autenticação via curl:
+Ao iniciar, o backend executa as migrations pendentes do Flyway e valida o schema do banco com Hibernate.
+
+### Frontend
+
+Para rodar o frontend:
+
+```bash
+cd app-financeiro-front-end
+npm install
+npm run dev
+```
+
+- Porta: 5173
+- URL: `http://localhost:5173`
+
+Rotas principais disponíveis no frontend:
+
+- `/login` - tela de login
+- `/cadastro` - tela de cadastro
+- `/dashboard` - painel inicial autenticado
+- `/contas/nova` - cadastro de conta
+- `/transacoes` - listagem de transações
+- `/transacoes/nova` - cadastro manual de transação
+- `/categorias` - tela de categorias
+- `/parcelamentos` - tela de parcelamentos
+- `/importacoes/nova` - importação de extratos
+
+### Testes
+
+Para rodar os testes do backend:
+
+```bash
+cd app-financeiro-back-end
+./gradlew test
+```
+
+Para rodar os testes do frontend:
+
+```bash
+cd app-financeiro-front-end
+npm install
+npm test
+```
+
+Também é recomendado rodar o lint e o build do frontend antes de abrir PR:
+
+```bash
+npm run lint
+npm run build
+```
+
+### Teste rápido de autenticação via curl
+
+Com o backend rodando, é possível testar o cadastro de usuário com:
 
 ```bash
 curl -X POST http://localhost:8080/auth/register \
@@ -103,7 +177,7 @@ curl -X POST http://localhost:8080/auth/register \
   -d '{"nome":"Alexandre","email":"alex@test.com","cpf":"12345678909","senha":"123456"}'
 ```
 
-Informações mais detalhadas disponíveis em [docs/como-rodar.md](docs/como-rodar.md).
+Informações mais detalhadas estão disponíveis em [docs/como-rodar.md](docs/como-rodar.md).
 
 ## Migrations e versionamento do banco
 
