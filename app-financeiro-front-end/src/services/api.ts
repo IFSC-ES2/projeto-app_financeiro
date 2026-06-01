@@ -186,6 +186,7 @@ export interface FiltroTransacoesParams {
   dataInicio?: string;
   dataFim?: string;
   categoriaId?: string;
+  contaId?: string;
   tipo?: TipoTransacao | '';
 }
 
@@ -196,6 +197,7 @@ export const listarTransacoes = async (params: FiltroTransacoesParams = {}) => {
   if (params.dataInicio) query.dataInicio = params.dataInicio;
   if (params.dataFim) query.dataFim = params.dataFim;
   if (params.categoriaId) query.categoriaId = params.categoriaId;
+  if (params.contaId) query.contaId = params.contaId;
   if (params.tipo) query.tipo = params.tipo;
 
   const { data } = await api.get<PaginaResponse<TransacaoResponse>>('/transacoes', { params: query });

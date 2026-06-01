@@ -69,7 +69,7 @@ class ListarTransacoesIntegrationTests {
         TransacaoResponseDTO dto = new TransacaoResponseDTO();
         dto.setTransacaoId(UUID.randomUUID());
         dto.setContaId(UUID.randomUUID());
-        when(transacaoService.listarTransacoesPorUsuario(any(), any(), any(), any(), any(), any()))
+        when(transacaoService.listarTransacoesPorUsuario(any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(new PaginaDTO<>(List.of(dto), 0, 20, 1, 1, true, true));
 
         mockMvc.perform(get("/transacoes").with(user(usuario)))
@@ -86,7 +86,7 @@ class ListarTransacoesIntegrationTests {
     @Test
     @DisplayName("Repassa filtros (data, categoria, tipo) e paginação ao service")
     void deveRepassarFiltrosEPaginacaoAoService() throws Exception {
-        when(transacaoService.listarTransacoesPorUsuario(any(), any(), any(), any(), any(), any()))
+        when(transacaoService.listarTransacoesPorUsuario(any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(new PaginaDTO<>(List.of(), 2, 5, 0, 0, true, true));
 
         UUID categoriaId = UUID.randomUUID();
@@ -107,7 +107,7 @@ class ListarTransacoesIntegrationTests {
         var tipo = forClass(TipoTransacao.class);
         var pageable = forClass(Pageable.class);
         verify(transacaoService).listarTransacoesPorUsuario(
-                any(), dataInicio.capture(), dataFim.capture(), categoria.capture(), tipo.capture(), pageable.capture());
+                any(), dataInicio.capture(), dataFim.capture(), categoria.capture(), tipo.capture(), any(), pageable.capture());
 
         assertThat(dataInicio.getValue()).isEqualTo(LocalDate.of(2024, 1, 1));
         assertThat(dataFim.getValue()).isEqualTo(LocalDate.of(2024, 1, 31));
@@ -115,6 +115,44 @@ class ListarTransacoesIntegrationTests {
         assertThat(tipo.getValue()).isEqualTo(TipoTransacao.CREDITO);
         assertThat(pageable.getValue().getPageNumber()).isEqualTo(2);
         assertThat(pageable.getValue().getPageSize()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("Repassa o contaId ao service quando informado")
+    void deveRepassarContaIdAoService() throws Exception {
+        when(transacaoService.listarTransacoesPorUsuario(any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(new PaginaDTO<>(List.of(), 0, 20, 0, 0, true, true));
+
+        UUID contaId = UUID.randomUUID();
+
+        mockMvc.perform(get("/transacoes")
+                        .param("contaId", contaId.toString())
+                        .with(user(usuario)))
+                .andExpect(status().isOk());
+
+        var conta = forClass(UUID.class);
+        verify(transacaoService).listarTransacoesPorUsuario(
+                any(), any(), any(), any(), any(), conta.capture(), any());
+
+        assertThat(conta.getValue()).isEqualTo(contaId);
+    }
+
+    @Test
+    @DisplayName("Limita o tamanho de página ao máximo configurado (100)")
+    void deveLimitarTamanhoMaximoDaPagina() throws Exception {
+        when(transacaoService.listarTransacoesPorUsuario(any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(new PaginaDTO<>(List.of(), 0, 100, 0, 0, true, true));
+
+        mockMvc.perform(get("/transacoes")
+                        .param("size", "100000")
+                        .with(user(usuario)))
+                .andExpect(status().isOk());
+
+        var pageable = forClass(Pageable.class);
+        verify(transacaoService).listarTransacoesPorUsuario(
+                any(), any(), any(), any(), any(), any(), pageable.capture());
+
+        assertThat(pageable.getValue().getPageSize()).isEqualTo(100);
     }
 
     @Test
