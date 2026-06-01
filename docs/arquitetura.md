@@ -270,17 +270,10 @@ cd app-financeiro-back-end
 ./gradlew bootRun
 ```
 
-Banco PostgreSQL local:
+Banco PostgreSQL local (via Docker Compose):
 
 ```bash
-docker run -d \
-  --name app-financeiro-db \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=1234 \
-  -e POSTGRES_DB=app_financeiro \
-  -p 5432:5432 \
-  -v app-financeiro-pgdata:/var/lib/postgresql/data \
-  postgres:16
+docker compose up -d
 ```
 
 ## 10. Padrões de Projeto (Design Patterns) Aplicados
