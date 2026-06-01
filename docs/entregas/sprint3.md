@@ -42,11 +42,15 @@ No frontend, os testes foram configurados e iniciados. Essa estrutura está evid
 
 - `test/#97 importacao`
 - `feat: Tela inicial (preliminar) (CLOSES #98)`
+- `feat/#98 esqueleto tela` (0.3.1)
+- `test/120 conta categorias transacoes` (0.3.1)
 
 #### Observações
 
 - O PR que fechava a issue `#98` foi fechado para evitar retrabalho, pois a branch principal avançou em pontos que impactavam diretamente esse PR.
 - A resolução da issue `#98` ficou parcial para a versão `0.3.0` e planejada para ser entregue em 0.3.1.
+- Contribuiu diretamente com commits no PR `test/#121-isolar-ambiente` aberto pelo Victor Gabriel.
+- Incrementou o dashboard inicial para melhora de fluxo.
 
 #### Contribuições em reviews
 
@@ -59,6 +63,9 @@ No frontend, os testes foram configurados e iniciados. Essa estrutura está evid
 #### Abertura de PRs
 
 - `feat/#102 tela para associar conta bancaria ao registrar usuario`
+- `docs/#94-sprint3` 
+- `test/#121-isolar-ambiente` (0.3.1)
+- `chore/#123-docker-compose-postgres` (0.3.1)
 
 #### Contribuições em reviews
 
@@ -79,6 +86,7 @@ No frontend, os testes foram configurados e iniciados. Essa estrutura está evid
 - `feat/#71 migration de usuarios`
 - `feat/#64 categorizacao transacoes`
 - `feat/#60 processamento extrato endpoint upload`
+- `feat/#122 corrigir ci` (0.3.1)
 
 #### Contribuições em reviews
 
@@ -93,6 +101,7 @@ No frontend, os testes foram configurados e iniciados. Essa estrutura está evid
 #### Abertura de PRs
 
 - `docs: documenta execução local dos testes e gate de CI (closes #92)`
+- `feat(#61): Tela de importação de extratos e NF-e` (0.3.1)
 
 #### Contribuições em reviews
 
@@ -110,6 +119,7 @@ No frontend, os testes foram configurados e iniciados. Essa estrutura está evid
 - `docs(adr): revisa adrs antigos e adiciona novas decisoes da sprint 3 (#90)`
 - `test: Adiciona testes unitários e validação de segurança XXE para ParserXML (#97)` - Fechada
 - `test: Implementa testes unitários para parsers de extratos bancários (#97)` - Fechada
+- `test(#118): Criar testes unitários para a tela de Cadastro de Usuário` (0.3.1)
 
 #### Observações
 
@@ -142,6 +152,42 @@ No frontend, os testes foram configurados e iniciados. Essa estrutura está evid
 - Recebeu 33 comentários.
 - Victor Blum e Victor Gabriel trabalharam ativamente para melhorar essa implementação.
 - As reviews foram válidas e houve comunicação clara durante o processo.
+
+## Incremento adicional da versão 0.3.1
+
+Após a publicação da versão `0.3.0`, a equipe realizou um incremento complementar para consolidar entregas que ficaram parciais ou que precisavam de ajustes finais. Esse incremento resultou na versão `0.3.1`.
+
+A versão `0.3.1` não substitui o escopo principal da Sprint 3, mas registra avanços adicionais feitos sobre a base da `0.3.0`, principalmente em execução local, navegação do frontend, listagem de transações, importação de extratos e testes.
+
+## Incremento adicional da versão 0.3.1
+
+Após a publicação da versão `0.3.0`, a equipe realizou um incremento complementar para consolidar entregas que ficaram parciais ou que precisavam de ajustes finais. Esse incremento resultou na versão `0.3.1`.
+
+A versão `0.3.1` não substitui o escopo principal da Sprint 3, mas registra avanços adicionais feitos sobre a base da `0.3.0`, principalmente em execução local, navegação do frontend, listagem de transações, importação de extratos e testes.
+
+### Principais avanços da 0.3.1
+
+Foi adicionado um `docker-compose.yml` na raiz do projeto para padronizar a execução local do PostgreSQL. Com isso, o banco pode ser iniciado com `docker compose up -d`, reduzindo diferenças de configuração entre os ambientes dos integrantes.
+
+A documentação de execução local foi atualizada no `README.md` e em `docs/como-rodar.md`, incluindo instruções para subir, parar e recriar o banco local com Docker Compose.
+
+O frontend passou a contar com uma estrutura mais completa de rotas públicas e privadas. Também foi adicionado um layout privado com navegação interna, permitindo organizar melhor as telas autenticadas da aplicação.
+
+A tela de listagem de transações foi adicionada ao frontend. Nessa versão, a listagem exibe transações do usuário autenticado e permite filtros no frontend por período, tipo, conta e categoria.
+
+O backend passou a disponibilizar a listagem de transações do usuário autenticado, permitindo que a tela de transações consuma dados reais da aplicação.
+
+A importação de extratos avançou também no frontend, com uma tela para selecionar conta, enviar arquivo e acompanhar o status da importação.
+
+O fluxo de autenticação no frontend foi reorganizado com melhorias no armazenamento da sessão, uso do token JWT e interceptors da API.
+
+Também foram adicionados testes automatizados no frontend, com destaque para a tela de cadastro, cobrindo renderização, validações, cadastro com sucesso e tratamento de erro da API.
+
+No backend, a cobertura de testes foi ampliada com novos testes relacionados a contas, categorias e listagem de transações.
+
+### Situação da 0.3.1
+
+Com esse incremento, a versão `0.3.1` consolida uma base mais estável para o MVP, com melhor experiência de execução local, navegação autenticada no frontend, listagem de transações, importação de extratos e maior cobertura de testes.
 
 ### Pontos adicionais
 
