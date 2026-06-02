@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -168,15 +167,13 @@ describe('Tela de Importação de Extratos', () => {
   });
 
   it('deve exibir mensagem de alerta quando a API de importacao retornar erro', async () => {
-    mockCriarImportacao.mockRejectedValueOnce(
-      new axios.AxiosError('Erro', 'ERR_BAD_REQUEST', undefined, undefined, {
+    mockCriarImportacao.mockRejectedValueOnce({
+      isAxiosError: true,
+      response: {
         status: 400,
         data: { erro: 'Arquivo inválido para importação.' },
-        statusText: 'Bad Request',
-        headers: {},
-        config: {},
-      }),
-    );
+      },
+    });
 
     renderizarComponente();
     await aguardarContas();
