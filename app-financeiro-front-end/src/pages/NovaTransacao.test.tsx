@@ -34,18 +34,18 @@ vi.mock('react-router-dom', async (importOriginal) => {
 });
 
 const mockContas = [
-  { contaId: '1', nome: 'NuConta', banco: 'Nubank' },
+  { contaId: '1', nome: 'NuConta', banco: 'Nubank', tipoConta: 'CORRENTE' },
 ];
 
 const mockCategorias = [
-  { categoriaId: 'cat-1', nome: 'Alimentação' },
+  { categoriaId: 'cat-1', nome: 'Alimentação', padrao: false },
 ];
 
 describe('Página NovaTransacao', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(api.listarContas).mockResolvedValue(mockContas);
-    vi.mocked(api.listarCategorias).mockResolvedValue(mockCategorias);
+    vi.mocked(api.listarContas).mockResolvedValue(mockContas as any);
+    vi.mocked(api.listarCategorias).mockResolvedValue(mockCategorias as any);
   });
 
   it('deve exibir o estado de carregamento e depois renderizar os inputs do formulário', async () => {
@@ -108,7 +108,7 @@ describe('Página NovaTransacao', () => {
   });
 
   it('deve enviar o formulário com sucesso e redirecionar o usuário', async () => {
-    vi.mocked(api.registrarTransacaoManual).mockResolvedValue({ id: 'transacao-123' });
+    vi.mocked(api.registrarTransacaoManual).mockResolvedValue({ transacaoId: 'transacao-123' } as any);
 
     render(
       <MemoryRouter>
@@ -141,7 +141,7 @@ describe('Página NovaTransacao', () => {
         replace: true,
         state: {
           mensagem: 'Transação registrada com sucesso.',
-          transacaoCriada: { id: 'transacao-123' },
+          transacaoCriada: { transacaoId: 'transacao-123' },
         },
       });
     });
