@@ -180,4 +180,12 @@ export const listarTransacoes = async () => {
   return data;
 };
 
+export const categorizarTransacao = async (transacaoId: string, categoriaId: string) => {
+  const { data } = await api.patch<TransacaoResponse>(`/transacoes/${transacaoId}/categoria`, {
+    categoriaId,
+  });
+
+  return data;
+};
+
 export default api;
