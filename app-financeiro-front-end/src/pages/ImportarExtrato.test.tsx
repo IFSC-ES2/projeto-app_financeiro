@@ -185,8 +185,11 @@ describe('Tela de Importação de Extratos', () => {
         expect.objectContaining({ name: nome }),
         contaPrincipal.contaId,
       );
-      expect(screen.getByText('Importação concluída')).toBeInTheDocument();
     });
+
+    expect(
+      screen.queryByText('Formato não suportado. Use arquivos .csv, .xml ou .txt.'),
+    ).not.toBeInTheDocument();
   });
 
   it('deve exibir loading ao enviar enquanto criarImportacao estiver pendente', async () => {
@@ -309,17 +312,19 @@ describe('Tela de Importação de Extratos', () => {
     10_000,
   );
 
-  it('deve chamar criarImportacao e exibir resultado quando a importacao concluir', async () => {
+  it('deve exibir o resultado final quando a importacao concluir com sucesso', async () => {
     mockCriarImportacao.mockResolvedValueOnce(importacaoConcluida);
     renderizarComponente();
     await aguardarContas();
     await preencherEEnviar(criarArquivo('extrato.csv', 'text/csv'));
 
     await waitFor(() => {
-      expect(mockCriarImportacao).toHaveBeenCalledWith(expect.any(File), contaPrincipal.contaId);
       expect(screen.getByText('Importação concluída')).toBeInTheDocument();
+      expect(screen.getByText('Seu arquivo foi processado com sucesso.')).toBeInTheDocument();
       expect(screen.getByText('8')).toBeInTheDocument();
       expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByText('transações importadas')).toBeInTheDocument();
+      expect(screen.getByText('registros descartados')).toBeInTheDocument();
     });
   });
 
