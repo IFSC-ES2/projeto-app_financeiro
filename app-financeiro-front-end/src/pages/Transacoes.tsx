@@ -122,10 +122,6 @@ const Transacoes = () => {
   }, []);
 
   const contaPorId = useMemo(() => new Map(contas.map((conta) => [conta.contaId, conta])), [contas]);
-  const categoriaPorId = useMemo(
-    () => new Map(categorias.map((categoria) => [categoria.categoriaId, categoria])),
-    [categorias]
-  );
 
   const transacoesFiltradas = useMemo(
     () => ordenarTransacoesPorDataDesc(filtrarTransacoes(transacoes, filtros)),
@@ -274,7 +270,6 @@ const Transacoes = () => {
               <tbody>
                 {transacoesFiltradas.map((transacao) => {
                   const receita = transacao.tipoTransacao === 'CREDITO';
-                  const categoria = transacao.categoriaId ? categoriaPorId.get(transacao.categoriaId) : undefined;
                   const conta = transacao.contaId ? contaPorId.get(transacao.contaId) : undefined;
 
                   return (
