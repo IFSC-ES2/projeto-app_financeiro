@@ -77,7 +77,6 @@ public class TransacaoService {
         }
 
         Transacao transacao = new Transacao();
-        transacao.setCategorizada(true);
         transacao.setConta(conta);
         transacao.setValor(dto.getValor());
 
@@ -86,6 +85,19 @@ public class TransacaoService {
         transacao.setDescricao(dto.getDescricao());
         transacao.setTipo(dto.getTipoTransacao());
         transacao.setFormaPagamento(dto.getFormaPagamento());
+
+        if (dto.getCategoriaId() != null) {
+            Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
+
+            validarCategoriaPermitida(categoria, usuarioAutenticado);
+
+            transacao.setCategoria(categoria);
+            transacao.setCategorizada(true);
+        } else {
+            transacao.setCategorizada(false);
+        }
+
         Transacao transacaoSalva = transacaoRepository.save(transacao);
 
         return toResponse(transacaoSalva);
