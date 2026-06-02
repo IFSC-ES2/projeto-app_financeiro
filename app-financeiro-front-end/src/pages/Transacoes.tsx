@@ -80,46 +80,67 @@ const Transacoes = () => {
     }
   }, [estado?.mensagem, estado?.transacaoCriada, location.pathname, navigate]);
 
-  useEffect(() => {
-    let ativo = true;
+ useEffect(() => {
+  if (!mensagemCategoria) {
+    return;
+  }
 
-    const carregarApoio = async () => {
-      try {
-        const [contasCarregadas, categoriasCarregadas] = await Promise.all([listarContas(), listarCategorias()]);
+  const timeoutId = window.setTimeout(() => {
+    setMensagemCategoria('');
+  }, 3000);
 
-        if (!ativo) return;
-        setContas(contasCarregadas);
-        setCategorias(categoriasCarregadas);
-      } catch (erroCapturado) {
-        if (!ativo) return;
-        obterMensagemErroApi(erroCapturado, 'Não foi possível carregar contas e categorias.');
-      }
-    };
+  return () => {
+    window.clearTimeout(timeoutId);
+  };
+}, [mensagemCategoria]);
 
-    const carregarTransacoes = async () => {
-      setCarregando(true);
-      setErro('');
+useEffect(() => {
+  let ativo = true;
 
-      try {
-        const transacoesCarregadas = await listarTransacoes();
-        if (!ativo) return;
-        setTransacoes(ordenarTransacoesPorDataDesc(transacoesCarregadas));
-      } catch (erroCapturado) {
-        if (!ativo) return;
+  const carregarApoio = async () => {
+    try {
+      const [contasCarregadas, categoriasCarregadas] = await Promise.all([
+        listarContas(),
+        listarCategorias(),
+      ]);
 
-        setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível carregar as transações.'));
-      } finally {
-        if (ativo) setCarregando(false);
-      }
-    };
+      if (!ativo) return;
 
-    carregarApoio();
-    carregarTransacoes();
+      setContas(contasCarregadas);
+      setCategorias(categoriasCarregadas);
+    } catch (erroCapturado) {
+      if (!ativo) return;
 
-    return () => {
-      ativo = false;
-    };
-  }, []);
+      setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível carregar contas e categorias.'));
+    }
+  };
+
+  const carregarTransacoes = async () => {
+    setCarregando(true);
+    setErro('');
+
+    try {
+      const transacoesCarregadas = await listarTransacoes();
+
+      if (!ativo) return;
+
+      setTransacoes(ordenarTransacoesPorDataDesc(transacoesCarregadas));
+    } catch (erroCapturado) {
+      if (!ativo) return;
+
+      setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível carregar as transações.'));
+    } finally {
+      if (ativo) setCarregando(false);
+    }
+  };
+
+  carregarApoio();
+  carregarTransacoes();
+
+  return () => {
+    ativo = false;
+  };
+}, []);
 
   const contaPorId = useMemo(() => new Map(contas.map((conta) => [conta.contaId, conta])), [contas]);
 
@@ -131,6 +152,7 @@ const Transacoes = () => {
   const resumo = useMemo(() => calcularResumoTransacoes(transacoesFiltradas), [transacoesFiltradas]);
 
   const alterarFiltro = (campo: keyof FiltrosTransacao, valor: string) => {
+    setMensagemCategoria('');
     setFiltros((atuais) => ({ ...atuais, [campo]: valor }));
   };
 
