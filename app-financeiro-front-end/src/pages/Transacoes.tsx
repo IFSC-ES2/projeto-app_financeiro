@@ -70,7 +70,7 @@ const Transacoes = () => {
   const [filtros, setFiltros] = useState<FiltrosTransacao>(filtrosIniciais);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
-  const [mensagemSucesso] = useState(estado?.mensagem ?? '');
+  const [mensagemSucesso, setMensagemSucesso] = useState(estado?.mensagem ?? '');
   const [transacaoAtualizandoId, setTransacaoAtualizandoId] = useState<string | null>(null);
   const [mensagemCategoria, setMensagemCategoria] = useState('');
 
@@ -93,6 +93,20 @@ const Transacoes = () => {
     window.clearTimeout(timeoutId);
   };
 }, [mensagemCategoria]);
+
+useEffect(() => {
+  if (!mensagemSucesso) {
+    return;
+  }
+
+  const timeoutId = window.setTimeout(() => {
+    setMensagemSucesso('');
+  }, 3000);
+
+  return () => {
+    window.clearTimeout(timeoutId);
+  };
+}, [mensagemSucesso]);
 
 useEffect(() => {
   let ativo = true;
@@ -152,9 +166,10 @@ useEffect(() => {
   const resumo = useMemo(() => calcularResumoTransacoes(transacoesFiltradas), [transacoesFiltradas]);
 
   const alterarFiltro = (campo: keyof FiltrosTransacao, valor: string) => {
-    setMensagemCategoria('');
-    setFiltros((atuais) => ({ ...atuais, [campo]: valor }));
-  };
+  setMensagemCategoria('');
+  setMensagemSucesso('');
+  setFiltros((atuais) => ({ ...atuais, [campo]: valor }));
+};
 
   const atualizarCategoriaTransacao = async (transacaoId: string, categoriaId: string) => {
   if (!categoriaId) return;
