@@ -16,6 +16,7 @@ public class TransacaoResponseDTO {
     private BigDecimal valor;
     private LocalDate data;
     private String descricao;
+    private boolean categorizada;
     private TipoTransacao tipoTransacao;
     private TipoPagamento formaPagamento;
     private UUID importacaoId;

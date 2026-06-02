@@ -95,6 +95,7 @@ export interface TransacaoResponse {
   importacaoId?: string | null;
   categoriaId?: string | null;
   contaId: string | null;
+  categorizada: boolean;
 }
 
 export type StatusImportacao = 'PENDENTE' | 'PROCESSANDO' | 'CONCLUIDO' | 'ERRO';
@@ -106,6 +107,10 @@ export interface ImportacaoResponse {
   falhas: number;
   importadoEm: string;
   mensagemErro?: string | null;
+}
+
+export interface CategorizarTransacaoResponse{
+  categoriaId: string;
 }
 
 interface ErroApiPayload {

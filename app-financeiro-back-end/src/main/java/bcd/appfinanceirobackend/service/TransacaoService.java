@@ -145,6 +145,7 @@ public class TransacaoService {
         responseDTO.setTipoTransacao(transacao.getTipo());
         responseDTO.setDescricao(transacao.getDescricao());
         responseDTO.setContaId(transacao.getConta().getId());
+        responseDTO.setCategorizada(transacao.getCategorizada());
         responseDTO.setCategoriaId(
                     transacao.getCategoria() != null ? transacao.getCategoria().getId() : null
         );
