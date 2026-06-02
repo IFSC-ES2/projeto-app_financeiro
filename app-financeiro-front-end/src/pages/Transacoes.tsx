@@ -322,7 +322,7 @@ useEffect(() => {
                             onChange={(evento) => atualizarCategoriaTransacao(transacao.transacaoId, evento.target.value)}
                             aria-label={`Categoria da transação ${transacao.descricao || transacao.transacaoId}`}
                           >
-                            <option value="">Sem categoria</option>
+                            <option value="" disabled>Sem categoria</option>
                             {categorias.map((categoriaOpcao) => (
                               <option key={categoriaOpcao.categoriaId} value={categoriaOpcao.categoriaId}>
                                 {categoriaOpcao.nome}
