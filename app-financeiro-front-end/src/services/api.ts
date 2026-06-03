@@ -57,6 +57,7 @@ export interface ContaRequest {
   tipoConta: TipoConta;
   banco?: string;
   descricao?: string;
+  saldoInicial?: number;
 }
 
 export interface ContaResponse {

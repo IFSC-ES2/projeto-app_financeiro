@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import NovaConta from './NovaConta';
 
@@ -24,14 +24,25 @@ vi.mock('react-router-dom', async () => {
 describe('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.clearAllTimers();
+    mockRegistrarConta.mockReset();
+  });
+
+  afterEach(() => {
+    vi.clearAllTimers();
   });
 
   const renderizarComponente = () =>
     render(
       <BrowserRouter>
         <NovaConta />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
+
+  const preencherCamposMinimos = () => {
+    fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: 'Conta Principal' } });
+    fireEvent.change(screen.getByLabelText(/Banco/i), { target: { value: 'Itaú' } });
+  };
 
   it('deve renderizar os campos do formulário com os valores padrões e o botão de submissão', () => {
     renderizarComponente();
@@ -39,26 +50,119 @@ describe('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () => {
     expect(screen.getByLabelText(/Nome da conta/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Tipo de conta/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Banco/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Saldo inicial/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Descrição/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Cadastrar conta/i })).toBeInTheDocument();
 
     expect(screen.getByLabelText(/Tipo de conta/i)).toHaveValue('CORRENTE');
     expect(screen.getByLabelText(/Banco/i)).toHaveValue('Nubank');
+    expect(screen.getByLabelText(/Saldo inicial/i)).toHaveValue('0');
   });
 
   it('deve exibir erro de validação ao tentar submeter o formulário com o nome em branco', async () => {
     renderizarComponente();
 
-    const inputNome = screen.getByLabelText(/Nome da conta/i);
-    fireEvent.change(inputNome, { target: { value: '' } });
-
-    const botaoSubmeter = screen.getByRole('button', { name: /Cadastrar conta/i });
-    fireEvent.click(botaoSubmeter);
+    fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
 
     expect(mockRegistrarConta).not.toHaveBeenCalled();
-    
+
     await waitFor(() => {
       expect(screen.getByText('Nome da conta é obrigatório.')).toBeInTheDocument();
+    });
+  });
+
+  it('deve exibir erro de validação ao tentar submeter sem banco selecionado', async () => {
+    renderizarComponente();
+
+    fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: 'Conta sem banco' } });
+    fireEvent.change(screen.getByLabelText(/Banco/i), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
+
+    expect(mockRegistrarConta).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(screen.getByText('Banco é obrigatório.')).toBeInTheDocument();
+    });
+  });
+
+  it('deve exibir erro ao informar saldo inicial em formato inválido', async () => {
+    renderizarComponente();
+    preencherCamposMinimos();
+
+    fireEvent.change(screen.getByLabelText(/Saldo inicial/i), { target: { value: 'abc' } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
+
+    expect(mockRegistrarConta).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(screen.getByText('Saldo inicial inválido. Use apenas números.')).toBeInTheDocument();
+    });
+  });
+
+  it('deve permitir cadastrar com saldo inicial zerado', async () => {
+    mockRegistrarConta.mockResolvedValueOnce(undefined);
+    renderizarComponente();
+    preencherCamposMinimos();
+
+    fireEvent.change(screen.getByLabelText(/Saldo inicial/i), { target: { value: '0' } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
+
+    await waitFor(() => {
+      expect(mockRegistrarConta).toHaveBeenCalledWith(
+        expect.objectContaining({
+          nome: 'Conta Principal',
+          saldoInicial: 0,
+        }),
+      );
+    });
+  });
+
+  it('deve permitir cadastrar com saldo inicial positivo', async () => {
+    mockRegistrarConta.mockResolvedValueOnce(undefined);
+    renderizarComponente();
+    preencherCamposMinimos();
+
+    fireEvent.change(screen.getByLabelText(/Saldo inicial/i), { target: { value: '1250,50' } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
+
+    await waitFor(() => {
+      expect(mockRegistrarConta).toHaveBeenCalledWith(
+        expect.objectContaining({
+          saldoInicial: 1250.5,
+        }),
+      );
+    });
+  });
+
+  it('deve exibir loading enquanto registrarConta estiver pendente', async () => {
+    let resolver: () => void = () => undefined;
+
+    mockRegistrarConta.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolver = resolve;
+        }),
+    );
+
+    renderizarComponente();
+    preencherCamposMinimos();
+
+    const botao = screen.getByRole('button', { name: /Cadastrar conta/i });
+    fireEvent.click(botao);
+
+    await waitFor(() => {
+      expect(screen.getByText('Cadastrando...')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Cadastrando/i })).toBeDisabled();
+    });
+
+    fireEvent.click(botao);
+    expect(mockRegistrarConta).toHaveBeenCalledTimes(1);
+
+    resolver();
+
+    await waitFor(() => {
+      expect(screen.getByText(/Conta bancária cadastrada com sucesso/i)).toBeInTheDocument();
     });
   });
 
@@ -71,25 +175,30 @@ describe('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () => {
     fireEvent.change(screen.getByLabelText(/Banco/i), { target: { value: 'Itaú' } });
     fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: 'Fundo de reserva técnica.' } });
 
-    const botaoSubmeter = screen.getByRole('button', { name: /Cadastrar conta/i });
-    fireEvent.click(botaoSubmeter);
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
 
-    expect(mockRegistrarConta).toHaveBeenCalledWith({
-      nome: 'Conta Salário Premium',
-      tipoConta: 'POUPANCA',
-      banco: 'Itaú',
-      descricao: 'Fundo de reserva técnica.',
+    await waitFor(() => {
+      expect(mockRegistrarConta).toHaveBeenCalledWith({
+        nome: 'Conta Salário Premium',
+        tipoConta: 'POUPANCA',
+        banco: 'Itaú',
+        saldoInicial: 0,
+        descricao: 'Fundo de reserva técnica.',
+      });
     });
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Conta bancária cadastrada com sucesso. Redirecionando/i)
+        screen.getByText(/Conta bancária cadastrada com sucesso. Redirecionando/i),
       ).toBeInTheDocument();
     });
 
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true });
-    }, { timeout: 1500 });
+    await waitFor(
+      () => {
+        expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true });
+      },
+      { timeout: 1500 },
+    );
   });
 
   it('deve exibir mensagem de alerta geral em tela caso a API de registro falhe', async () => {
@@ -97,9 +206,7 @@ describe('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () => {
     renderizarComponente();
 
     fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: 'Conta com Falha' } });
-
-    const botaoSubmeter = screen.getByRole('button', { name: /Cadastrar conta/i });
-    fireEvent.click(botaoSubmeter);
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
 
     await waitFor(() => {
       expect(screen.getByText('Não foi possível cadastrar a conta bancária.')).toBeInTheDocument();
