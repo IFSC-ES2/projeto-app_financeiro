@@ -40,6 +40,11 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () 
       </BrowserRouter>,
     );
 
+  const preencherCamposMinimos = () => {
+    fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: 'Conta Principal' } });
+    fireEvent.change(screen.getByLabelText(/Banco/i), { target: { value: 'Itaú' } });
+  };
+
   it('deve renderizar os campos do formulário com os valores padrões e o botão de submissão', () => {
     renderizarComponente();
 
@@ -63,6 +68,78 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () 
 
     await waitFor(() => {
       expect(screen.getByText('Nome da conta é obrigatório.')).toBeInTheDocument();
+    });
+  });
+
+  it('deve exibir erro de validação ao tentar submeter sem banco selecionado', async () => {
+    renderizarComponente();
+
+    fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: 'Conta sem banco' } });
+    fireEvent.change(screen.getByLabelText(/Banco/i), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
+
+    expect(mockRegistrarConta).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(screen.getByText('Banco é obrigatório.')).toBeInTheDocument();
+    });
+  });
+
+  // Testes da issue #147; remover .skip quando NovaConta tiver Saldo inicial (issue #136).
+  describe.skip('Saldo inicial', () => {
+    it('deve renderizar o campo Saldo inicial com valor padrão zero', () => {
+      renderizarComponente();
+      expect(screen.getByLabelText(/Saldo inicial/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Saldo inicial/i)).toHaveValue('0');
+    });
+
+    it('deve exibir erro ao informar saldo inicial em formato inválido', async () => {
+      renderizarComponente();
+      preencherCamposMinimos();
+
+      fireEvent.change(screen.getByLabelText(/Saldo inicial/i), { target: { value: 'abc' } });
+      fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
+
+      expect(mockRegistrarConta).not.toHaveBeenCalled();
+
+      await waitFor(() => {
+        expect(screen.getByText('Saldo inicial inválido. Use apenas números.')).toBeInTheDocument();
+      });
+    });
+
+    it('deve permitir cadastrar com saldo inicial zerado', async () => {
+      mockRegistrarConta.mockResolvedValueOnce(undefined);
+      renderizarComponente();
+      preencherCamposMinimos();
+
+      fireEvent.change(screen.getByLabelText(/Saldo inicial/i), { target: { value: '0' } });
+      fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
+
+      await waitFor(() => {
+        expect(mockRegistrarConta).toHaveBeenCalledWith(
+          expect.objectContaining({
+            nome: 'Conta Principal',
+            saldoInicial: 0,
+          }),
+        );
+      });
+    });
+
+    it('deve permitir cadastrar com saldo inicial positivo', async () => {
+      mockRegistrarConta.mockResolvedValueOnce(undefined);
+      renderizarComponente();
+      preencherCamposMinimos();
+
+      fireEvent.change(screen.getByLabelText(/Saldo inicial/i), { target: { value: '1250,50' } });
+      fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
+
+      await waitFor(() => {
+        expect(mockRegistrarConta).toHaveBeenCalledWith(
+          expect.objectContaining({
+            saldoInicial: 1250.5,
+          }),
+        );
+      });
     });
   });
 
@@ -92,14 +169,18 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () 
     );
 
     renderizarComponente();
+    preencherCamposMinimos();
 
-    fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: 'Conta Principal' } });
-    fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
+    const botao = screen.getByRole('button', { name: /Cadastrar conta/i });
+    fireEvent.click(botao);
 
     await waitFor(() => {
       expect(screen.getByText('Cadastrando...')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Cadastrando/i })).toBeDisabled();
     });
+
+    fireEvent.click(botao);
+    expect(mockRegistrarConta).toHaveBeenCalledTimes(1);
 
     resolver();
 
