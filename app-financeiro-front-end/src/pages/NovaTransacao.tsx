@@ -39,34 +39,6 @@ const tiposTransacao: Array<{ valor: TipoTransacao; rotulo: string }> = [
   { valor: 'BOLETO', rotulo: 'Boleto' },
 ];
 
-const normalizarValor = (valor: string) => valor.trim().replace(',', '.');
-
-const validarValorMonetario = (valor: string) => {
-  const texto = valor.trim();
-
-  if (!texto) {
-    return { valido: false, mensagem: 'Valor é obrigatório.' };
-  }
-
-  if (texto.startsWith('-')) {
-    return { valido: false, mensagem: 'Informe um valor maior que zero.' };
-  }
-
-  const normalizado = normalizarValor(texto);
-
-  if (!/^\d+(\.\d{1,2})?$/.test(normalizado)) {
-    return { valido: false, mensagem: 'Valor inválido. Use apenas números.' };
-  }
-
-  const numero = Number(normalizado);
-
-  if (numero <= 0) {
-    return { valido: false, mensagem: 'Informe um valor maior que zero.' };
-  }
-
-  return { valido: true, valor: numero };
-};
-
 const formasPagamento: Array<{ valor: TipoPagamento; rotulo: string }> = [
   { valor: 'PIX', rotulo: 'Pix' },
   { valor: 'CARTAO_DEBITO', rotulo: 'Cartão de débito' },
@@ -145,22 +117,16 @@ const NovaTransacao = () => {
 
   const validar = () => {
     const novosErros: Partial<Record<keyof CamposTransacao, string>> = {};
-    const valor = validarValorMonetario(campos.valor);
+    const valorNumerico = Number(campos.valor);
 
-    if (!valor.valido) {
-      novosErros.valor = valor.mensagem;
+    if (!campos.valor) {
+      novosErros.valor = 'Valor é obrigatório.';
+    } else if (Number.isNaN(valorNumerico) || valorNumerico <= 0) {
+      novosErros.valor = 'Informe um valor maior que zero.';
     }
 
     if (!campos.data) {
       novosErros.data = 'Data é obrigatória.';
-    }
-
-    if (!campos.descricao.trim()) {
-      novosErros.descricao = 'Descrição é obrigatória.';
-    }
-
-    if (!campos.categoriaId) {
-      novosErros.categoriaId = 'Categoria é obrigatória.';
     }
 
     if (campos.formaPagamento !== 'DINHEIRO' && !campos.contaId) {
@@ -180,11 +146,8 @@ const NovaTransacao = () => {
     setSalvando(true);
 
     try {
-      const valorValidado = validarValorMonetario(campos.valor);
-      if (!valorValidado.valido || valorValidado.valor === undefined) return;
-
       const transacaoCriada = await registrarTransacaoManual({
-        valor: valorValidado.valor,
+        valor: Number(campos.valor),
         data: campos.data,
         descricao: campos.descricao.trim() || undefined,
         tipoTransacao: campos.tipoTransacao,
@@ -236,8 +199,9 @@ const NovaTransacao = () => {
                 <span>Valor *</span>
                 <input
                   name="valor"
-                  type="text"
-                  inputMode="decimal"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
                   value={campos.valor}
                   onChange={alterarCampo}
                   className={erros.valor ? 'invalid' : ''}
@@ -259,17 +223,15 @@ const NovaTransacao = () => {
               </label>
 
               <label className="span-2">
-                <span>Descrição *</span>
+                <span>Descrição</span>
                 <input
                   name="descricao"
                   type="text"
                   maxLength={120}
                   value={campos.descricao}
                   onChange={alterarCampo}
-                  className={erros.descricao ? 'invalid' : ''}
                   placeholder="Ex.: mercado, salário, transporte"
                 />
-                {erros.descricao && <small className="field-error">{erros.descricao}</small>}
               </label>
 
               <label>
@@ -295,21 +257,15 @@ const NovaTransacao = () => {
               </label>
 
               <label>
-                <span>Categoria *</span>
-                <select
-                  name="categoriaId"
-                  value={campos.categoriaId}
-                  onChange={alterarCampo}
-                  className={erros.categoriaId ? 'invalid' : ''}
-                >
-                  <option value="">Selecione uma categoria</option>
+                <span>Categoria</span>
+                <select name="categoriaId" value={campos.categoriaId} onChange={alterarCampo}>
+                  <option value="">Sem categoria</option>
                   {categorias.map((categoria) => (
                     <option key={categoria.categoriaId} value={categoria.categoriaId}>
                       {categoria.nome}
                     </option>
                   ))}
                 </select>
-                {erros.categoriaId && <small className="field-error">{erros.categoriaId}</small>}
               </label>
 
               <label>
