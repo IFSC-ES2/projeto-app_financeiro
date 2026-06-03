@@ -10,6 +10,7 @@ type CamposConta = {
   nome: string;
   tipoConta: TipoConta;
   banco: string;
+  saldoInicial: string;
   descricao: string;
 };
 
@@ -17,7 +18,30 @@ const valoresIniciais: CamposConta = {
   nome: '',
   tipoConta: 'CORRENTE',
   banco: 'Nubank',
+  saldoInicial: '0',
   descricao: '',
+};
+
+const normalizarSaldoInicial = (valor: string) => valor.trim().replace(',', '.');
+
+const validarSaldoInicial = (valor: string) => {
+  const normalizado = normalizarSaldoInicial(valor);
+
+  if (!normalizado) {
+    return { valido: false, mensagem: 'Saldo inicial é obrigatório.' };
+  }
+
+  if (!/^\d+(\.\d{1,2})?$/.test(normalizado)) {
+    return { valido: false, mensagem: 'Saldo inicial inválido. Use apenas números.' };
+  }
+
+  const numero = Number(normalizado);
+
+  if (numero < 0) {
+    return { valido: false, mensagem: 'Saldo inicial não pode ser negativo.' };
+  }
+
+  return { valido: true, valor: numero };
 };
 
 const tiposConta: Array<{ valor: TipoConta; rotulo: string }> = [
@@ -70,6 +94,11 @@ const NovaConta: React.FC = () => {
       novosErros.banco = 'Banco é obrigatório.';
     }
 
+    const saldo = validarSaldoInicial(campos.saldoInicial);
+    if (!saldo.valido) {
+      novosErros.saldoInicial = saldo.mensagem;
+    }
+
     setErros(novosErros);
     return Object.keys(novosErros).length === 0;
   };
@@ -85,10 +114,14 @@ const NovaConta: React.FC = () => {
     setSalvando(true);
 
     try {
+      const saldo = validarSaldoInicial(campos.saldoInicial);
+      if (!saldo.valido) return;
+
       const novaConta: ContaRequest = {
         nome: campos.nome.trim(),
         tipoConta: campos.tipoConta,
         banco: campos.banco.trim(),
+        saldoInicial: saldo.valor,
         descricao: campos.descricao.trim() || undefined,
       };
 
@@ -231,6 +264,7 @@ const NovaConta: React.FC = () => {
               value={campos.banco}
               onChange={alterarCampo}
             >
+              <option value="">Selecione um banco</option>
               {bancos.map((banco) => (
                 <option key={banco} value={banco}>
                   {banco}
@@ -240,6 +274,26 @@ const NovaConta: React.FC = () => {
 
             {erros.banco && <div className="invalid-feedback">{erros.banco}</div>}
           </div>
+        </div>
+
+        <div className="mb-3">
+          <label htmlFor="saldoInicial" className="form-label fw-semibold text-secondary small mb-1">
+            Saldo inicial
+          </label>
+
+          <input
+            id="saldoInicial"
+            name="saldoInicial"
+            type="text"
+            inputMode="decimal"
+            className={`form-control ${erros.saldoInicial ? 'is-invalid' : ''}`}
+            style={{ boxShadow: 'none' }}
+            value={campos.saldoInicial}
+            onChange={alterarCampo}
+            placeholder="Ex: 0,00"
+          />
+
+          {erros.saldoInicial && <div className="invalid-feedback">{erros.saldoInicial}</div>}
         </div>
 
         <div className="mb-3">
