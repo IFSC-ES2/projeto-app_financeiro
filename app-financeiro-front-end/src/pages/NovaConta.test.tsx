@@ -21,11 +21,12 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-describe('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () => {
+describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.clearAllTimers();
     mockRegistrarConta.mockReset();
+    mockNavigate.mockClear();
   });
 
   afterEach(() => {
@@ -133,6 +134,23 @@ describe('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () => {
         }),
       );
     });
+
+    vi.clearAllTimers();
+  });
+
+  it('deve exibir mensagem de alerta geral em tela caso a API de registro falhe', async () => {
+    mockRegistrarConta.mockImplementationOnce(() => Promise.reject(new Error('Erro na API')));
+    renderizarComponente();
+
+    fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: 'Conta com Falha' } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Não foi possível cadastrar a conta bancária.')).toBeInTheDocument();
+    });
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+    vi.clearAllTimers();
   });
 
   it('deve exibir loading enquanto registrarConta estiver pendente', async () => {
@@ -164,6 +182,8 @@ describe('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () => {
     await waitFor(() => {
       expect(screen.getByText(/Conta bancária cadastrada com sucesso/i)).toBeInTheDocument();
     });
+
+    vi.clearAllTimers();
   });
 
   it('deve chamar a função registrarConta com os dados tratados e redirecionar para o dashboard após o sucesso', async () => {
@@ -199,19 +219,7 @@ describe('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () => {
       },
       { timeout: 1500 },
     );
-  });
 
-  it('deve exibir mensagem de alerta geral em tela caso a API de registro falhe', async () => {
-    mockRegistrarConta.mockRejectedValueOnce(new Error('Erro na API'));
-    renderizarComponente();
-
-    fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: 'Conta com Falha' } });
-    fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText('Não foi possível cadastrar a conta bancária.')).toBeInTheDocument();
-    });
-
-    expect(mockNavigate).not.toHaveBeenCalled();
+    vi.clearAllTimers();
   });
 });
