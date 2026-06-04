@@ -116,4 +116,13 @@ class CategorizarTransacaoIntegrationTests {
                         .content(mapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    @DisplayName("Bloqueia categorização sem autenticação")
+    void deveBloquearSemAutenticacao() throws Exception {
+        mockMvc.perform(patch("/transacoes/{transacaoId}/categoria", transacaoId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(request)))
+                .andExpect(status().is4xxClientError());
+    }
 }
