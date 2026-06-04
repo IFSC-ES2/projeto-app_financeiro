@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import LayoutPrivado from '../components/layout/LayoutPrivado';
 import EstadoVazio from '../components/ui/EstadoVazio';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
+import ResumoFormaPagamento from '../components/resumo/ResumoFormaPagamento';
 import {
   categorizarTransacao,
   listarCategorias,
@@ -264,6 +265,8 @@ useEffect(() => {
           <strong>{formatarMoeda(resumo.saldo)}</strong>
         </article>
       </section>
+
+      <ResumoFormaPagamento />
 
       <section className="transactions-panel">
         <div className="transactions-header">
