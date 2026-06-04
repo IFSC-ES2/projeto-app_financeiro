@@ -98,6 +98,13 @@ export interface TransacaoResponse {
   categorizada: boolean;
 }
 
+export interface ResumoPagamentoResponse {
+  formaPagamento: TipoPagamento | null;
+  total: number;
+  quantidade: number;
+  percentual: number;
+}
+
 export type StatusImportacao = 'PENDENTE' | 'PROCESSANDO' | 'CONCLUIDO' | 'ERRO';
 
 export interface ImportacaoResponse {
