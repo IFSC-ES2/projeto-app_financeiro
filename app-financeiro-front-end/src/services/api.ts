@@ -115,6 +115,13 @@ export interface ResumoPagamentoResponse {
   percentual: number;
 }
 
+export interface ResumoPagamentoResponse {
+  formaPagamento: TipoPagamento | null;
+  total: number;
+  quantidade: number;
+  percentual: number;
+}
+
 export type StatusImportacao = 'PENDENTE' | 'PROCESSANDO' | 'CONCLUIDO' | 'ERRO';
 
 export interface ImportacaoResponse {
@@ -178,12 +185,13 @@ export const registrarTransacaoManual = async (transacao: TransacaoRequest) => {
   return data;
 };
 
-export interface ResumoPagamentoResponse {
-  formaPagamento: TipoPagamento | null;
-  total: number;
-  quantidade: number;
-  percentual: number;
-}
+export const buscarResumoPorPagamento = async () => {
+  const { data } = await api.get<ResumoPagamentoResponse[]>('/resumo/pagamentos', {
+    ignorarLogoutAutomatico: true,
+  });
+
+  return data;
+};
 
 export const criarImportacao = async (arquivo: File, contaId: string) => {
   const formData = new FormData();
