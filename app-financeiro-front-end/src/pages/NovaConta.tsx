@@ -16,7 +16,7 @@ type CamposConta = {
 
 const valoresIniciais: CamposConta = {
   nome: '',
-  banco: 'Nubank',
+  banco: '',
   tipoConta: 'CORRENTE',
   descricao: '',
 };
