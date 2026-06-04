@@ -3,7 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import LayoutPrivado from '../components/layout/LayoutPrivado';
 import EstadoVazio from '../components/ui/EstadoVazio';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { listarCategorias, listarContas, listarTransacoes, obterMensagemErroApi } from '../services/api';
+import {
+  categorizarTransacao,
+  listarCategorias,
+  listarContas,
+  listarTransacoes,
+  obterMensagemErroApi,
+} from '../services/api';
 import type { CategoriaResponse, ContaResponse, TransacaoResponse } from '../services/api';
 import { formatarData, formatarMoeda } from '../utils/formatacao';
 import {
@@ -64,7 +70,9 @@ const Transacoes = () => {
   const [filtros, setFiltros] = useState<FiltrosTransacao>(filtrosIniciais);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
-  const [mensagemSucesso] = useState(estado?.mensagem ?? '');
+  const [mensagemSucesso, setMensagemSucesso] = useState(estado?.mensagem ?? '');
+  const [transacaoAtualizandoId, setTransacaoAtualizandoId] = useState<string | null>(null);
+  const [mensagemCategoria, setMensagemCategoria] = useState('');
 
   useEffect(() => {
     if (estado?.mensagem || estado?.transacaoCriada) {
@@ -72,52 +80,83 @@ const Transacoes = () => {
     }
   }, [estado?.mensagem, estado?.transacaoCriada, location.pathname, navigate]);
 
-  useEffect(() => {
-    let ativo = true;
+ useEffect(() => {
+  if (!mensagemCategoria) {
+    return;
+  }
 
-    const carregarApoio = async () => {
-      try {
-        const [contasCarregadas, categoriasCarregadas] = await Promise.all([listarContas(), listarCategorias()]);
+  const timeoutId = window.setTimeout(() => {
+    setMensagemCategoria('');
+  }, 3000);
 
-        if (!ativo) return;
-        setContas(contasCarregadas);
-        setCategorias(categoriasCarregadas);
-      } catch (erroCapturado) {
-        if (!ativo) return;
-        obterMensagemErroApi(erroCapturado, 'Não foi possível carregar contas e categorias.');
-      }
-    };
+  return () => {
+    window.clearTimeout(timeoutId);
+  };
+}, [mensagemCategoria]);
 
-    const carregarTransacoes = async () => {
-      setCarregando(true);
-      setErro('');
+useEffect(() => {
+  if (!mensagemSucesso) {
+    return;
+  }
 
-      try {
-        const transacoesCarregadas = await listarTransacoes();
-        if (!ativo) return;
-        setTransacoes(ordenarTransacoesPorDataDesc(transacoesCarregadas));
-      } catch (erroCapturado) {
-        if (!ativo) return;
+  const timeoutId = window.setTimeout(() => {
+    setMensagemSucesso('');
+  }, 3000);
 
-        setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível carregar as transações.'));
-      } finally {
-        if (ativo) setCarregando(false);
-      }
-    };
+  return () => {
+    window.clearTimeout(timeoutId);
+  };
+}, [mensagemSucesso]);
 
-    carregarApoio();
-    carregarTransacoes();
+useEffect(() => {
+  let ativo = true;
 
-    return () => {
-      ativo = false;
-    };
-  }, []);
+  const carregarApoio = async () => {
+    try {
+      const [contasCarregadas, categoriasCarregadas] = await Promise.all([
+        listarContas(),
+        listarCategorias(),
+      ]);
+
+      if (!ativo) return;
+
+      setContas(contasCarregadas);
+      setCategorias(categoriasCarregadas);
+    } catch (erroCapturado) {
+      if (!ativo) return;
+
+      setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível carregar contas e categorias.'));
+    }
+  };
+
+  const carregarTransacoes = async () => {
+    setCarregando(true);
+    setErro('');
+
+    try {
+      const transacoesCarregadas = await listarTransacoes();
+
+      if (!ativo) return;
+
+      setTransacoes(ordenarTransacoesPorDataDesc(transacoesCarregadas));
+    } catch (erroCapturado) {
+      if (!ativo) return;
+
+      setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível carregar as transações.'));
+    } finally {
+      if (ativo) setCarregando(false);
+    }
+  };
+
+  carregarApoio();
+  carregarTransacoes();
+
+  return () => {
+    ativo = false;
+  };
+}, []);
 
   const contaPorId = useMemo(() => new Map(contas.map((conta) => [conta.contaId, conta])), [contas]);
-  const categoriaPorId = useMemo(
-    () => new Map(categorias.map((categoria) => [categoria.categoriaId, categoria])),
-    [categorias]
-  );
 
   const transacoesFiltradas = useMemo(
     () => ordenarTransacoesPorDataDesc(filtrarTransacoes(transacoes, filtros)),
@@ -127,12 +166,39 @@ const Transacoes = () => {
   const resumo = useMemo(() => calcularResumoTransacoes(transacoesFiltradas), [transacoesFiltradas]);
 
   const alterarFiltro = (campo: keyof FiltrosTransacao, valor: string) => {
-    setFiltros((atuais) => ({ ...atuais, [campo]: valor }));
-  };
+  setMensagemCategoria('');
+  setMensagemSucesso('');
+  setFiltros((atuais) => ({ ...atuais, [campo]: valor }));
+};
+
+  const atualizarCategoriaTransacao = async (transacaoId: string, categoriaId: string) => {
+  if (!categoriaId) return;
+
+  setTransacaoAtualizandoId(transacaoId);
+  setErro('');
+  setMensagemCategoria('');
+
+  try {
+    const transacaoAtualizada = await categorizarTransacao(transacaoId, categoriaId);
+
+    setTransacoes((atuais) =>
+      atuais.map((transacao) =>
+        transacao.transacaoId === transacaoId ? transacaoAtualizada : transacao
+      )
+    );
+
+    setMensagemCategoria('Categoria atualizada com sucesso.');
+  } catch (erroCapturado) {
+    setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível atualizar a categoria da transação.'));
+  } finally {
+    setTransacaoAtualizandoId(null);
+  }
+};
 
   return (
     <LayoutPrivado titulo="Transações" subtitulo="Visualize e registre movimentações financeiras da sua conta.">
       <MensagemAlerta mensagem={mensagemSucesso} tipo="success" />
+      <MensagemAlerta mensagem={mensagemCategoria} tipo="success" />
       <MensagemAlerta mensagem={erro} tipo="danger" />
       <section className="filters-panel" aria-label="Filtros de transações">
         <label>
@@ -241,7 +307,6 @@ const Transacoes = () => {
               <tbody>
                 {transacoesFiltradas.map((transacao) => {
                   const receita = transacao.tipoTransacao === 'CREDITO';
-                  const categoria = transacao.categoriaId ? categoriaPorId.get(transacao.categoriaId) : undefined;
                   const conta = transacao.contaId ? contaPorId.get(transacao.contaId) : undefined;
 
                   return (
@@ -257,7 +322,37 @@ const Transacoes = () => {
                           </div>
                         </div>
                       </td>
-                      <td>{categoria?.nome || 'Sem categoria'}</td>
+                      <td>
+                        <div className="category-cell">
+                          {!transacao.categorizada && (
+                            <span className="category-pending-badge">
+                              Pendente
+                            </span>
+                          )}
+
+                          <select
+                            className="category-select"
+                            value={transacao.categoriaId ?? ''}
+                            disabled={transacaoAtualizandoId === transacao.transacaoId}
+                            onChange={(evento) => atualizarCategoriaTransacao(transacao.transacaoId, evento.target.value)}
+                            aria-label={`Categoria da transação ${transacao.descricao || transacao.transacaoId}`}
+                          >
+                            <option value="" disabled>Sem categoria</option>
+                            {categorias.map((categoriaOpcao) => (
+                              <option key={categoriaOpcao.categoriaId} value={categoriaOpcao.categoriaId}>
+                                {categoriaOpcao.nome}
+                                {categoriaOpcao.padrao ? ' — padrão' : ''}
+                              </option>
+                            ))}
+                          </select>
+
+                          {transacaoAtualizandoId === transacao.transacaoId && (
+                            <small className="category-updating">
+                              Atualizando...
+                            </small>
+                          )}
+                        </div>
+                      </td>
                       <td>{conta?.nome || 'Dinheiro'}</td>
                       <td>{formatarData(transacao.data)}</td>
                       <td className={receita ? 'text-end amount-positive' : 'text-end amount-negative'}>

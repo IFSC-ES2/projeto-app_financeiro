@@ -52,6 +52,7 @@ const mockTransacaoCriada: api.TransacaoResponse = {
   formaPagamento: 'PIX',
   categoriaId: 'cat-1',
   contaId: '1',
+  categorizada: true,
 };
 
 const renderNovaTransacao = () =>
