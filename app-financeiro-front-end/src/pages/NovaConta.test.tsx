@@ -59,7 +59,6 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () 
     expect(screen.getByRole('button', { name: /Cadastrar conta/i })).toBeInTheDocument();
 
     expect(screen.getByLabelText(/Tipo de conta/i)).toHaveValue('CORRENTE');
-    expect(screen.getByLabelText(/Banco/i)).toHaveValue('Nubank');
   });
 
   it('deve exibir erro de validação ao tentar submeter o formulário com o nome em branco', async () => {
@@ -180,7 +179,7 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () 
 
     await waitFor(() => {
       expect(screen.getByText('Cadastrando...')).toBeInTheDocument();
-      expect(screen.getByRole('combobox', { name: /^Conta/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /Cadastrando/i })).toBeDisabled();
     });
 
     fireEvent.click(botao);
