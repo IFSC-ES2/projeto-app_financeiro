@@ -8,6 +8,7 @@ import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +49,7 @@ public class ResumoService {
             quantidade++;
             totalGrupo = totalGrupo.add(t.getValor());
         }
-        percentualGrupo = totalGrupo.divide(totalGeral).multiply(new BigDecimal(100));
+        percentualGrupo = totalGrupo.divide(totalGeral, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
         GrupoPagamentoDTO grupoPagamentoDTO = new GrupoPagamentoDTO();
         grupoPagamentoDTO.setFormaPagamento(entry.getKey());
         grupoPagamentoDTO.setTotal(totalGrupo);
