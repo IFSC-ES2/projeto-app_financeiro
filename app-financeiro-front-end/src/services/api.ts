@@ -168,6 +168,11 @@ export const registrarTransacaoManual = async (transacao: TransacaoRequest) => {
   return data;
 };
 
+export const buscarResumoPorPagamento = async () => {
+  const { data } = await api.get<ResumoPagamentoResponse[]>('/resumo/pagamentos');
+  return data;
+};
+
 export const criarImportacao = async (arquivo: File, contaId: string) => {
   const formData = new FormData();
   formData.append('arquivo', arquivo);
