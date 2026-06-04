@@ -250,12 +250,16 @@ public class TransacaoService {
     }
 
     private void validarCamposObrigatorios(TransacaoRequestDTO dto) {
-        boolean pagamentoEmDinheiro = dto.getFormaPagamento() == TipoPagamento.DINHEIRO;
-
         if (dto.getValor() == null ||
                 dto.getData() == null ||
                 dto.getTipoTransacao() == null ||
-                (!pagamentoEmDinheiro && dto.getContaId() == null)) {
+                dto.getFormaPagamento() == null) {
+            throw new IllegalArgumentException("Campos obrigatórios não informados");
+        }
+
+        boolean pagamentoEmDinheiro = dto.getFormaPagamento() == TipoPagamento.DINHEIRO;
+
+        if (!pagamentoEmDinheiro && dto.getContaId() == null) {
             throw new IllegalArgumentException("Campos obrigatórios não informados");
         }
 
