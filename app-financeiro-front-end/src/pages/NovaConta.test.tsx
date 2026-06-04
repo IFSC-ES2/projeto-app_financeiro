@@ -23,7 +23,7 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () => {
+describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #136)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.clearAllTimers();
@@ -87,14 +87,6 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () 
       expect(screen.getByText('Banco é obrigatório.')).toBeInTheDocument();
     });
   });
-
-  // Testes da issue #147; remover .skip quando NovaConta tiver Saldo inicial (issue #136).
-  describe.skip('Saldo inicial', () => {
-    it('deve renderizar o campo Saldo inicial com valor padrão zero', () => {
-      renderizarComponente();
-      expect(screen.getByLabelText(/Saldo inicial/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Saldo inicial/i)).toHaveValue('0');
-    });
 
     it('deve exibir erro ao informar saldo inicial em formato inválido', async () => {
       renderizarComponente();
