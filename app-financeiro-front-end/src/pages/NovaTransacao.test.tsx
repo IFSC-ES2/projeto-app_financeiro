@@ -63,7 +63,11 @@ const renderNovaTransacao = () =>
   );
 
 const aguardarFormulario = async () => {
-  await screen.findByText(/Dados da transação/i);
+  await waitFor(() => {
+    expect(screen.queryByText(/Carregando dados de apoio.../i)).not.toBeInTheDocument();
+  });
+
+  expect(screen.getByLabelText(/Valor \*/i)).toBeInTheDocument();
 };
 
 describe.sequential('Página NovaTransacao', () => {
