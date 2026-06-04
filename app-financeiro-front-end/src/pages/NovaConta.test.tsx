@@ -180,7 +180,7 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () 
 
     await waitFor(() => {
       expect(screen.getByText('Cadastrando...')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Cadastrando/i })).toBeDisabled();
+      expect(screen.getByRole('combobox', { name: /^Conta/i })).toBeDisabled();
     });
 
     fireEvent.click(botao);
