@@ -33,7 +33,7 @@ public class ContaController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deletarConta(@AuthenticationPrincipal Usuario usuario,
-                                             @RequestParam UUID id){
+                                             @PathVariable UUID id){
         contaService.removerConta(usuario, id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("");
     }
