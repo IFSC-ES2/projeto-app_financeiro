@@ -41,7 +41,7 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () 
       <BrowserRouter>
         <NovaConta />
       </BrowserRouter>
-    </ProvedorAutenticacao>,
+    </ProvedorAutenticacao>
   );
 
   const preencherCamposMinimos = () => {
