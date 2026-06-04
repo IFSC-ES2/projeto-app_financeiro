@@ -3,7 +3,12 @@ import EstadoVazio from '../ui/EstadoVazio';
 import MensagemAlerta from '../ui/MensagemAlerta';
 import { buscarResumoPorPagamento, obterMensagemErroApi } from '../../services/api';
 import type { ResumoPagamentoResponse, TipoPagamento } from '../../services/api';
-import { formatarMoeda } from '../../utils/formatacao'; 
+import { formatarMoeda } from '../../utils/formatacao';
+
+type ResumoFormaPagamentoProps = {
+  limiteItens?: number;
+  compacto?: boolean;
+};
 
 const rotulosFormaPagamento: Record<TipoPagamento, string> = {
   PIX: 'Pix',
@@ -29,7 +34,10 @@ const formatarPercentual = (percentual: number) =>
 const limitarPercentual = (percentual: number) =>
   Math.min(Math.max(Number(percentual) || 0, 0), 100);
 
-const ResumoFormaPagamento = () => {
+const ResumoFormaPagamento = ({
+  limiteItens,
+  compacto = false,
+}: ResumoFormaPagamentoProps) => {
   const [resumo, setResumo] = useState<ResumoPagamentoResponse[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
@@ -68,12 +76,21 @@ const ResumoFormaPagamento = () => {
     };
   }, []);
 
+  const resumoExibido = limiteItens ? resumo.slice(0, limiteItens) : resumo;
+
   return (
-    <section className="payment-summary-panel" aria-label="Resumo por forma de pagamento">
+    <section
+      className={compacto ? 'payment-summary-panel payment-summary-panel-compact' : 'payment-summary-panel'}
+      aria-label="Resumo por forma de pagamento"
+    >
       <div className="payment-summary-header">
         <div>
           <h2>Resumo por forma de pagamento</h2>
-          <p>Totais agrupados por Pix, cartão, dinheiro, boleto e TED/DOC.</p>
+          <p>
+            {compacto
+              ? 'Principais formas de pagamento utilizadas.'
+              : 'Totais agrupados por Pix, cartão, dinheiro, boleto e TED/DOC.'}
+          </p>
         </div>
       </div>
 
@@ -92,7 +109,7 @@ const ResumoFormaPagamento = () => {
         />
       ) : (
         <div className="payment-summary-list">
-          {resumo.map((item) => {
+          {resumoExibido.map((item) => {
             const percentual = limitarPercentual(item.percentual);
             const chave = item.formaPagamento ?? 'NAO_INFORMADO';
 
