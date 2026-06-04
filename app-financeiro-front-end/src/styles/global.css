@@ -571,6 +571,31 @@ button:disabled {
   overflow: hidden;
 }
 
+.payment-summary-panel-compact {
+  margin-bottom: 0;
+}
+
+.payment-summary-panel-compact .payment-summary-header {
+  padding: 18px 20px;
+}
+
+.payment-summary-panel-compact .payment-summary-header h2 {
+  font-size: 1rem;
+}
+
+.payment-summary-panel-compact .payment-summary-header p {
+  font-size: 0.9rem;
+}
+
+.payment-summary-panel-compact .payment-summary-list {
+  grid-template-columns: 1fr;
+  padding: 18px 20px 20px;
+}
+
+.payment-summary-panel-compact .payment-summary-item {
+  padding: 14px;
+}
+
 .payment-summary-header {
   padding: 20px 22px;
   border-bottom: 1px solid var(--sb-border);
