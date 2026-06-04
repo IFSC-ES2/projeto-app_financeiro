@@ -2,6 +2,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import NovaConta from './NovaConta';
+import { ProvedorAutenticacao } from '../contexts/ContextoAutenticacao';
+
 
 const { mockRegistrarConta, mockNavigate } = vi.hoisted(() => ({
   mockRegistrarConta: vi.fn(),
@@ -34,11 +36,13 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () 
   });
 
   const renderizarComponente = () =>
-    render(
+  render(
+    <ProvedorAutenticacao>
       <BrowserRouter>
         <NovaConta />
-      </BrowserRouter>,
-    );
+      </BrowserRouter>
+    </ProvedorAutenticacao>,
+  );
 
   const preencherCamposMinimos = () => {
     fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: 'Conta Principal' } });
