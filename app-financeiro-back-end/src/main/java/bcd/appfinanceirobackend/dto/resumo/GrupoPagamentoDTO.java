@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 @Setter
 public class GrupoPagamentoDTO {
     private TipoPagamento formaPagamento;
-    private String rotulo;
     private BigDecimal total;
     private int quantidade;
     private BigDecimal percentual;
