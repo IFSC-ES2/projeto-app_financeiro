@@ -16,7 +16,7 @@ type CamposConta = {
 
 const valoresIniciais: CamposConta = {
   nome: '',
-  banco: '',
+  banco: 'Nubank',
   tipoConta: 'CORRENTE',
   descricao: '',
 };
@@ -90,7 +90,7 @@ const NovaConta = () => {
 
       await registrarConta(novaConta);
 
-      setSucesso('Conta bancária cadastrada com sucesso.');
+      setSucesso('Conta bancária cadastrada com sucesso. Redirecionando para o Dashboard...');
       setCampos(valoresIniciais);
       setErros({});
 
@@ -152,7 +152,7 @@ const NovaConta = () => {
             </label>
 
             <label>
-              <span>Tipo da conta *</span>
+              <span>Tipo de conta *</span>
               <select
                 name="tipoConta"
                 value={campos.tipoConta}
