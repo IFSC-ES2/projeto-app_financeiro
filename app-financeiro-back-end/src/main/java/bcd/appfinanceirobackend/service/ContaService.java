@@ -2,12 +2,16 @@ package bcd.appfinanceirobackend.service;
 
 import bcd.appfinanceirobackend.dto.conta.ContaRequestDTO;
 import bcd.appfinanceirobackend.dto.conta.ContaResponseDTO;
+import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.repository.ContaRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ContaService {
@@ -36,6 +40,15 @@ public class ContaService {
         conta.setUsuario(usuarioAutenticado);
         contaRepository.save(conta);
         return toResponse(conta);
+    }
+
+    public void removerConta(Usuario usuario, UUID id) {
+        Conta conta = contaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
+        if (!conta.getUsuario().getId().equals(usuario.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a esta conta");
+        }
+        contaRepository.delete(conta);
     }
 
     public ContaResponseDTO toResponse(Conta conta) {
