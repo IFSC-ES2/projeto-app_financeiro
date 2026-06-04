@@ -2,6 +2,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import NovaConta from './NovaConta';
+import { ProvedorAutenticacao } from '../contexts/ContextoAutenticacao';
+
 
 const { mockRegistrarConta, mockNavigate } = vi.hoisted(() => ({
   mockRegistrarConta: vi.fn(),
@@ -21,7 +23,7 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () => {
+describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #136)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.clearAllTimers();
@@ -34,11 +36,13 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () 
   });
 
   const renderizarComponente = () =>
-    render(
+  render(
+    <ProvedorAutenticacao>
       <BrowserRouter>
         <NovaConta />
-      </BrowserRouter>,
-    );
+      </BrowserRouter>
+    </ProvedorAutenticacao>
+  );
 
   const preencherCamposMinimos = () => {
     fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: 'Conta Principal' } });
@@ -55,7 +59,6 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () 
     expect(screen.getByRole('button', { name: /Cadastrar conta/i })).toBeInTheDocument();
 
     expect(screen.getByLabelText(/Tipo de conta/i)).toHaveValue('CORRENTE');
-    expect(screen.getByLabelText(/Banco/i)).toHaveValue('Nubank');
   });
 
   it('deve exibir erro de validação ao tentar submeter o formulário com o nome em branco', async () => {
@@ -147,15 +150,22 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #147)', () 
     mockRegistrarConta.mockImplementationOnce(() => Promise.reject(new Error('Erro na API')));
     renderizarComponente();
 
-    fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: 'Conta com Falha' } });
+    fireEvent.change(screen.getByLabelText(/Nome da conta/i), {
+      target: { value: 'Conta com Falha' },
+    });
+
+    fireEvent.change(screen.getByLabelText(/Banco/i), {
+      target: { value: 'Itaú' },
+    });
+
     fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
 
     await waitFor(() => {
       expect(screen.getByText('Não foi possível cadastrar a conta bancária.')).toBeInTheDocument();
     });
 
+    expect(mockRegistrarConta).toHaveBeenCalledTimes(1);
     expect(mockNavigate).not.toHaveBeenCalled();
-    vi.clearAllTimers();
   });
 
   it('deve exibir loading enquanto registrarConta estiver pendente', async () => {

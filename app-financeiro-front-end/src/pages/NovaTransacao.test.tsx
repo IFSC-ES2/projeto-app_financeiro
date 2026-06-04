@@ -52,6 +52,7 @@ const mockTransacaoCriada: api.TransacaoResponse = {
   formaPagamento: 'PIX',
   categoriaId: 'cat-1',
   contaId: '1',
+  categorizada: true,
 };
 
 const renderNovaTransacao = () =>
@@ -219,7 +220,7 @@ describe.sequential('Página NovaTransacao', () => {
 
     fireEvent.change(screen.getByLabelText(/Forma de pagamento/i), { target: { value: 'DINHEIRO' } });
 
-    expect(screen.getByLabelText(/Conta/i)).toBeDisabled();
+    expect(screen.getByRole('combobox', { name: /^Conta\s*$/i })).toBeDisabled();
     expect(screen.getByText('Conta automática em dinheiro')).toBeInTheDocument();
   });
 });

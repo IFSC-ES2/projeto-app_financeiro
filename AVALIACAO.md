@@ -16,16 +16,25 @@
 | 6       | Lucas de Leon Rodrigues | cb1e539 | 17/05/26 | 27/05/26 | 6,1  | 10   |
 | 6       | Victor Blum             | cb1e539 | 17/05/26 | 27/05/26 | 7,1  | 10   |
 | 6       | Victor Gabriel Lacerda  | cb1e539 | 17/05/26 | 27/05/26 | 7,3  | 10   |
+| 7       | Alexandre Villela       | 9a6b86f | 31/05/26 | 03/06/26 | 7,4  | 10   |
+| 7       | João Pedro Callegaro    | 9a6b86f | 31/05/26 | 03/06/26 | 7,8  | 10   |
+| 7       | Lucas de Leon Rodrigues | 9a6b86f | 31/05/26 | 03/06/26 | 8,3  | 10   |
+| 7       | Victor Blum             | 9a6b86f | 31/05/26 | 03/06/26 | 8,6  | 10   |
+| 7       | Victor Gabriel Lacerda  | 9a6b86f | 31/05/26 | 03/06/26 | 8,4  | 10   |
+| 8       |                         |         |          |          |      | 10   |
+| 9       |                         |         |          |          |      | 10   |
+| 10      |                         |         |          |          |      | 10   |
+| 11/12   |                         |         |          |          |      | 30   |
 
 ## Nota parcial
 
 | aluno                   | nota parcial |
 | ----------------------- | ------------ |
 | Alexandre Villela       | 7,6          |
-| João Pedro Callegaro    | 7,1          |
-| Lucas de Leon Rodrigues | 7,4          |
-| Victor Blum             | 7,6          |
-| Victor Gabriel Lacerda  | 7,6          |
+| João Pedro Callegaro    | 7,3          |
+| Lucas de Leon Rodrigues | 7,6          |
+| Victor Blum             | 7,9          |
+| Victor Gabriel Lacerda  | 7,8          |
 
 ## Comentários
 
@@ -118,14 +127,14 @@
    - A documentação usa `/register` como rota de frontend em `como-rodar.md`, mas a aplicação expõe a tela de cadastro em `/cadastro`.
    - A documentação e decisões anteriores ainda carregam inconsistências residuais de banco/ambiente, apesar da execução real estar em PostgreSQL.
 8. Release do marco: atendido com atraso.
-    - A tag anotada `v0.1.0` existe e aponta para o commit `dd7c536`.
-    - A release `v0.1.0` foi publicada com notas da Sprint 1.
+   - A tag anotada `v0.1.0` existe e aponta para o commit `dd7c536`.
+   - A release `v0.1.0` foi publicada com notas da Sprint 1.
 
 ### Entrega 6
 
 1. Incremento funcional do MVP: parcial.
    - Funcionalidade declaradas para entrega na Sprint 2:
-      - Registro manual de transações, com frontend, backend, persistência e endpoints auxiliares de contas e categorias.
+     - Registro manual de transações, com frontend, backend, persistência e endpoints auxiliares de contas e categorias.
    - O backend expõe `POST /transacoes/manual`, `GET /contas`, `POST /contas/registrar` e `GET /categorias`, com autenticação por JWT e verificação de posse da conta antes de registrar a transação.
    - O frontend possui a tela `NovaTransacao`, carrega contas e categorias, valida valor, data e conta, envia a transação para a API e exibe o registro recém-criado no estado local da tela, mas não está acessível diretamente pela aplicação.
    - O fluxo representa uma evolução real em relação à Sprint 1, pois adiciona um caso de uso novo do domínio financeiro. Ainda assim, o histórico exibido não é persistente no frontend e depende de uma conta previamente cadastrada; a própria descrição do PR registra que a listagem completa de transações ficou para issue futura.
@@ -154,12 +163,54 @@
 9. Registro das contribuições individuais: parcial.
    - `sprint2.md` registra contribuições por integrante e referencia PRs/issues, mas é mais um registro de contribuições do que um relatório completo da sprint.
    - Contribuições individuais:
-      - Alexandre: contribuiu com o CI (`#79`) e com métricas/cobertura (`#83`). A contribuição é relevante para processo e qualidade, com checks verdes, mas a atualização de métricas contém inconsistências e o CI não captura lint nem o problema de wrapper Gradle.
-      - João Pedro: contribuiu principalmente com a atualização de riscos (`#84`). O documento de riscos foi efetivamente atualizado, mas a participação rastreável é mais restrita e pouco conectada ao incremento funcional principal.
-      - Lucas: atuou em reviews/merges e no registro de contribuições; também abriu o PR de testes `#85`. No entanto, esses testes não entraram na tag/release `v0.2.0`, deixando a funcionalidade principal sem cobertura automatizada no marco avaliado.
-      - Victor Blum: contribuiu de forma central no backend do registro manual (`#81`), autenticação JWT, validação de posse da conta e correções de runtime, além de documentação de riscos/qualidade (`#80`). A nota é limitada por lacunas de validação/testes na tag e pelo problema de reprodutibilidade do wrapper.
-      - Victor Gabriel: contribuiu de forma central no frontend e nos endpoints auxiliares (`#86`), integrou contas/categorias/transações e participou de merges/reviews. A nota é a maior da entrega por protagonismo no fluxo entregue, mas limitada pelo lint quebrado, histórico apenas local e ausência de testes frontend.
+     - Alexandre: contribuiu com o CI (`#79`) e com métricas/cobertura (`#83`). A contribuição é relevante para processo e qualidade, com checks verdes, mas a atualização de métricas contém inconsistências e o CI não captura lint nem o problema de wrapper Gradle.
+     - João Pedro: contribuiu principalmente com a atualização de riscos (`#84`). O documento de riscos foi efetivamente atualizado, mas a participação rastreável é mais restrita e pouco conectada ao incremento funcional principal.
+     - Lucas: atuou em reviews/merges e no registro de contribuições; também abriu o PR de testes `#85`. No entanto, esses testes não entraram na tag/release `v0.2.0`, deixando a funcionalidade principal sem cobertura automatizada no marco avaliado.
+     - Victor Blum: contribuiu de forma central no backend do registro manual (`#81`), autenticação JWT, validação de posse da conta e correções de runtime, além de documentação de riscos/qualidade (`#80`). A nota é limitada por lacunas de validação/testes na tag e pelo problema de reprodutibilidade do wrapper.
+     - Victor Gabriel: contribuiu de forma central no frontend e nos endpoints auxiliares (`#86`), integrou contas/categorias/transações e participou de merges/reviews. A nota é a maior da entrega por protagonismo no fluxo entregue, mas limitada pelo lint quebrado, histórico apenas local e ausência de testes frontend.
 10. Documentação atualizada: parcial.
     - As instruções continuam comprometidas pela ausência do `gradle-wrapper.jar`, problema já identificado na Entrega 5 e ainda presente na Entrega 6.
     - A execução local do banco também depende de passos manuais que poderiam estar encapsulados em `docker compose up -d`, especialmente porque a aplicação e os testes dependem de PostgreSQL disponível em `localhost:5432`.
     - O documento de contribuições cita o PR de testes como ainda aberto, enquanto ele não entrou na tag avaliada; isso ajuda a explicar a lacuna, mas também evidencia que a release foi feita antes de concluir essa parte da sprint.
+
+### Entrega 7
+
+1. Incremento funcional da Sprint 3: parcial.
+   - Funcionalidade declaradas para entrega na Sprint 3:
+     - importação de extratos/NF-e, parsers CSV/TXT/XML/NF-e, categorização de transações, cadastro de conta, registro manual autenticado, listagem de transações, filtros no frontend, rotas privadas e Flyway.
+   - O backend expõe endpoints compatíveis com o relatório: `/importacoes`, `/importacoes/{id}/status`, `/transacoes/{transacaoId}/categoria`, `/contas`, `/contas/registrar`, `/categorias` e `/transacoes/manual`.
+   - A tag `v0.3.1` corrige lacunas importantes da `v0.3.0`, incluindo navegação privada no frontend, tela/listagem de transações, tela de importação, filtros e padronização do banco local por Docker Compose.
+   - O incremento é uma evolução real em relação à Sprint 2 e ataca funcionalidades centrais do produto financeiro, mas ainda não fica plenamente fechado como MVP polido: há pendências e PRs posteriores relacionados a categorização/interface e mais testes frontend.
+   - `sprint3.md` passou a declarar 13 de 14 itens concluídos, mas a consolidação ocorreu em release de correção após o prazo e mistura parte do trabalho originalmente incompleto da `v0.3.0`.
+   - Issues e PRs relevantes foram usados e vinculados em parte: `#60`, `#64`, `#71`, `#90`, `#92`, `#97`, `#102`, `#111`, `#112`/`#114`, `#133`, `#140`, `#144`, entre outros.
+2. Documentação da arquitetura: atendido.
+3. ADRs consolidados: atendido.
+   - A decisão de Strategy está documentada, mas a implementação poderia explicitar melhor a interface/contrato comum dos parsers para tornar o padrão mais evidente no código.
+4. Atualização das métricas: parcial.
+   - `metricas.md` compara Sprint 2 e Sprint 3 para métricas de produto, processo e projeto.
+   - Na `v0.3.1`, as métricas foram atualizadas para considerar 13 de 14 itens concluídos, com taxa declarada de 92,9%, além de valores observados, análise qualitativa, itens considerados e referência de cobertura JaCoCo.
+   - A análise registra limitações importantes, como ausência de story points padronizados e uso de contagem de itens/PRs como aproximação.
+   - Persistem ressalvas: parte da melhoria da taxa decorre de itens integrados depois do prazo, e algumas métricas são sustentadas por cenários automatizados ou amostras vazias, não por dados reais de uso.
+5. Testes automatizados integrados ao pipeline: parcial.
+   - Há testes versionados no backend para autenticação, transação manual, contas, categorias, controller de importação, serviço de importação e parsers CSV/TXT/XML/NF-e.
+   - Há configuração de testes frontend com Vitest/Testing Library e testes para ambiente, login e cadastro; localmente foram 3 arquivos e 10 testes aprovados.
+   - O CI executa `./gradlew test --no-daemon` no backend e `npm test -- --run` no frontend em PRs.
+   - Os PRs verificados da Sprint 3 apresentam checks verdes, incluindo backend, frontend, YAML e arquivos obrigatórios.
+   - Ainda há lacunas: testes de categorização `#107` ficaram pendentes/planejados, a cobertura frontend segue limitada e parte dos testes/frontend foi integrada após o prazo.
+6. Integração contínua mínima: atendido.
+   - `.github/workflows/ci.yml` tem jobs separados para backend, frontend, validação YAML e arquivos obrigatórios.
+   - O backend valida a presença de `gradle/wrapper/gradle-wrapper.jar`, usa Java 21, executa `./gradlew assemble --no-daemon`, `./gradlew test --no-daemon` e gera resumo JaCoCo.
+   - O frontend executa `npm ci`, `npm run lint`, `npm run build` e `npm test -- --run`.
+   - A validação YAML usa Python/PyYAML e o check de arquivos obrigatórios verifica README, workflows, riscos e template de PR.
+   - A `v0.3.1` corrige os dois principais problemas de CI/reprodutibilidade da `v0.3.0`: wrapper Gradle incompleto e ausência de lint frontend no pipeline.
+   - Dados sensíveis, como `POSTGRES_USER` e `POSTGRES_PASSWORD`, quando deveriam ser utilizados os segredos do GitHub.
+7. Release/tag do marco: atendido.
+   - A release `v0.3.1` existe e descreve as correções e complementos da Sprint 3: Docker Compose, documentação, rotas privadas, listagem/filtros de transações, importação de extratos, testes backend/frontend e CI.
+8. Registro de contribuição individual: parcial.
+   - `sprint3.md` registra contribuições individuais por integrante, com PRs abertos, observações e reviews.
+   - O registro é mais forte que nas entregas anteriores, mas ainda mistura PRs fechados, PRs parcialmente implementados e trabalho pós-prazo.
+   - Alexandre: contribuiu com documentação de execução local/testes, Docker Compose e gate de CI, além de reviews e correções pontuais. A nota melhora pela correção objetiva de reprodutibilidade, mas é limitada pelo menor volume e menor centralidade no incremento funcional.
+   - João Pedro: contribuiu em configuração e testes frontend, testes da tela de login/cadastro, ADRs e reviews. A nota é limitada pelo menor protagonismo no incremento funcional.
+   - Lucas: contribuiu de forma relevante em testes de importação/parsers, testes adicionais, correções e reviews, coerente com qualidade. A nota é limitada por pendências de categorização e atraso.
+   - Victor Blum: teve a contribuição técnica mais central e volumosa: importação, parsers, categorização, migrations, arquitetura, métricas e reviews. A nota é limitada pelas lacunas remanescentes de categorização/testes e falha local do teste com Testcontainers.
+   - Victor Gabriel: teve contribuição forte em frontend, fluxo de conta bancária, registro manual, ajustes de integração, navegação/listagem, reviews e documentação final da sprint/release.
