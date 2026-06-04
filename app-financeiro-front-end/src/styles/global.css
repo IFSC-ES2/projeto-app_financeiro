@@ -1017,6 +1017,13 @@ button:disabled {
   .form-actions .sb-button {
     width: 100%;
   }
+
+  .filters-panel,
+  .summary-grid,
+  .payment-summary-list,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 991px) {
