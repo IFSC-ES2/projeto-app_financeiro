@@ -115,13 +115,6 @@ export interface ResumoPagamentoResponse {
   percentual: number;
 }
 
-export interface ResumoPagamentoResponse {
-  formaPagamento: TipoPagamento | null;
-  total: number;
-  quantidade: number;
-  percentual: number;
-}
-
 export type StatusImportacao = 'PENDENTE' | 'PROCESSANDO' | 'CONCLUIDO' | 'ERRO';
 
 export interface ImportacaoResponse {
