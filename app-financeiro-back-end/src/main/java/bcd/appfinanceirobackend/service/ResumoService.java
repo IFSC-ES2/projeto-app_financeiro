@@ -28,17 +28,10 @@ public class ResumoService {
         if (transacoes.isEmpty()) return listaDePagamentoAgrupados;
         BigDecimal totalGeral = new BigDecimal(0);
         Map<TipoPagamento, List<Transacao>> agrupamentoPagamentos = new HashMap<>();
-        List<Transacao> listaVazia = new ArrayList<>();
         for (Transacao t: transacoes) {
             totalGeral = totalGeral.add(t.getValor());
-            agrupamentoPagamentos.putIfAbsent(t.getFormaPagamento(), listaVazia);
-        }
-        for (Transacao t: transacoes){
-            for (Map.Entry<TipoPagamento, List<Transacao>> entry: agrupamentoPagamentos.entrySet()) {
-                if (t.getFormaPagamento() == entry.getKey()){
-                    entry.getValue().add(t);
-                }
-            }
+            agrupamentoPagamentos.putIfAbsent(t.getFormaPagamento(), new ArrayList<>());
+            agrupamentoPagamentos.get(t.getFormaPagamento()).add(t);
         }
         for (Map.Entry<TipoPagamento, List<Transacao>> entry: agrupamentoPagamentos.entrySet()) {
             GrupoPagamentoDTO grupoPagamentoDTO = getGrupoPagamentoDTO(entry, totalGeral);
