@@ -104,6 +104,22 @@ public class TransacaoService {
 
     }
 
+    public void excluir(UUID transacaoId, Usuario usuarioAutenticado) {
+        Transacao transacao = buscarTransacaoDoUsuario(transacaoId, usuarioAutenticado);
+        transacaoRepository.delete(transacao);
+    }
+
+    private Transacao buscarTransacaoDoUsuario(UUID transacaoId, Usuario usuarioAutenticado) {
+        Transacao transacao = transacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada"));
+
+        if (!transacao.getConta().getUsuario().getId().equals(usuarioAutenticado.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a essa transação");
+        }
+
+        return transacao;
+    }
+
     public List<TransacaoResponseDTO> listarTransacoesPorUsuario (Usuario usuarioAutenticado) {
         return transacaoRepository.findAllByContaUsuarioId(usuarioAutenticado.getId())
                 .stream()
