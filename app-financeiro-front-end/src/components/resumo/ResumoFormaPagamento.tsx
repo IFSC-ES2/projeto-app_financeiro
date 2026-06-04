@@ -3,7 +3,7 @@ import EstadoVazio from '../ui/EstadoVazio';
 import MensagemAlerta from '../ui/MensagemAlerta';
 import { buscarResumoPorPagamento, obterMensagemErroApi } from '../../services/api';
 import type { ResumoPagamentoResponse, TipoPagamento } from '../../services/api';
-import { formatarMoeda } from '../../utils/formatacao';
+import { formatarMoeda } from '../../utils/formatacao'; 
 
 const rotulosFormaPagamento: Record<TipoPagamento, string> = {
   PIX: 'Pix',
