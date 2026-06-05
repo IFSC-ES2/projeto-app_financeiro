@@ -26,7 +26,7 @@ function App() {
           </Route>
 
           <Route element={<RotaPrivada />}>
-            <Route path="/contas/nova" element={<NovaConta />} />
+            <Route path="/contas" element={<NovaConta />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transacoes" element={<Transacoes />} />
             <Route path="/transacoes/nova" element={<NovaTransacao />} />
