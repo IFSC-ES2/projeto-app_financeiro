@@ -164,9 +164,15 @@ const NovaConta = () => {
 
       <section className="form-panel">
         <div className="form-panel-header accounts-panel-header">
-          <div>
-            <h2>Contas cadastradas</h2>
-            <p>Visualize as contas bancárias associadas ao seu usuário.</p>
+          <div className="accounts-header-title">
+            <span className="accounts-header-icon" aria-hidden="true">
+              🏦
+            </span>
+
+            <div>
+              <h2>Contas cadastradas</h2>
+              <p>Visualize as contas bancárias associadas ao seu usuário.</p>
+            </div>
           </div>
 
           {contas.length > 0 && (
@@ -192,12 +198,16 @@ const NovaConta = () => {
           <div className="accounts-list">
             {contas.map((conta) => (
               <article key={conta.contaId} className="account-card">
-                <div>
+                <div className="account-icon" aria-hidden="true">
+                  {conta.banco?.slice(0, 2).toUpperCase() || conta.nome.slice(0, 2).toUpperCase()}
+                </div>
+
+                <div className="account-card-content">
                   <h3>{conta.nome}</h3>
                   <p>
                     {conta.banco || 'Banco não informado'} • {rotulosTipoConta[conta.tipoConta]}
                   </p>
-                  {conta.descricao && <p>{conta.descricao}</p>}
+                  {conta.descricao && <small>{conta.descricao}</small>}
                 </div>
               </article>
             ))}
