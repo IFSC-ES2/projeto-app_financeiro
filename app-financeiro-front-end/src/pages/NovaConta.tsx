@@ -163,9 +163,17 @@ const NovaConta = () => {
       <MensagemAlerta mensagem={sucesso} tipo="success" />
 
       <section className="form-panel">
-        <div className="form-panel-header">
-          <h2>Contas cadastradas</h2>
-          <p>Visualize as contas bancárias associadas ao seu usuário.</p>
+        <div className="form-panel-header accounts-panel-header">
+          <div>
+            <h2>Contas cadastradas</h2>
+            <p>Visualize as contas bancárias associadas ao seu usuário.</p>
+          </div>
+
+          {contas.length > 0 && (
+            <button type="button" className="sb-button sb-button-primary sb-button-sm" onClick={abrirModal}>
+              Adicionar nova conta
+            </button>
+          )}
         </div>
 
         {carregando ? (

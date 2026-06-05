@@ -1361,6 +1361,32 @@ button:disabled {
   line-height: 1;
 }
 
+.accounts-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.accounts-panel-header h2 {
+  margin: 0;
+}
+
+.accounts-panel-header p {
+  margin: 0.25rem 0 0;
+}
+
+@media (max-width: 640px) {
+  .accounts-panel-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .accounts-panel-header .sb-button {
+    width: 100%;
+  }
+}
+
 @media (max-width: 991px) {
   .auth-panel {
     display: none;
