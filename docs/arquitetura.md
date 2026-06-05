@@ -216,6 +216,29 @@ Parsers implementados:
 
 Esse módulo apoia o MVP ao reduzir o trabalho manual de lançamento de gastos.
 
+#### Contrato comum dos parsers
+
+O módulo de importação utiliza a interface `ParserExtrato` como contrato comum entre o `ImportacaoService` e os parsers concretos (`ParserCSV`, `ParserTXT`, `ParserXML` e `ParserNFe`).
+
+Cada parser é responsável por duas operações principais:
+
+1. `aceita(MultipartFile arquivo)`: indica se o parser reconhece o arquivo recebido.
+2. `parsear(MultipartFile arquivo, Conta conta)`: converte os registros válidos do arquivo em transações.
+
+A decisão de `aceita()` deve considerar a extensão do arquivo e, quando necessário, uma prévia do conteúdo. O `Content-Type` enviado pelo cliente não deve ser a única fonte de decisão, pois pode ser genérico ou incorreto.
+
+O método `parsear()` retorna um `ResultadoParser`, contendo:
+
+| Campo | Responsabilidade |
+| --- | --- |
+| `transacoes` | Lista somente com transações válidas extraídas do arquivo. |
+| `totalLinhas` | Quantidade de registros avaliados pelo parser. |
+| `linhasInvalidas` | Quantidade de registros ignorados por inconsistência. |
+
+O contrato permite sucesso parcial. Isso significa que, se parte do arquivo for válida e parte inválida, o parser deve retornar as transações válidas e contabilizar os registros inválidos, sem interromper toda a importação.
+
+As transações criadas pelos parsers devem conter conta, data, descrição, valor, tipo e `categorizada=false`. Já a associação com a entidade `Importacao`, a sugestão de categoria, a persistência e a atualização de status são responsabilidades do `ImportacaoService`.
+
 ### Tratamento de erros
 
 O projeto possui `GlobalExceptionHandler` para tratar exceções como recurso não encontrado e argumentos inválidos, além de handlers específicos no `AuthController` para conflitos, dados inválidos e falhas de autenticação.
@@ -286,7 +309,7 @@ A funcionalidade de importação permite que o usuário envie extratos de difere
 
 **Como funciona no código:**
 
-1. **A Interface (A Estratégia):** Foi criada a interface `ParserExtrato` contendo os contratos `aceita(MultipartFile arquivo)` e `parsear(MultipartFile arquivo, Conta conta)`.
+1. **A Interface (A Estratégia):** Foi criada a interface `ParserExtrato`, que formaliza o contrato comum dos parsers por meio dos métodos `aceita(MultipartFile arquivo)` e `parsear(MultipartFile arquivo, Conta conta)`. Esse contrato define quando um parser deve aceitar um arquivo, como deve retornar sucessos parciais e quais campos da transação são responsabilidade do parser.
 2. **As Implementações (Estratégias Concretas):** Classes como `ParserCSV`, `ParserXML` e `ParserNFe` implementam a interface, contendo a lógica específica para traduzir bytes daquele formato específico em objetos `Transacao`.
 3. **O Contexto:** A classe `ImportacaoService` recebe via injeção de dependência do Spring uma lista de todas as estratégias disponíveis (`List<ParserExtrato> parsers`).
 
