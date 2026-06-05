@@ -57,7 +57,7 @@ const Cadastro: React.FC = () => {
     try {
       const cpfSoDigitos = valores.cpf.replace(/\D/g, '');
       await cadastrar(valores.nome, valores.email, valores.senha, cpfSoDigitos);
-      navigate('/contas/nova');
+      navigate('/contas/primeira', { replace: true });
     } catch (err: unknown) {
       const status = obterStatusHttp(err);
       if (status === 409) setErro(obterMensagemErroApi(err, 'E-mail ou CPF já cadastrado.'));
