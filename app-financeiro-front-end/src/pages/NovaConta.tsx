@@ -158,11 +158,6 @@ const NovaConta = () => {
     <LayoutPrivado
       titulo="Contas"
       subtitulo="Gerencie suas contas bancárias cadastradas no SmartBudget."
-      acaoPrimaria={
-        <button type="button" className="sb-button sb-button-primary sb-button-sm" onClick={abrirModal}>
-          Adicionar nova conta
-        </button>
-      }
     >
       <MensagemAlerta mensagem={erroGeral} tipo="danger" />
       <MensagemAlerta mensagem={sucesso} tipo="success" />
