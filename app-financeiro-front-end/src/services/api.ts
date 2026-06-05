@@ -95,6 +95,7 @@ export interface TransacaoResponse {
   importacaoId?: string | null;
   categoriaId?: string | null;
   contaId: string | null;
+  categorizada: boolean;
 }
 
 export type StatusImportacao = 'PENDENTE' | 'PROCESSANDO' | 'CONCLUIDO' | 'ERRO';
@@ -106,6 +107,10 @@ export interface ImportacaoResponse {
   falhas: number;
   importadoEm: string;
   mensagemErro?: string | null;
+}
+
+export interface CategorizarTransacaoResponse{
+  categoriaId: string;
 }
 
 interface ErroApiPayload {
@@ -201,6 +206,14 @@ export const listarTransacoes = async (params: FiltroTransacoesParams = {}) => {
   if (params.tipo) query.tipo = params.tipo;
 
   const { data } = await api.get<PaginaResponse<TransacaoResponse>>('/transacoes', { params: query });
+  return data;
+};
+
+export const categorizarTransacao = async (transacaoId: string, categoriaId: string) => {
+  const { data } = await api.patch<TransacaoResponse>(`/transacoes/${transacaoId}/categoria`, {
+    categoriaId,
+  });
+
   return data;
 };
 

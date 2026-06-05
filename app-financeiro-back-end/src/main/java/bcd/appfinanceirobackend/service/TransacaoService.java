@@ -82,7 +82,6 @@ public class TransacaoService {
         }
 
         Transacao transacao = new Transacao();
-        transacao.setCategorizada(true);
         transacao.setConta(conta);
         transacao.setValor(dto.getValor());
 
@@ -91,10 +90,68 @@ public class TransacaoService {
         transacao.setDescricao(dto.getDescricao());
         transacao.setTipo(dto.getTipoTransacao());
         transacao.setFormaPagamento(dto.getFormaPagamento());
+
+        if (dto.getCategoriaId() != null) {
+            Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
+
+            validarCategoriaPermitida(categoria, usuarioAutenticado);
+
+            transacao.setCategoria(categoria);
+            transacao.setCategorizada(true);
+        } else {
+            transacao.setCategorizada(false);
+        }
+
         Transacao transacaoSalva = transacaoRepository.save(transacao);
 
         return toResponse(transacaoSalva);
+    }
 
+    public TransacaoResponseDTO editar(UUID transacaoId, TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
+        validarCamposObrigatorios(dto);
+
+        Transacao transacao = buscarTransacaoDoUsuario(transacaoId, usuarioAutenticado);
+        Conta conta = resolverConta(dto, usuarioAutenticado);
+
+        transacao.setConta(conta);
+        transacao.setValor(dto.getValor());
+        transacao.setData(dto.getData());
+        transacao.setFutura(dto.getData().isAfter(LocalDate.now()));
+        transacao.setDescricao(dto.getDescricao());
+        transacao.setTipo(dto.getTipoTransacao());
+        transacao.setFormaPagamento(dto.getFormaPagamento());
+
+        if (dto.getCategoriaId() != null) {
+            Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
+
+            validarCategoriaPermitida(categoria, usuarioAutenticado);
+
+            transacao.setCategoria(categoria);
+            transacao.setCategorizada(true);
+        } else {
+            transacao.setCategoria(null);
+            transacao.setCategorizada(false);
+        }
+
+        return toResponse(transacaoRepository.save(transacao));
+    }
+
+    public void excluir(UUID transacaoId, Usuario usuarioAutenticado) {
+        Transacao transacao = buscarTransacaoDoUsuario(transacaoId, usuarioAutenticado);
+        transacaoRepository.delete(transacao);
+    }
+
+    private Transacao buscarTransacaoDoUsuario(UUID transacaoId, Usuario usuarioAutenticado) {
+        Transacao transacao = transacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada"));
+
+        if (!transacao.getConta().getUsuario().getId().equals(usuarioAutenticado.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a essa transação");
+        }
+
+        return transacao;
     }
 
     public PaginaDTO<TransacaoResponseDTO> listarTransacoesPorUsuario(Usuario usuarioAutenticado,
@@ -148,26 +205,6 @@ public class TransacaoService {
         }
         return null;
     }
-
-
-
-    public TransacaoResponseDTO toResponse(Transacao transacao) {
-        TransacaoResponseDTO responseDTO = new TransacaoResponseDTO();
-        responseDTO.setTransacaoId(transacao.getId());
-        responseDTO.setData(transacao.getData());
-        responseDTO.setValor(transacao.getValor());
-        responseDTO.setFormaPagamento(transacao.getFormaPagamento());
-        responseDTO.setTipoTransacao(transacao.getTipo());
-        responseDTO.setDescricao(transacao.getDescricao());
-        responseDTO.setContaId(transacao.getConta().getId());
-        responseDTO.setCategoriaId(
-                    transacao.getCategoria() != null ? transacao.getCategoria().getId() : null
-        );
-        responseDTO.setImportacaoId(
-                    transacao.getImportacao() != null ? transacao.getImportacao().getId() : null
-        );
-        return responseDTO;
-    }
     
     private Conta obterOuCriarContaDinheiro(Usuario usuario) {
         return contaRepository
@@ -199,6 +236,8 @@ public class TransacaoService {
         }
     }
 
+    // Utils
+
     private String normalizarTexto(String texto) {
         return Normalizer.normalize(texto, Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "")
@@ -208,5 +247,58 @@ public class TransacaoService {
 
     private boolean contemPalavra(String descricao, String palavraChave) {
         return descricao.matches(".*\\b" + Pattern.quote(palavraChave) + "\\b.*");
+    }
+
+    private Conta resolverConta(TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
+        if (dto.getFormaPagamento() == TipoPagamento.DINHEIRO) {
+            return obterOuCriarContaDinheiro(usuarioAutenticado);
+        }
+
+        Conta conta = contaRepository.findById(dto.getContaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
+
+        if (!conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a esta conta");
+        }
+
+        return conta;
+    }
+
+    private void validarCamposObrigatorios(TransacaoRequestDTO dto) {
+        if (dto.getValor() == null ||
+                dto.getData() == null ||
+                dto.getTipoTransacao() == null ||
+                dto.getFormaPagamento() == null) {
+            throw new IllegalArgumentException("Campos obrigatórios não informados");
+        }
+
+        boolean pagamentoEmDinheiro = dto.getFormaPagamento() == TipoPagamento.DINHEIRO;
+
+        if (!pagamentoEmDinheiro && dto.getContaId() == null) {
+            throw new IllegalArgumentException("Campos obrigatórios não informados");
+        }
+
+        if (dto.getValor().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("O valor informado deve ser maior que zero");
+        }
+    }
+
+    public TransacaoResponseDTO toResponse(Transacao transacao) {
+        TransacaoResponseDTO responseDTO = new TransacaoResponseDTO();
+        responseDTO.setTransacaoId(transacao.getId());
+        responseDTO.setData(transacao.getData());
+        responseDTO.setValor(transacao.getValor());
+        responseDTO.setFormaPagamento(transacao.getFormaPagamento());
+        responseDTO.setTipoTransacao(transacao.getTipo());
+        responseDTO.setDescricao(transacao.getDescricao());
+        responseDTO.setContaId(transacao.getConta().getId());
+        responseDTO.setCategorizada(transacao.getCategorizada());
+        responseDTO.setCategoriaId(
+                transacao.getCategoria() != null ? transacao.getCategoria().getId() : null
+        );
+        responseDTO.setImportacaoId(
+                transacao.getImportacao() != null ? transacao.getImportacao().getId() : null
+        );
+        return responseDTO;
     }
 }

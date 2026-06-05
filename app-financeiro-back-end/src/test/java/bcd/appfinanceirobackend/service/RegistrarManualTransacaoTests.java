@@ -3,11 +3,13 @@ package bcd.appfinanceirobackend.service;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
+import bcd.appfinanceirobackend.model.Categoria;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.model.enums.TipoPagamento;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
+import bcd.appfinanceirobackend.repository.CategoriaRepository;
 import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +43,9 @@ class RegistrarManualTransacaoTests {
 
     @Mock
     private ContaRepository contaRepository;
+
+    @Mock
+    private CategoriaRepository categoriaRepository;
 
     @InjectMocks
     private TransacaoService transacaoService;
@@ -154,7 +159,7 @@ class RegistrarManualTransacaoTests {
             assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
                     .isInstanceOf(IllegalArgumentException.class);
 
-            verifyNoInteractions(contaRepository, transacaoRepository);
+            verifyNoInteractions(contaRepository, transacaoRepository, categoriaRepository);
         }
     }
 
@@ -218,16 +223,6 @@ class RegistrarManualTransacaoTests {
             assertThat(response.getContaId()).isEqualTo(conta.getId());
         }
 
-        @Test
-        @DisplayName("Persiste a transação com o campo categorizada igual a true")
-        void deveSalvarTransacaoComCategorizadaTrue() {
-            ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
-
-            transacaoService.registrarManual(dtoValido, usuarioDono);
-
-            verify(transacaoRepository).save(captor.capture());
-            assertThat(captor.getValue().getCategorizada()).isTrue();
-        }
 
         @Test
         @DisplayName("Persiste a transação com futura = false para data atual")
@@ -239,6 +234,30 @@ class RegistrarManualTransacaoTests {
 
             verify(transacaoRepository).save(captor.capture());
             assertThat(captor.getValue().getFutura()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Persiste a transação com categoria quando categoriaId é informado")
+        void deveSalvarTransacaoComCategoriaQuandoCategoriaIdInformado() {
+            Categoria categoria = new Categoria();
+            categoria.setId(UUID.randomUUID());
+            categoria.setNome("Alimentação");
+            categoria.setPadrao(true);
+
+            dtoValido.setCategoriaId(categoria.getId());
+
+            when(categoriaRepository.findById(categoria.getId())).thenReturn(Optional.of(categoria));
+
+            ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
+
+            TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
+
+            verify(transacaoRepository).save(captor.capture());
+
+            assertThat(captor.getValue().getCategoria()).isEqualTo(categoria);
+            assertThat(captor.getValue().getCategorizada()).isTrue();
+            assertThat(response.getCategoriaId()).isEqualTo(categoria.getId());
+            assertThat(response.isCategorizada()).isTrue();
         }
 
         @Test
@@ -307,11 +326,20 @@ class RegistrarManualTransacaoTests {
         }
 
         @Test
-        @DisplayName("Retorna categoriaId nulo quando a transação não possui categoria")
-        void deveRetornarCategoriaIdNuloQuandoSemCategoria() {
+        @DisplayName("Persiste e retorna transação não categorizada quando categoriaId não é informado")
+        void deveSalvarERetornarTransacaoNaoCategorizadaQuandoCategoriaIdNaoInformado() {
+            dtoValido.setCategoriaId(null);
+
+            ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
+
             TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
 
+            verify(transacaoRepository).save(captor.capture());
+
+            assertThat(captor.getValue().getCategoria()).isNull();
+            assertThat(captor.getValue().getCategorizada()).isFalse();
             assertThat(response.getCategoriaId()).isNull();
+            assertThat(response.isCategorizada()).isFalse();
         }
 
         @Test

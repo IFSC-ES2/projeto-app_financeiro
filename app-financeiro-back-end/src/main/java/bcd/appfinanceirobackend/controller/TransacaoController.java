@@ -37,6 +37,22 @@ public class TransacaoController {
                 requestDTO, usuarioAutenticado));
     }
 
+    @PutMapping("/{transacaoId}")
+    public ResponseEntity<TransacaoResponseDTO> editarTransacao(
+            @PathVariable UUID transacaoId,
+            @RequestBody TransacaoRequestDTO requestDTO,
+            @AuthenticationPrincipal Usuario usuarioAutenticado) {
+        return ResponseEntity.ok(transacaoService.editar(transacaoId, requestDTO, usuarioAutenticado));
+    }
+
+    @DeleteMapping("/{transacaoId}")
+    public ResponseEntity<Void> excluirTransacao(
+            @PathVariable UUID transacaoId,
+            @AuthenticationPrincipal Usuario usuarioAutenticado) {
+        transacaoService.excluir(transacaoId, usuarioAutenticado);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping
     public ResponseEntity<PaginaDTO<TransacaoResponseDTO>> listar(
             @AuthenticationPrincipal Usuario usuario,

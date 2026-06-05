@@ -3,7 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import LayoutPrivado from '../components/layout/LayoutPrivado';
 import EstadoVazio from '../components/ui/EstadoVazio';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { listarCategorias, listarContas, listarTransacoes, obterMensagemErroApi } from '../services/api';
+import {
+  categorizarTransacao,
+  listarCategorias,
+  listarContas,
+  listarTransacoes,
+  obterMensagemErroApi,
+} from '../services/api';
 import type {
   CategoriaResponse,
   ContaResponse,
@@ -76,13 +82,43 @@ const Transacoes = () => {
   const [tamanho, setTamanho] = useState(20);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
-  const [mensagemSucesso] = useState(estado?.mensagem ?? '');
+  const [mensagemSucesso, setMensagemSucesso] = useState(estado?.mensagem ?? '');
+  const [transacaoAtualizandoId, setTransacaoAtualizandoId] = useState<string | null>(null);
+  const [mensagemCategoria, setMensagemCategoria] = useState('');
 
   useEffect(() => {
     if (estado?.mensagem) {
       navigate(location.pathname, { replace: true, state: null });
     }
   }, [estado?.mensagem, location.pathname, navigate]);
+
+  useEffect(() => {
+    if (!mensagemCategoria) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setMensagemCategoria('');
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [mensagemCategoria]);
+
+  useEffect(() => {
+    if (!mensagemSucesso) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setMensagemSucesso('');
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [mensagemSucesso]);
 
   useEffect(() => {
     let ativo = true;
@@ -96,7 +132,7 @@ const Transacoes = () => {
         setCategorias(categoriasCarregadas);
       } catch (erroCapturado) {
         if (!ativo) return;
-        obterMensagemErroApi(erroCapturado, 'Não foi possível carregar contas e categorias.');
+        setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível carregar contas e categorias.'));
       }
     };
 
@@ -142,10 +178,6 @@ const Transacoes = () => {
   }, [filtros, paginaAtual, tamanho]);
 
   const contaPorId = useMemo(() => new Map(contas.map((conta) => [conta.contaId, conta])), [contas]);
-  const categoriaPorId = useMemo(
-    () => new Map(categorias.map((categoria) => [categoria.categoriaId, categoria])),
-    [categorias]
-  );
 
   const transacoes = useMemo(() => pagina?.conteudo ?? [], [pagina]);
   const totalElementos = pagina?.totalElementos ?? 0;
@@ -153,6 +185,8 @@ const Transacoes = () => {
   const resumo = useMemo(() => calcularResumoTransacoes(transacoes), [transacoes]);
 
   const alterarFiltro = (campo: keyof FiltrosTransacao, valor: string) => {
+    setMensagemCategoria('');
+    setMensagemSucesso('');
     setFiltros((atuais) => ({ ...atuais, [campo]: valor }));
     setPaginaAtual(0);
   };
@@ -162,9 +196,39 @@ const Transacoes = () => {
     setPaginaAtual(0);
   };
 
+  const atualizarCategoriaTransacao = async (transacaoId: string, categoriaId: string) => {
+    if (!categoriaId) return;
+
+    setTransacaoAtualizandoId(transacaoId);
+    setErro('');
+    setMensagemCategoria('');
+
+    try {
+      const transacaoAtualizada = await categorizarTransacao(transacaoId, categoriaId);
+
+      setPagina((atual) =>
+        atual
+          ? {
+              ...atual,
+              conteudo: atual.conteudo.map((transacao) =>
+                transacao.transacaoId === transacaoId ? transacaoAtualizada : transacao
+              ),
+            }
+          : atual
+      );
+
+      setMensagemCategoria('Categoria atualizada com sucesso.');
+    } catch (erroCapturado) {
+      setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível atualizar a categoria da transação.'));
+    } finally {
+      setTransacaoAtualizandoId(null);
+    }
+  };
+
   return (
     <LayoutPrivado titulo="Transações" subtitulo="Visualize e registre movimentações financeiras da sua conta.">
       <MensagemAlerta mensagem={mensagemSucesso} tipo="success" />
+      <MensagemAlerta mensagem={mensagemCategoria} tipo="success" />
       <MensagemAlerta mensagem={erro} tipo="danger" />
       <section className="filters-panel" aria-label="Filtros de transações">
         <label>
@@ -288,7 +352,6 @@ const Transacoes = () => {
                 <tbody>
                   {transacoes.map((transacao) => {
                     const receita = transacao.tipoTransacao === 'CREDITO';
-                    const categoria = transacao.categoriaId ? categoriaPorId.get(transacao.categoriaId) : undefined;
                     const conta = transacao.contaId ? contaPorId.get(transacao.contaId) : undefined;
 
                     return (
@@ -304,7 +367,33 @@ const Transacoes = () => {
                             </div>
                           </div>
                         </td>
-                        <td>{categoria?.nome || 'Sem categoria'}</td>
+                        <td>
+                          <div className="category-cell">
+                            {!transacao.categorizada && (
+                              <span className="category-pending-badge">Pendente</span>
+                            )}
+
+                            <select
+                              className="category-select"
+                              value={transacao.categoriaId ?? ''}
+                              disabled={transacaoAtualizandoId === transacao.transacaoId}
+                              onChange={(evento) => atualizarCategoriaTransacao(transacao.transacaoId, evento.target.value)}
+                              aria-label={`Categoria da transação ${transacao.descricao || transacao.transacaoId}`}
+                            >
+                              <option value="" disabled>Sem categoria</option>
+                              {categorias.map((categoriaOpcao) => (
+                                <option key={categoriaOpcao.categoriaId} value={categoriaOpcao.categoriaId}>
+                                  {categoriaOpcao.nome}
+                                  {categoriaOpcao.padrao ? ' — padrão' : ''}
+                                </option>
+                              ))}
+                            </select>
+
+                            {transacaoAtualizandoId === transacao.transacaoId && (
+                              <small className="category-updating">Atualizando...</small>
+                            )}
+                          </div>
+                        </td>
                         <td>{conta?.nome || 'Dinheiro'}</td>
                         <td>{formatarData(transacao.data)}</td>
                         <td className={receita ? 'text-end amount-positive' : 'text-end amount-negative'}>
