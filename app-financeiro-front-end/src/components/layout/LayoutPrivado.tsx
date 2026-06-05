@@ -15,7 +15,7 @@ const itensNavegacao = [
   { para: "/transacoes", rotulo: "Transações", icone: "transacoes" },
   { para: "/categorias", rotulo: "Categorias", icone: "categorias" },
   { para: "/parcelamentos", rotulo: "Parcelamentos", icone: "parcelamentos" },
-  { para: "/contas/nova", rotulo: "Nova conta", icone: "contas" },
+  { para: "/contas/nova", rotulo: "Contas", icone: "contas" },
 ];
 
 const IconeNavegacao = ({ nome }: { nome: string }) => {
