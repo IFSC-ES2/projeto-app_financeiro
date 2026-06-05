@@ -271,7 +271,9 @@ const ImportarExtrato: React.FC = () => {
                   {semContas && (
                     <p className="text-muted small mt-2 mb-0">
                       Você precisa{' '}
-                      <Link to="/contas/nova" className="text-decoration-none">cadastrar uma conta</Link>{' '}
+                      <Link to="/contas" className="sb-button sb-button-primary">
+                        Cadastrar conta
+                      </Link>{' '}
                       antes de importar transações.
                     </p>
                   )}
