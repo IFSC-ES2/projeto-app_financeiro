@@ -11,6 +11,7 @@ import Transacoes from './pages/Transacoes';
 import NovaTransacao from './pages/NovaTransacao';
 import Categorias from './pages/Categorias';
 import Parcelamentos from './pages/Parcelamentos';
+import PrimeiraConta from './pages/PrimeiraConta';
 
 function App() {
   return (
@@ -25,13 +26,14 @@ function App() {
           </Route>
 
           <Route element={<RotaPrivada />}>
-            <Route path="/contas/nova" element={<NovaConta />} />
+            <Route path="/contas" element={<NovaConta />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transacoes" element={<Transacoes />} />
             <Route path="/transacoes/nova" element={<NovaTransacao />} />
             <Route path="/categorias" element={<Categorias />} />
             <Route path="/parcelamentos" element={<Parcelamentos />} />
             <Route path="/importacoes/nova" element={<ImportarExtrato />} />
+            <Route path="/contas/primeira" element={<PrimeiraConta />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/login" replace />} />
