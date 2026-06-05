@@ -5,12 +5,14 @@ import NovaConta from './NovaConta';
 import { ProvedorAutenticacao } from '../contexts/ContextoAutenticacao';
 
 
-const { mockRegistrarConta, mockNavigate } = vi.hoisted(() => ({
+const { mockListarContas, mockRegistrarConta, mockNavigate } = vi.hoisted(() => ({
+  mockListarContas: vi.fn(),
   mockRegistrarConta: vi.fn(),
   mockNavigate: vi.fn(),
 }));
 
 vi.mock('../services/api', () => ({
+  listarContas: mockListarContas,
   registrarConta: mockRegistrarConta,
   obterMensagemErroApi: vi.fn((_err: unknown, fallback: string) => fallback),
 }));
@@ -29,6 +31,8 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #136)', () 
     vi.clearAllTimers();
     mockRegistrarConta.mockReset();
     mockNavigate.mockClear();
+    mockListarContas.mockReset();
+    mockListarContas.mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -36,21 +40,31 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #136)', () 
   });
 
   const renderizarComponente = () =>
-  render(
-    <ProvedorAutenticacao>
-      <BrowserRouter>
-        <NovaConta />
-      </BrowserRouter>
-    </ProvedorAutenticacao>
-  );
+    render(
+      <ProvedorAutenticacao>
+        <BrowserRouter>
+          <NovaConta />
+        </BrowserRouter>
+      </ProvedorAutenticacao>
+    );
+
+  const abrirModalCadastro = async () => {
+    renderizarComponente();
+
+    const botaoAdicionar = await screen.findByRole('button', {
+      name: /Adicionar nova conta/i,
+    });
+
+    fireEvent.click(botaoAdicionar);
+  };
 
   const preencherCamposMinimos = () => {
     fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: 'Conta Principal' } });
     fireEvent.change(screen.getByLabelText(/Banco/i), { target: { value: 'Itaú' } });
   };
 
-  it('deve renderizar os campos do formulário com os valores padrões e o botão de submissão', () => {
-    renderizarComponente();
+  it('deve renderizar os campos do formulário com os valores padrões e o botão de submissão', async () => {
+    await abrirModalCadastro();
 
     expect(screen.getByLabelText(/Nome da conta/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Tipo de conta/i)).toBeInTheDocument();
@@ -62,7 +76,7 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #136)', () 
   });
 
   it('deve exibir erro de validação ao tentar submeter o formulário com o nome em branco', async () => {
-    renderizarComponente();
+    await abrirModalCadastro();
 
     fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
@@ -75,7 +89,7 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #136)', () 
   });
 
   it('deve exibir erro de validação ao tentar submeter sem banco selecionado', async () => {
-    renderizarComponente();
+    await abrirModalCadastro();
 
     fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: 'Conta sem banco' } });
     fireEvent.change(screen.getByLabelText(/Banco/i), { target: { value: '' } });
@@ -88,67 +102,9 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #136)', () 
     });
   });
 
-  // Testes da issue #147; remover .skip quando NovaConta tiver Saldo inicial (issue #136).
-  describe.skip('Saldo inicial', () => {
-    it('deve renderizar o campo Saldo inicial com valor padrão zero', () => {
-      renderizarComponente();
-      expect(screen.getByLabelText(/Saldo inicial/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Saldo inicial/i)).toHaveValue('0');
-    });
-
-    it('deve exibir erro ao informar saldo inicial em formato inválido', async () => {
-      renderizarComponente();
-      preencherCamposMinimos();
-
-      fireEvent.change(screen.getByLabelText(/Saldo inicial/i), { target: { value: 'abc' } });
-      fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
-
-      expect(mockRegistrarConta).not.toHaveBeenCalled();
-
-      await waitFor(() => {
-        expect(screen.getByText('Saldo inicial inválido. Use apenas números.')).toBeInTheDocument();
-      });
-    });
-
-    it('deve permitir cadastrar com saldo inicial zerado', async () => {
-      mockRegistrarConta.mockResolvedValueOnce(undefined);
-      renderizarComponente();
-      preencherCamposMinimos();
-
-      fireEvent.change(screen.getByLabelText(/Saldo inicial/i), { target: { value: '0' } });
-      fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
-
-      await waitFor(() => {
-        expect(mockRegistrarConta).toHaveBeenCalledWith(
-          expect.objectContaining({
-            nome: 'Conta Principal',
-            saldoInicial: 0,
-          }),
-        );
-      });
-    });
-
-    it('deve permitir cadastrar com saldo inicial positivo', async () => {
-      mockRegistrarConta.mockResolvedValueOnce(undefined);
-      renderizarComponente();
-      preencherCamposMinimos();
-
-      fireEvent.change(screen.getByLabelText(/Saldo inicial/i), { target: { value: '1250,50' } });
-      fireEvent.click(screen.getByRole('button', { name: /Cadastrar conta/i }));
-
-      await waitFor(() => {
-        expect(mockRegistrarConta).toHaveBeenCalledWith(
-          expect.objectContaining({
-            saldoInicial: 1250.5,
-          }),
-        );
-      });
-    });
-  });
-
   it('deve exibir mensagem de alerta geral em tela caso a API de registro falhe', async () => {
     mockRegistrarConta.mockImplementationOnce(() => Promise.reject(new Error('Erro na API')));
-    renderizarComponente();
+    await abrirModalCadastro();
 
     fireEvent.change(screen.getByLabelText(/Nome da conta/i), {
       target: { value: 'Conta com Falha' },
@@ -169,16 +125,23 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #136)', () 
   });
 
   it('deve exibir loading enquanto registrarConta estiver pendente', async () => {
-    let resolver: () => void = () => undefined;
+    const contaCriada = {
+      contaId: 'conta-loading',
+      nome: 'Conta Principal',
+      tipoConta: 'CORRENTE' as const,
+      banco: 'Itaú',
+      descricao: '',
+    };
+    let resolver: (conta: typeof contaCriada) => void = () => undefined;
 
     mockRegistrarConta.mockImplementationOnce(
       () =>
-        new Promise<void>((resolve) => {
+        new Promise<typeof contaCriada>((resolve) => {
           resolver = resolve;
         }),
     );
 
-    renderizarComponente();
+    await abrirModalCadastro();
     preencherCamposMinimos();
 
     const botao = screen.getByRole('button', { name: /Cadastrar conta/i });
@@ -192,7 +155,7 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #136)', () 
     fireEvent.click(botao);
     expect(mockRegistrarConta).toHaveBeenCalledTimes(1);
 
-    resolver();
+    resolver(contaCriada);
 
     await waitFor(() => {
       expect(screen.getByText(/Conta bancária cadastrada com sucesso/i)).toBeInTheDocument();
@@ -201,9 +164,15 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #136)', () 
     vi.clearAllTimers();
   });
 
-  it('deve chamar a função registrarConta com os dados tratados e redirecionar para o dashboard após o sucesso', async () => {
-    mockRegistrarConta.mockResolvedValueOnce(undefined);
-    renderizarComponente();
+  it('deve chamar a função registrarConta com os dados tratados e atualizar a listagem após o sucesso', async () => {
+    mockRegistrarConta.mockResolvedValueOnce({
+      contaId: 'conta-1',
+      nome: 'Conta Salário Premium',
+      tipoConta: 'POUPANCA',
+      banco: 'Itaú',
+      descricao: 'Fundo de reserva técnica.',
+    });
+    await abrirModalCadastro();
 
     fireEvent.change(screen.getByLabelText(/Nome da conta/i), { target: { value: '  Conta Salário Premium  ' } });
     fireEvent.change(screen.getByLabelText(/Tipo de conta/i), { target: { value: 'POUPANCA' } });
@@ -223,16 +192,13 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #136)', () 
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Conta bancária cadastrada com sucesso. Redirecionando/i),
+        screen.getByText(/Conta bancária cadastrada com sucesso/i),
       ).toBeInTheDocument();
     });
 
-    await waitFor(
-      () => {
-        expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true });
-      },
-      { timeout: 1500 },
-    );
+    await waitFor(() => {
+      expect(screen.getByText('Conta Salário Premium')).toBeInTheDocument();
+    });
 
     vi.clearAllTimers();
   });
