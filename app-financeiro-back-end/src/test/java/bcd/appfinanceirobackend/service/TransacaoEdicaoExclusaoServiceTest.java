@@ -21,6 +21,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
@@ -255,6 +256,29 @@ class TransacaoEdicaoExclusaoServiceTest {
                     .hasMessageContaining("Campos obrigatórios não informados");
 
             verify(transacaoRepository, never()).findById(any());
+            verify(transacaoRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Lança 403 quando categoria personalizada pertence a outro usuário")
+        void deveLancarForbiddenQuandoCategoriaPersonalizadaPertenceAOutroUsuario() {
+            Categoria categoriaDeOutroUsuario = new Categoria();
+            categoriaDeOutroUsuario.setId(UUID.randomUUID());
+            categoriaDeOutroUsuario.setNome("Categoria privada");
+            categoriaDeOutroUsuario.setPadrao(false);
+            categoriaDeOutroUsuario.setUsuario(outroUsuario);
+
+            dtoValido.setCategoriaId(categoriaDeOutroUsuario.getId());
+
+            when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
+            when(contaRepository.findById(novaConta.getId())).thenReturn(Optional.of(novaConta));
+            when(categoriaRepository.findById(categoriaDeOutroUsuario.getId()))
+                    .thenReturn(Optional.of(categoriaDeOutroUsuario));
+
+            assertThatThrownBy(() -> transacaoService.editar(transacao.getId(), dtoValido, usuarioDono))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .hasFieldOrPropertyWithValue("statusCode", HttpStatus.FORBIDDEN);
+
             verify(transacaoRepository, never()).save(any());
         }
     }
