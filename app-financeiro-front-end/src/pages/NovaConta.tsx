@@ -107,7 +107,7 @@ const NovaConta = () => {
   return (
     <LayoutPrivado
       titulo="Contas"
-      subtitulo="Cadastre uma conta bancária para usar nas suas transações."
+      subtitulo="Gerencie suas contas bancárias cadastradas no SmartBudget."
       acaoPrimaria={
         <Link to="/dashboard" className="sb-button sb-button-secondary sb-button-sm">
           Voltar
