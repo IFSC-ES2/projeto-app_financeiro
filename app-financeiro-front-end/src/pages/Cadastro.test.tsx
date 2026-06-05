@@ -84,7 +84,7 @@ describe('Tela de Cadastro', () => {
     });
   });
 
-  it('deve chamar a funcao cadastrar e redirecionar para /contas/nova ao preencher dados validos', async () => {
+  it('deve chamar a funcao cadastrar e redirecionar para /contas/primeira ao preencher dados validos', async () => {
     mockCadastrar.mockResolvedValueOnce(undefined);
     renderizarComponente();
     const user = userEvent.setup();
@@ -105,7 +105,7 @@ describe('Tela de Cadastro', () => {
         'senhaValida123',
         '52998224725'
       );
-      expect(mockNavigate).toHaveBeenCalledWith('/contas/nova');
+      expect(mockNavigate).toHaveBeenCalledWith('/contas/primeira', { replace: true });
     });
   });
 
