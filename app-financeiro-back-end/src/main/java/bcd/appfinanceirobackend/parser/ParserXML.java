@@ -40,6 +40,9 @@ import java.util.List;
  * </extrato>
  *
  * Tags alternativas também aceitas: <lancamento>, <movimento>, <entry>
+ * Elementos de transação com data ou valor inválidos são ignorados e
+ * contabilizados como linhas inválidas. A ausência completa de tags de
+ * transação reconhecidas é tratada como erro estrutural do arquivo.
  */
 @Component
 @Order(2)
