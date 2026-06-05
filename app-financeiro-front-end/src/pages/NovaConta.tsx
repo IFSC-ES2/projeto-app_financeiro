@@ -106,7 +106,7 @@ const NovaConta = () => {
 
   return (
     <LayoutPrivado
-      titulo="Nova conta bancária"
+      titulo="Contas"
       subtitulo="Cadastre uma conta bancária para usar nas suas transações."
       acaoPrimaria={
         <Link to="/dashboard" className="sb-button sb-button-secondary sb-button-sm">
