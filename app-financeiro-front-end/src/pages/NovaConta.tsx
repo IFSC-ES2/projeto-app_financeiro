@@ -119,8 +119,8 @@ const NovaConta = () => {
 
       <section className="form-panel">
         <div className="form-panel-header">
-          <h2>Dados da conta</h2>
-          <p>Nome, banco e tipo da conta são obrigatórios.</p>
+          <h2>Adicionar nova conta</h2>
+          <p>Preencha os dados da conta bancária que deseja cadastrar.</p>
         </div>
 
         <form onSubmit={enviar} noValidate className="sb-form">
