@@ -292,3 +292,9 @@ $RECYCLE.BIN/
 !app-financeiro-back-end/gradle/wrapper/gradle-wrapper.jar
 
 # End of https://www.toptal.com/developers/gitignore/api/react,windows,linux,java,groovy,git,visualstudiocode,intellij
+
+### Env / secrets ###
+.env
+.env.*
+!.env.example
+!.env.prod.example
