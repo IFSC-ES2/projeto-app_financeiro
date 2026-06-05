@@ -176,8 +176,8 @@ const NovaConta = () => {
           </div>
 
           {contas.length > 0 && (
-            <button type="button" className="sb-button sb-button-primary sb-button-sm" onClick={abrirModal}>
-              Adicionar nova conta
+            <button type="button" className="sb-button sb-button-primary" onClick={abrirModal}>
+              + Adicionar nova conta
             </button>
           )}
         </div>
