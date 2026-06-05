@@ -4,6 +4,7 @@ import bcd.appfinanceirobackend.config.JwtAuthFilter;
 import bcd.appfinanceirobackend.config.SecurityConfig;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
+import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.model.enums.TipoPagamento;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
@@ -21,8 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -32,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -145,6 +149,60 @@ class TransacaoEdicaoExclusaoControllerTest {
         }
 
         @Test
+        @DisplayName("Retorna 404 quando transação não existe")
+        void deveRetornar404QuandoTransacaoNaoExiste() throws Exception {
+            when(transacaoService.editar(eq(transacaoId), any(TransacaoRequestDTO.class), any(Usuario.class)))
+                    .thenThrow(new ResourceNotFoundException("Transação não encontrada"));
+
+            mockMvc.perform(put("/transacoes/{transacaoId}", transacaoId)
+                            .with(user(usuarioAutenticado))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(mapper.writeValueAsString(requestValido)))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("Retorna 403 quando transação pertence a outro usuário")
+        void deveRetornar403QuandoTransacaoPertenceAOutroUsuario() throws Exception {
+            when(transacaoService.editar(eq(transacaoId), any(TransacaoRequestDTO.class), any(Usuario.class)))
+                    .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a essa transação"));
+
+            mockMvc.perform(put("/transacoes/{transacaoId}", transacaoId)
+                            .with(user(usuarioAutenticado))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(mapper.writeValueAsString(requestValido)))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Retorna 403 quando nova conta pertence a outro usuário")
+        void deveRetornar403QuandoNovaContaPertenceAOutroUsuario() throws Exception {
+            when(transacaoService.editar(eq(transacaoId), any(TransacaoRequestDTO.class), any(Usuario.class)))
+                    .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a esta conta"));
+
+            mockMvc.perform(put("/transacoes/{transacaoId}", transacaoId)
+                            .with(user(usuarioAutenticado))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(mapper.writeValueAsString(requestValido)))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Retorna 400 quando payload é inválido")
+        void deveRetornar400QuandoPayloadInvalido() throws Exception {
+            when(transacaoService.editar(eq(transacaoId), any(TransacaoRequestDTO.class), any(Usuario.class)))
+                    .thenThrow(new IllegalArgumentException("Campos obrigatórios não informados"));
+
+            requestValido.setFormaPagamento(null);
+
+            mockMvc.perform(put("/transacoes/{transacaoId}", transacaoId)
+                            .with(user(usuarioAutenticado))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(mapper.writeValueAsString(requestValido)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
         @DisplayName("Retorna 401 ou 403 quando usuário não está autenticado")
         void deveRetornar401Ou403QuandoNaoAutenticado() throws Exception {
             mockMvc.perform(put("/transacoes/{transacaoId}", transacaoId)
@@ -181,6 +239,28 @@ class TransacaoEdicaoExclusaoControllerTest {
 
             verify(transacaoService).excluir(eq(transacaoId), usuarioCaptor.capture());
             assertThat(usuarioCaptor.getValue()).isEqualTo(usuarioAutenticado);
+        }
+
+        @Test
+        @DisplayName("Retorna 404 quando transação não existe")
+        void deveRetornar404QuandoTransacaoNaoExiste() throws Exception {
+            doThrow(new ResourceNotFoundException("Transação não encontrada"))
+                    .when(transacaoService).excluir(eq(transacaoId), any(Usuario.class));
+
+            mockMvc.perform(delete("/transacoes/{transacaoId}", transacaoId)
+                            .with(user(usuarioAutenticado)))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("Retorna 403 quando transação pertence a outro usuário")
+        void deveRetornar403QuandoTransacaoPertenceAOutroUsuario() throws Exception {
+            doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a essa transação"))
+                    .when(transacaoService).excluir(eq(transacaoId), any(Usuario.class));
+
+            mockMvc.perform(delete("/transacoes/{transacaoId}", transacaoId)
+                            .with(user(usuarioAutenticado)))
+                    .andExpect(status().isForbidden());
         }
 
         @Test
