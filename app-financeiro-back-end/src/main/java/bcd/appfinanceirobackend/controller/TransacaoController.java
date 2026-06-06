@@ -1,16 +1,22 @@
 package bcd.appfinanceirobackend.controller;
 
 import bcd.appfinanceirobackend.dto.categoria.CategorizarTransacaoRequestDTO;
+import bcd.appfinanceirobackend.dto.comum.PaginaDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.model.Usuario;
+import bcd.appfinanceirobackend.model.enums.TipoTransacao;
 import bcd.appfinanceirobackend.service.TransacaoService;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
@@ -48,8 +54,16 @@ public class TransacaoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TransacaoResponseDTO>> listar(@AuthenticationPrincipal Usuario usuario) {
-        return ResponseEntity.ok(transacaoService.listarTransacoesPorUsuario(usuario));
+    public ResponseEntity<PaginaDTO<TransacaoResponseDTO>> listar(
+            @AuthenticationPrincipal Usuario usuario,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(required = false) UUID categoriaId,
+            @RequestParam(required = false) TipoTransacao tipo,
+            @RequestParam(required = false) UUID contaId,
+            @PageableDefault(size = 20, sort = "data", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(
+                transacaoService.listarTransacoesPorUsuario(usuario, dataInicio, dataFim, categoriaId, tipo, contaId, pageable));
     }
 
     @PatchMapping("/{transacaoId}/categoria")
