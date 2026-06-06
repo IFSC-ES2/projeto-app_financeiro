@@ -306,7 +306,7 @@ class TransacaoEdicaoExclusaoServiceTest {
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Transação não encontrada");
 
-            verify(transacaoRepository, never()).delete(any(Transacao.class));
+            verify(transacaoRepository, never()).delete(any());
         }
 
         @Test
@@ -320,7 +320,7 @@ class TransacaoEdicaoExclusaoServiceTest {
                     .isInstanceOf(ResponseStatusException.class)
                     .hasMessageContaining("Acesso negado a essa transação");
 
-            verify(transacaoRepository, never()).delete(any(Transacao.class));
+            verify(transacaoRepository, never()).delete(any());
         }
     }
 }
