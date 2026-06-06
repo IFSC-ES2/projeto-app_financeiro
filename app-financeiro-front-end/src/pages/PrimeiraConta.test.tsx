@@ -89,6 +89,20 @@ describe.sequential('Tela de Primeira Conta (onboarding)', () => {
     });
   });
 
+  it('deve exibir erro de validação quando o tipo de conta estiver vazio', async () => {
+    renderizarComponente();
+    preencherCamposMinimos();
+
+    fireEvent.change(screen.getByLabelText(/Tipo de conta/i), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: /Finalizar cadastro/i }));
+
+    expect(mockRegistrarConta).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(screen.getByText('Tipo de conta é obrigatório.')).toBeInTheDocument();
+    });
+  });
+
   it('deve exibir mensagem de alerta geral em tela caso a API de registro falhe', async () => {
     mockRegistrarConta.mockRejectedValueOnce(new Error('Erro na API'));
 
