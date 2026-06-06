@@ -4,15 +4,6 @@ import MensagemAlerta from '../ui/MensagemAlerta';
 import { buscarResumoPorPagamento, obterMensagemErroApi } from '../../services/api';
 import type { ResumoPagamentoResponse, TipoPagamento } from '../../services/api';
 
-const rotulosFormaPagamento: Record<TipoPagamento, string> = {
-  PIX: 'Pix',
-  CARTAO_DEBITO: 'Cartão de débito',
-  CARTAO_CREDITO: 'Cartão de crédito',
-  DINHEIRO: 'Dinheiro',
-  BOLETO: 'Boleto',
-  TED_DOC: 'TED/DOC',
-};
-
 const classesFormaPagamento: Record<TipoPagamento, string> = {
   PIX: 'payment-chart-color-pix',
   CARTAO_DEBITO: 'payment-chart-color-debito',
@@ -29,12 +20,6 @@ const coresFormaPagamento: Record<TipoPagamento, string> = {
   DINHEIRO: '#FF8F3D',
   BOLETO: '#7C5CFF',
   TED_DOC: '#4D96FF',
-};
-
-const obterRotuloFormaPagamento = (formaPagamento: TipoPagamento | null) => {
-  if (!formaPagamento) return 'Não informado';
-
-  return rotulosFormaPagamento[formaPagamento];
 };
 
 const obterCorFormaPagamento = (formaPagamento: TipoPagamento | null) => {
@@ -155,7 +140,7 @@ const ResumoFormaPagamentoPizza = () => {
               <div className="dashboard-payment-legend-item" key={item.formaPagamento ?? 'NAO_INFORMADO'}>
                 <span className={obterClasseFormaPagamento(item.formaPagamento)} />
                 <div>
-                  <strong>{obterRotuloFormaPagamento(item.formaPagamento)}</strong>
+                  <strong>{item.rotulo ?? 'Não informado'}</strong>
                   <small>{formatarPercentual(item.percentual)}</small>
                 </div>
               </div>
