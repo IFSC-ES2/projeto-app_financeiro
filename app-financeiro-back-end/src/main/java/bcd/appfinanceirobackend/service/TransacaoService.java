@@ -34,45 +34,22 @@ import java.util.regex.Pattern;
 public class TransacaoService {
 
     private final TransacaoRepository transacaoRepository;
-    private final ContaRepository contaRepository;
     private final CategoriaRepository categoriaRepository;
+    private final ContaUsuarioService contaUsuarioService;
     private final TransacaoMapper transacaoMapper = new TransacaoMapper();
 
     public TransacaoService(TransacaoRepository transacaoRepository,
-                            ContaRepository contaRepository,
                             CategoriaRepository categoriaRepository,
-                            SugestaoCategoriaService sugestaoCategoriaService) {
+                            ContaUsuarioService contaUsuarioService) {
         this.transacaoRepository = transacaoRepository;
-        this.contaRepository = contaRepository;
         this.categoriaRepository = categoriaRepository;
+        this.contaUsuarioService = contaUsuarioService;
     }
 
     public TransacaoResponseDTO registrarManual (TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
-        boolean pagamentoEmDinheiro = dto.getFormaPagamento() == TipoPagamento.DINHEIRO;
+        validarCamposObrigatorios(dto);
 
-        if (dto.getValor() == null ||
-                dto.getData() == null ||
-                dto.getTipoTransacao() == null ||
-                (!pagamentoEmDinheiro && dto.getContaId() == null)) {
-            throw new IllegalArgumentException("Campos obrigatórios não informados");
-        }
-
-        if(dto.getValor().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("O valor informado deve ser maior que zero");
-        }
-
-        Conta conta;
-
-        if (pagamentoEmDinheiro) {
-            conta = obterOuCriarContaDinheiro(usuarioAutenticado);
-        } else {
-            conta = contaRepository.findById(dto.getContaId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
-
-            if (!conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a esta conta");
-            }
-        }
+        Conta conta = contaUsuarioService.resolverConta(dto, usuarioAutenticado);
 
         Transacao transacao = new Transacao();
         transacao.setConta(conta);
@@ -105,7 +82,7 @@ public class TransacaoService {
         validarCamposObrigatorios(dto);
 
         Transacao transacao = buscarTransacaoDoUsuario(transacaoId, usuarioAutenticado);
-        Conta conta = resolverConta(dto, usuarioAutenticado);
+        Conta conta = contaUsuarioService.resolverConta(dto, usuarioAutenticado);
 
         transacao.setConta(conta);
         transacao.setValor(dto.getValor());
@@ -183,28 +160,6 @@ public class TransacaoService {
         return transacaoMapper.toResponse(transacao);
     }
 
-
-    
-    private Conta obterOuCriarContaDinheiro(Usuario usuario) {
-        return contaRepository
-                .findByUsuarioIdAndTipoContaAndNome(
-                        usuario.getId(),
-                        TipoConta.CARTEIRA,
-                        "Dinheiro / Carteira"
-                )
-                .orElseGet(() -> {
-                    Conta conta = new Conta();
-                    conta.setNome("Dinheiro / Carteira");
-                    conta.setTipoConta(TipoConta.CARTEIRA);
-                    conta.setBanco("Dinheiro");
-                    conta.setDescricao("Conta automática para transações em dinheiro");
-                    conta.setUsuario(usuario);
-
-                    return contaRepository.save(conta);
-                });
-    }
-
-
     private void validarCategoriaPermitida(Categoria categoria, Usuario usuario) {
         boolean categoriaPadrao = categoria.isPadrao();
         boolean categoriaDoUsuario = categoria.getUsuario() != null
@@ -216,21 +171,6 @@ public class TransacaoService {
     }
 
     // Utils
-
-    private Conta resolverConta(TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
-        if (dto.getFormaPagamento() == TipoPagamento.DINHEIRO) {
-            return obterOuCriarContaDinheiro(usuarioAutenticado);
-        }
-
-        Conta conta = contaRepository.findById(dto.getContaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
-
-        if (!conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a esta conta");
-        }
-
-        return conta;
-    }
 
     private void validarCamposObrigatorios(TransacaoRequestDTO dto) {
         if (dto.getValor() == null ||
