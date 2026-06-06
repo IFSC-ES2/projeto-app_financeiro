@@ -2,27 +2,12 @@ import { useEffect, useState } from 'react';
 import EstadoVazio from '../ui/EstadoVazio';
 import MensagemAlerta from '../ui/MensagemAlerta';
 import { buscarResumoPorPagamento, obterMensagemErroApi } from '../../services/api';
-import type { ResumoPagamentoResponse, TipoPagamento } from '../../services/api';
+import type { ResumoPagamentoResponse } from '../../services/api';
 import { formatarMoeda } from '../../utils/formatacao';
 
 type ResumoFormaPagamentoProps = {
   limiteItens?: number;
   compacto?: boolean;
-};
-
-const rotulosFormaPagamento: Record<TipoPagamento, string> = {
-  PIX: 'Pix',
-  CARTAO_DEBITO: 'Cartão de débito',
-  CARTAO_CREDITO: 'Cartão de crédito',
-  DINHEIRO: 'Dinheiro',
-  BOLETO: 'Boleto',
-  TED_DOC: 'TED/DOC',
-};
-
-const obterRotuloFormaPagamento = (formaPagamento: TipoPagamento | null) => {
-  if (!formaPagamento) return 'Não informado';
-
-  return rotulosFormaPagamento[formaPagamento];
 };
 
 const formatarPercentual = (percentual: number) =>
@@ -117,7 +102,7 @@ const ResumoFormaPagamento = ({
               <article className="payment-summary-item" key={chave}>
                 <div className="payment-summary-item-header">
                   <div>
-                    <strong>{obterRotuloFormaPagamento(item.formaPagamento)}</strong>
+                    <strong>{item.rotulo ?? 'Não informado'}</strong>
                     <span>
                       {item.quantidade} transação{item.quantidade === 1 ? '' : 'ões'}
                     </span>

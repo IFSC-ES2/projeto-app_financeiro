@@ -110,6 +110,7 @@ export interface TransacaoResponse {
 
 export interface ResumoPagamentoResponse {
   formaPagamento: TipoPagamento | null;
+  rotulo: string;
   total: number;
   quantidade: number;
   percentual: number;
@@ -200,8 +201,37 @@ export const consultarStatusImportacao = async (importacaoId: string) => {
   return data;
 };
 
-export const listarTransacoes = async () => {
-  const { data } = await api.get<TransacaoResponse[]>('/transacoes');
+export interface PaginaResponse<T> {
+  conteudo: T[];
+  pagina: number;
+  tamanho: number;
+  totalElementos: number;
+  totalPaginas: number;
+  primeira: boolean;
+  ultima: boolean;
+}
+
+export interface FiltroTransacoesParams {
+  page?: number;
+  size?: number;
+  dataInicio?: string;
+  dataFim?: string;
+  categoriaId?: string;
+  contaId?: string;
+  tipo?: TipoTransacao | '';
+}
+
+export const listarTransacoes = async (params: FiltroTransacoesParams = {}) => {
+  const query: Record<string, string> = {};
+  if (params.page != null) query.page = String(params.page);
+  if (params.size != null) query.size = String(params.size);
+  if (params.dataInicio) query.dataInicio = params.dataInicio;
+  if (params.dataFim) query.dataFim = params.dataFim;
+  if (params.categoriaId) query.categoriaId = params.categoriaId;
+  if (params.contaId) query.contaId = params.contaId;
+  if (params.tipo) query.tipo = params.tipo;
+
+  const { data } = await api.get<PaginaResponse<TransacaoResponse>>('/transacoes', { params: query });
   return data;
 };
 
