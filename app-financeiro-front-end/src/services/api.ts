@@ -1,6 +1,12 @@
 import axios from 'axios';
 import { limparSessao, obterAccessToken } from '../utils/authStorage';
 
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    ignorarLogoutAutomatico?: boolean;
+  }
+}
+
 const api = axios.create({
   baseURL: 'http://localhost:8080',
   headers: {
@@ -21,7 +27,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (erro: unknown) => {
-    if (axios.isAxiosError(erro) && (erro.response?.status === 401 || erro.response?.status === 403)) {
+    if (
+      axios.isAxiosError(erro) &&
+      !erro.config?.ignorarLogoutAutomatico &&
+      (erro.response?.status === 401 || erro.response?.status === 403)
+    ) {
       limparSessao();
       window.dispatchEvent(new Event('smartbudget:unauthorized'));
     }
@@ -98,6 +108,14 @@ export interface TransacaoResponse {
   categorizada: boolean;
 }
 
+export interface ResumoPagamentoResponse {
+  formaPagamento: TipoPagamento | null;
+  rotulo: string;
+  total: number;
+  quantidade: number;
+  percentual: number;
+}
+
 export type StatusImportacao = 'PENDENTE' | 'PROCESSANDO' | 'CONCLUIDO' | 'ERRO';
 
 export interface ImportacaoResponse {
@@ -161,6 +179,14 @@ export const registrarTransacaoManual = async (transacao: TransacaoRequest) => {
   return data;
 };
 
+export const buscarResumoPorPagamento = async () => {
+  const { data } = await api.get<ResumoPagamentoResponse[]>('/resumo/pagamentos', {
+    ignorarLogoutAutomatico: true,
+  });
+
+  return data;
+};
+
 export const criarImportacao = async (arquivo: File, contaId: string) => {
   const formData = new FormData();
   formData.append('arquivo', arquivo);
@@ -175,8 +201,37 @@ export const consultarStatusImportacao = async (importacaoId: string) => {
   return data;
 };
 
-export const listarTransacoes = async () => {
-  const { data } = await api.get<TransacaoResponse[]>('/transacoes');
+export interface PaginaResponse<T> {
+  conteudo: T[];
+  pagina: number;
+  tamanho: number;
+  totalElementos: number;
+  totalPaginas: number;
+  primeira: boolean;
+  ultima: boolean;
+}
+
+export interface FiltroTransacoesParams {
+  page?: number;
+  size?: number;
+  dataInicio?: string;
+  dataFim?: string;
+  categoriaId?: string;
+  contaId?: string;
+  tipo?: TipoTransacao | '';
+}
+
+export const listarTransacoes = async (params: FiltroTransacoesParams = {}) => {
+  const query: Record<string, string> = {};
+  if (params.page != null) query.page = String(params.page);
+  if (params.size != null) query.size = String(params.size);
+  if (params.dataInicio) query.dataInicio = params.dataInicio;
+  if (params.dataFim) query.dataFim = params.dataFim;
+  if (params.categoriaId) query.categoriaId = params.categoriaId;
+  if (params.contaId) query.contaId = params.contaId;
+  if (params.tipo) query.tipo = params.tipo;
+
+  const { data } = await api.get<PaginaResponse<TransacaoResponse>>('/transacoes', { params: query });
   return data;
 };
 
