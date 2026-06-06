@@ -79,9 +79,10 @@ describe('Tela de Importação de Extratos', () => {
     );
 
   const aguardarContas = async () => {
-    await waitFor(() => {
-      expect(screen.getByLabelText(/Conta de destino/i)).toBeInTheDocument();
-    });
+    // Espera as opções de conta carregarem (vêm de listarContas async), não só o
+    // <select>. Sem isso, selectOptions pode correr antes da option existir e
+    // falhar de forma intermitente ("Value not found in options") em CI lento.
+    await screen.findByRole('option', { name: new RegExp(contaPrincipal.nome, 'i') });
   };
 
   const preencherEEnviar = async (arquivo: File) => {
