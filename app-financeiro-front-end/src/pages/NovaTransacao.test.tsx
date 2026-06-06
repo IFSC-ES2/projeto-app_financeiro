@@ -234,7 +234,15 @@ describe('Mensagem de sucesso na listagem de Transacoes', () => {
     vi.clearAllMocks();
     vi.mocked(api.listarContas).mockResolvedValue(mockContas);
     vi.mocked(api.listarCategorias).mockResolvedValue(mockCategorias);
-    vi.mocked(api.listarTransacoes).mockResolvedValue([]);
+    vi.mocked(api.listarTransacoes).mockResolvedValue({
+      conteudo: [],
+      pagina: 0,
+      tamanho: 20,
+      totalElementos: 0,
+      totalPaginas: 0,
+      primeira: true,
+      ultima: true,
+    });
   });
 
   it('deve exibir a mensagem recebida pelo state da navegacao', async () => {
