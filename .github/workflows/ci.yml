@@ -106,10 +106,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Tests
-        run: npm test --if-present
-
-      - name: Resumo de cobertura (Vitest)
+      - name: Tests e cobertura (Vitest)
         run: |
           npm run test:coverage
           python3 - <<'PY'

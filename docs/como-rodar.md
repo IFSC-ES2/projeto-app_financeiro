@@ -289,7 +289,7 @@ O resumo aparece no terminal. O relatório detalhado fica em:
 app-financeiro-front-end/coverage/index.html
 ```
 
-O arquivo `coverage/coverage-summary.json` alimenta o step **Resumo de cobertura (Vitest)** no CI, no mesmo espírito do JaCoCo do backend.
+No CI, o job **Frontend** executa apenas `npm run test:coverage` (sem duplicar `npm test`), e imprime o resumo a partir de `coverage/coverage-summary.json`, no mesmo espírito do JaCoCo do backend.
 
 ## 6. Problemas comuns
 
