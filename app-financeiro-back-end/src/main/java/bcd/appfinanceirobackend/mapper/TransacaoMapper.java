@@ -2,7 +2,9 @@ package bcd.appfinanceirobackend.mapper;
 
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.model.Transacao;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TransacaoMapper {
 
     public TransacaoMapper() {}
