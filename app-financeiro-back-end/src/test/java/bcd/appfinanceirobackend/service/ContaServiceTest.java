@@ -2,10 +2,12 @@ package bcd.appfinanceirobackend.service;
 
 import bcd.appfinanceirobackend.dto.conta.ContaRequestDTO;
 import bcd.appfinanceirobackend.dto.conta.ContaResponseDTO;
+import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.model.enums.TipoConta;
 import bcd.appfinanceirobackend.repository.ContaRepository;
+import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,8 +17,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,6 +38,9 @@ class ContaServiceTest {
 
     @Mock
     private ContaRepository contaRepository;
+
+    @Mock
+    private TransacaoRepository transacaoRepository;
 
     @InjectMocks
     private ContaService contaService;
@@ -255,6 +264,73 @@ class ContaServiceTest {
             assertThat(response.getTipoConta()).isEqualTo(conta.getTipoConta());
             assertThat(response.getBanco()).isEqualTo(conta.getBanco());
             assertThat(response.getDescricao()).isEqualTo(conta.getDescricao());
+        }
+    }
+
+    @Nested
+    @DisplayName("Remoção de conta")
+    class RemocaoConta {
+
+        @Test
+        @DisplayName("Remove conta própria sem transações vinculadas")
+        void deveRemoverContaPropriaSemTransacoes() {
+            Conta conta = criarConta("Conta Corrente", TipoConta.CORRENTE, "Banco A", "Principal");
+            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
+            when(transacaoRepository.existsByContaId(conta.getId())).thenReturn(false);
+
+            contaService.removerConta(usuarioAutenticado, conta.getId());
+
+            verify(contaRepository).delete(conta);
+        }
+
+        @Test
+        @DisplayName("Lança 404 quando a conta não existe")
+        void deveLancarNotFoundQuandoContaNaoExiste() {
+            UUID id = UUID.randomUUID();
+            when(contaRepository.findById(id)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> contaService.removerConta(usuarioAutenticado, id))
+                    .isInstanceOf(ResourceNotFoundException.class)
+                    .hasMessageContaining("Conta não encontrada");
+
+            verify(contaRepository, never()).delete(any(Conta.class));
+            verifyNoInteractions(transacaoRepository);
+        }
+
+        @Test
+        @DisplayName("Lança 403 ao tentar remover conta de outro usuário")
+        void deveLancarForbiddenQuandoContaDeOutroUsuario() {
+            Usuario outroUsuario = new Usuario();
+            outroUsuario.setId(UUID.randomUUID());
+
+            Conta conta = criarConta("Conta Alheia", TipoConta.CORRENTE, "Banco B", "De outro");
+            conta.setUsuario(outroUsuario);
+            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
+
+            assertThatThrownBy(() -> contaService.removerConta(usuarioAutenticado, conta.getId()))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .hasMessageContaining("Acesso negado a esta conta")
+                    .extracting(excecao -> ((ResponseStatusException) excecao).getStatusCode())
+                    .isEqualTo(HttpStatus.FORBIDDEN);
+
+            verify(contaRepository, never()).delete(any(Conta.class));
+            verify(transacaoRepository, never()).existsByContaId(any());
+        }
+
+        @Test
+        @DisplayName("Lança 409 ao tentar remover conta com transações vinculadas")
+        void deveLancarConflictQuandoContaPossuiTransacoes() {
+            Conta conta = criarConta("Conta Movimentada", TipoConta.CORRENTE, "Banco C", "Com histórico");
+            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
+            when(transacaoRepository.existsByContaId(conta.getId())).thenReturn(true);
+
+            assertThatThrownBy(() -> contaService.removerConta(usuarioAutenticado, conta.getId()))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .hasMessageContaining("Não é possível remover uma conta com transações vinculadas")
+                    .extracting(excecao -> ((ResponseStatusException) excecao).getStatusCode())
+                    .isEqualTo(HttpStatus.CONFLICT);
+
+            verify(contaRepository, never()).delete(any(Conta.class));
         }
     }
 
