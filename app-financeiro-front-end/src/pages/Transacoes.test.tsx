@@ -238,6 +238,81 @@ describe('Tela de listagem de Transações (Issue #155)', () => {
     expect(screen.queryByText('Supermercado')).not.toBeInTheDocument();
   });
 
+  it('deve navegar entre páginas e solicitar listagem com page correto', async () => {
+    const transacaoPagina1: api.TransacaoResponse = {
+      ...transacaoDespesa,
+      transacaoId: 'tx-p1',
+      descricao: 'Transação página 1',
+    };
+    const transacaoPagina2: api.TransacaoResponse = {
+      ...transacaoDespesa,
+      transacaoId: 'tx-p2',
+      descricao: 'Transação página 2',
+    };
+
+    vi.mocked(api.listarTransacoes)
+      .mockResolvedValueOnce(
+        paginaComConteudo([transacaoPagina1], {
+          pagina: 0,
+          totalPaginas: 2,
+          totalElementos: 2,
+          primeira: true,
+          ultima: false,
+        }),
+      )
+      .mockResolvedValueOnce(
+        paginaComConteudo([transacaoPagina2], {
+          pagina: 1,
+          totalPaginas: 2,
+          totalElementos: 2,
+          primeira: false,
+          ultima: true,
+        }),
+      )
+      .mockResolvedValueOnce(
+        paginaComConteudo([transacaoPagina1], {
+          pagina: 0,
+          totalPaginas: 2,
+          totalElementos: 2,
+          primeira: true,
+          ultima: false,
+        }),
+      );
+
+    const usuario = userEvent.setup();
+
+    renderTransacoes();
+    await aguardarCarregamento();
+
+    expect(screen.getByText('Transação página 1')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Próxima/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Anterior/i })).toBeDisabled();
+
+    await usuario.click(screen.getByRole('button', { name: /Próxima/i }));
+
+    await waitFor(() => {
+      expect(api.listarTransacoes).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 1, size: 20 }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Transação página 2')).toBeInTheDocument();
+    });
+
+    await usuario.click(screen.getByRole('button', { name: /Anterior/i }));
+
+    await waitFor(() => {
+      expect(api.listarTransacoes).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 0, size: 20 }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Transação página 1')).toBeInTheDocument();
+    });
+  });
+
   it('deve chamar categorizarTransacao ao selecionar categoria na linha', async () => {
     vi.mocked(api.listarTransacoes).mockResolvedValueOnce(paginaComConteudo([transacaoReceita]));
     vi.mocked(api.categorizarTransacao).mockResolvedValueOnce({
