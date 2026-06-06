@@ -5,6 +5,7 @@ import bcd.appfinanceirobackend.config.SecurityConfig;
 import bcd.appfinanceirobackend.dto.comum.PaginaDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.model.Usuario;
+import bcd.appfinanceirobackend.model.enums.TipoPagamento;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
 import bcd.appfinanceirobackend.repository.UsuarioRepository;
 import bcd.appfinanceirobackend.security.JwtUtil;
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +28,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -68,7 +71,14 @@ class ListarTransacoesIntegrationTests {
     void deveRetornar200ComEnvelopePaginado() throws Exception {
         TransacaoResponseDTO dto = new TransacaoResponseDTO();
         dto.setTransacaoId(UUID.randomUUID());
+        dto.setValor(new BigDecimal("200.00"));
+        dto.setData(LocalDate.of(2026, 5, 30));
+        dto.setDescricao("Supermercado");
+        dto.setTipoTransacao(TipoTransacao.DEBITO);
+        dto.setFormaPagamento(TipoPagamento.PIX);
         dto.setContaId(UUID.randomUUID());
+        dto.setCategoriaId(UUID.randomUUID());
+        dto.setImportacaoId(UUID.randomUUID());
         when(transacaoService.listarTransacoesPorUsuario(any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(new PaginaDTO<>(List.of(dto), 0, 20, 1, 1, true, true));
 
@@ -80,7 +90,17 @@ class ListarTransacoesIntegrationTests {
                 .andExpect(jsonPath("$.tamanho").value(20))
                 .andExpect(jsonPath("$.totalElementos").value(1))
                 .andExpect(jsonPath("$.totalPaginas").value(1))
-                .andExpect(jsonPath("$.ultima").value(true));
+                .andExpect(jsonPath("$.ultima").value(true))
+                // mapeamento campo a campo dos itens (envelope.conteudo[0])
+                .andExpect(jsonPath("$.conteudo[0].transacaoId").value(dto.getTransacaoId().toString()))
+                .andExpect(jsonPath("$.conteudo[0].valor").value(200.00))
+                .andExpect(jsonPath("$.conteudo[0].data").value("2026-05-30"))
+                .andExpect(jsonPath("$.conteudo[0].descricao").value("Supermercado"))
+                .andExpect(jsonPath("$.conteudo[0].tipoTransacao").value("DEBITO"))
+                .andExpect(jsonPath("$.conteudo[0].formaPagamento").value("PIX"))
+                .andExpect(jsonPath("$.conteudo[0].contaId").value(dto.getContaId().toString()))
+                .andExpect(jsonPath("$.conteudo[0].categoriaId").value(dto.getCategoriaId().toString()))
+                .andExpect(jsonPath("$.conteudo[0].importacaoId").value(dto.getImportacaoId().toString()));
     }
 
     @Test
@@ -101,14 +121,16 @@ class ListarTransacoesIntegrationTests {
                         .with(user(usuario)))
                 .andExpect(status().isOk());
 
+        var usuarioCaptor = forClass(Usuario.class);
         var dataInicio = forClass(LocalDate.class);
         var dataFim = forClass(LocalDate.class);
         var categoria = forClass(UUID.class);
         var tipo = forClass(TipoTransacao.class);
         var pageable = forClass(Pageable.class);
         verify(transacaoService).listarTransacoesPorUsuario(
-                any(), dataInicio.capture(), dataFim.capture(), categoria.capture(), tipo.capture(), any(), pageable.capture());
+                usuarioCaptor.capture(), dataInicio.capture(), dataFim.capture(), categoria.capture(), tipo.capture(), any(), pageable.capture());
 
+        assertThat(usuarioCaptor.getValue()).isEqualTo(usuario);
         assertThat(dataInicio.getValue()).isEqualTo(LocalDate.of(2024, 1, 1));
         assertThat(dataFim.getValue()).isEqualTo(LocalDate.of(2024, 1, 31));
         assertThat(categoria.getValue()).isEqualTo(categoriaId);
@@ -160,5 +182,8 @@ class ListarTransacoesIntegrationTests {
     void deveBloquearSemAutenticacao() throws Exception {
         mockMvc.perform(get("/transacoes"))
                 .andExpect(status().is4xxClientError());
+
+        verify(transacaoService, never())
+                .listarTransacoesPorUsuario(any(), any(), any(), any(), any(), any(), any());
     }
 }
