@@ -27,18 +27,18 @@ public class ImportacaoService {
     private final ImportacaoRepository importacaoRepository;
     private final TransacaoRepository transacaoRepository;
     private final ContaRepository contaRepository;
-    private final TransacaoService transacaoService;
+    private final SugestaoCategoriaService sugestaoCategoriaService;
 
     public ImportacaoService(List<ParserExtrato> parsers,
                              ImportacaoRepository importacaoRepository,
                              TransacaoRepository transacaoRepository,
                              ContaRepository contaRepository,
-                             TransacaoService transacaoService){
+                             SugestaoCategoriaService sugestaoCategoriaService){
         this.contaRepository = contaRepository;
         this.transacaoRepository = transacaoRepository;
         this.parsers = parsers;
         this.importacaoRepository = importacaoRepository;
-        this.transacaoService = transacaoService;
+        this.sugestaoCategoriaService = sugestaoCategoriaService;
     }
 
     public ImportacaoResponseDTO processar(MultipartFile arquivo,
@@ -92,7 +92,7 @@ public class ImportacaoService {
             falhas = resultado.getLinhasInvalidas();
             for (Transacao t: resultado.getTransacoes()){
                 try {
-                    Categoria categoria = transacaoService.sugerirCategoria(t.getDescricao());
+                    Categoria categoria = sugestaoCategoriaService.sugerirCategoria(t.getDescricao());
                     if(categoria != null){
                         t.setCategoria(categoria);
                         t.setCategorizada(true);

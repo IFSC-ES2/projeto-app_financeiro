@@ -40,21 +40,12 @@ public class TransacaoService {
 
     public TransacaoService(TransacaoRepository transacaoRepository,
                             ContaRepository contaRepository,
-                            CategoriaRepository categoriaRepository) {
+                            CategoriaRepository categoriaRepository,
+                            SugestaoCategoriaService sugestaoCategoriaService) {
         this.transacaoRepository = transacaoRepository;
         this.contaRepository = contaRepository;
         this.categoriaRepository = categoriaRepository;
     }
-
-    private static final Map<String, List<String>> PALAVRAS_CHAVE = Map.of(
-            "Alimentação",  List.of("mercado", "supermercado", "padaria", "restaurante", "lanchonete", "ifood", "rappi"),
-            "Transporte",   List.of("uber", "99", "combustivel", "gasolina", "onibus", "metro", "estacionamento"),
-            "Saúde",        List.of("farmacia", "hospital", "clinica", "medico", "laboratorio", "drogaria"),
-            "Lazer",        List.of("netflix", "spotify", "cinema", "teatro", "steam", "jogos"),
-            "Habitação",    List.of("aluguel", "condominio", "agua", "luz", "energia", "gas"),
-            "Serviços",     List.of("internet", "telefone", "celular", "tim", "claro", "vivo"),
-            "Manutenção",   List.of("oficina", "reparo", "conserto", "ferragem", "material")
-    );
 
     public TransacaoResponseDTO registrarManual (TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
         boolean pagamentoEmDinheiro = dto.getFormaPagamento() == TipoPagamento.DINHEIRO;
@@ -192,21 +183,7 @@ public class TransacaoService {
         return transacaoMapper.toResponse(transacao);
     }
 
-    public Categoria sugerirCategoria (String descricao) {
-        if(descricao == null || descricao.isBlank()){
-            return null;
-        }
-        String descricaoMinuscula = descricao.toLowerCase();
-        String descricaoNormalizada = normalizarTexto(descricaoMinuscula);
-        for (Map.Entry<String, List<String>> entry: PALAVRAS_CHAVE.entrySet()) {
-            boolean encontrou = entry.getValue().stream().anyMatch( palavraChave ->
-                    contemPalavra(descricaoNormalizada, palavraChave));
-            if(encontrou) {
-                return categoriaRepository.findByNomeAndPadraoTrue(entry.getKey()).orElse(null);
-            }
-        }
-        return null;
-    }
+
     
     private Conta obterOuCriarContaDinheiro(Usuario usuario) {
         return contaRepository
@@ -239,17 +216,6 @@ public class TransacaoService {
     }
 
     // Utils
-
-    private String normalizarTexto(String texto) {
-        return Normalizer.normalize(texto, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "")
-                .toLowerCase()
-                .trim();
-    }
-
-    private boolean contemPalavra(String descricao, String palavraChave) {
-        return descricao.matches(".*\\b" + Pattern.quote(palavraChave) + "\\b.*");
-    }
 
     private Conta resolverConta(TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
         if (dto.getFormaPagamento() == TipoPagamento.DINHEIRO) {
