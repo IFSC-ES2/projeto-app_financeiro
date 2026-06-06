@@ -235,3 +235,27 @@ A cobertura de testes da Sprint 3 foi obtida a partir do relatório JaCoCo gerad
 Cobertura de linhas (projeto backend): 75.5% (694/919 linhas cobertas)
 Cobertura de linhas (pacote service): 68.6% (188/274)
 ```
+
+### Cobertura de testes do frontend (correção Sprint 3 — issue #177)
+
+A dívida registrada na Sprint 2 (“frontend sem testes/cobertura”) foi **superada** com Vitest + Testing Library (#111) e testes de telas nas Sprints 3–4. A issue **#177** formaliza a **medição** da cobertura no frontend, alinhada ao JaCoCo do backend.
+
+**Como reproduzir localmente:**
+
+```bash
+cd app-financeiro-front-end
+npm run test:coverage
+```
+
+Relatório HTML: `app-financeiro-front-end/coverage/index.html`. O CI imprime o resumo a partir de `coverage/coverage-summary.json` no step **Resumo de cobertura (Vitest)**.
+
+**Referência observada** (Vitest `v8`, escopo `src/**/*.{ts,tsx}` exceto `App.tsx`, `main.tsx`, arquivos `*.test.*` e `setupTests.ts`):
+
+| Métrica | Valor |
+|--------|-------|
+| Linhas | **70,3%** (568/808) |
+| Statements | **67,6%** (627/927) |
+| Funções | **58,7%** (125/213) |
+| Branches | **61,2%** (341/557) |
+
+**Leitura:** a cobertura agregada do frontend reflete telas já testadas (login, cadastro, nova conta, nova transação, importação, resumo por pagamento) e componentes ainda sem testes dedicados (`Dashboard`, `PrimeiraConta`, `Transacoes` até merge dos PRs de teste, rotas, parte de `api.ts`). A meta de acompanhar evolução nas próximas sprints passa a ser **mensurável** no pipeline.

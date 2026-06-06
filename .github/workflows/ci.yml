@@ -109,6 +109,36 @@ jobs:
       - name: Tests
         run: npm test --if-present
 
+      - name: Resumo de cobertura (Vitest)
+        run: |
+          npm run test:coverage
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          summary_path = Path("coverage/coverage-summary.json")
+          if not summary_path.is_file():
+              print("Relatório de cobertura do frontend não encontrado; execute npm run test:coverage.")
+              raise SystemExit(1)
+
+          data = json.loads(summary_path.read_text(encoding="utf-8"))
+          total = data.get("total", {})
+          for key, label in (
+              ("lines", "linhas"),
+              ("functions", "funções"),
+              ("branches", "branches"),
+              ("statements", "statements"),
+          ):
+              metric = total.get(key, {})
+              pct = metric.get("pct", 0)
+              covered = metric.get("covered", 0)
+              total_count = metric.get("total", 0)
+              print(
+                  f"Cobertura de {label} (frontend): {pct:.1f}% "
+                  f"({covered}/{total_count})"
+              )
+          PY
+
   yaml-lint:
     name: YAML syntax validation
     runs-on: ubuntu-latest
