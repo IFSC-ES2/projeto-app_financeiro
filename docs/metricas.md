@@ -247,7 +247,7 @@ cd app-financeiro-front-end
 npm run test:coverage
 ```
 
-Relatório HTML: `app-financeiro-front-end/coverage/index.html`. O CI imprime o resumo a partir de `coverage/coverage-summary.json` no step **Resumo de cobertura (Vitest)**.
+Relatório HTML: `app-financeiro-front-end/coverage/index.html`. O CI executa `npm run test:coverage` uma única vez no step **Tests e cobertura (Vitest)** e imprime o resumo a partir de `coverage/coverage-summary.json`.
 
 **Referência observada** (Vitest `v8`, escopo `src/**/*.{ts,tsx}` exceto `App.tsx`, `main.tsx`, arquivos `*.test.*` e `setupTests.ts`):
 
