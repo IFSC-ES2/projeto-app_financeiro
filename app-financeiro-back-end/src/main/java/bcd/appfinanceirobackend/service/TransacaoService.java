@@ -4,6 +4,7 @@ import bcd.appfinanceirobackend.dto.comum.PaginaDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
+import bcd.appfinanceirobackend.mapper.TransacaoMapper;
 import bcd.appfinanceirobackend.model.Categoria;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
@@ -35,6 +36,7 @@ public class TransacaoService {
     private final TransacaoRepository transacaoRepository;
     private final ContaRepository contaRepository;
     private final CategoriaRepository categoriaRepository;
+    private final TransacaoMapper transacaoMapper = new TransacaoMapper();
 
     public TransacaoService(TransacaoRepository transacaoRepository,
                             ContaRepository contaRepository,
@@ -105,7 +107,7 @@ public class TransacaoService {
 
         Transacao transacaoSalva = transacaoRepository.save(transacao);
 
-        return toResponse(transacaoSalva);
+        return transacaoMapper.toResponse(transacaoSalva);
     }
 
     public TransacaoResponseDTO editar(UUID transacaoId, TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
@@ -135,7 +137,7 @@ public class TransacaoService {
             transacao.setCategorizada(false);
         }
 
-        return toResponse(transacaoRepository.save(transacao));
+        return transacaoMapper.toResponse(transacaoRepository.save(transacao));
     }
 
     public void excluir(UUID transacaoId, Usuario usuarioAutenticado) {
@@ -168,7 +170,7 @@ public class TransacaoService {
                 .and(TransacaoSpecs.doTipo(tipo))
                 .and(TransacaoSpecs.daContaEspecifica(contaId));
 
-        return PaginaDTO.de(transacaoRepository.findAll(filtro, pageable), this::toResponse);
+        return PaginaDTO.de(transacaoRepository.findAll(filtro, pageable), transacaoMapper::toResponse);
     }
 
     public TransacaoResponseDTO categorizar(UUID transacaoId, UUID categoriaId, Usuario usuarioAutenticado){
@@ -187,7 +189,7 @@ public class TransacaoService {
         transacao.setCategoria(categoria);
         transacao.setCategorizada(true);
         transacaoRepository.save(transacao);
-        return toResponse(transacao);
+        return transacaoMapper.toResponse(transacao);
     }
 
     public Categoria sugerirCategoria (String descricao) {
@@ -283,22 +285,5 @@ public class TransacaoService {
         }
     }
 
-    public TransacaoResponseDTO toResponse(Transacao transacao) {
-        TransacaoResponseDTO responseDTO = new TransacaoResponseDTO();
-        responseDTO.setTransacaoId(transacao.getId());
-        responseDTO.setData(transacao.getData());
-        responseDTO.setValor(transacao.getValor());
-        responseDTO.setFormaPagamento(transacao.getFormaPagamento());
-        responseDTO.setTipoTransacao(transacao.getTipo());
-        responseDTO.setDescricao(transacao.getDescricao());
-        responseDTO.setContaId(transacao.getConta().getId());
-        responseDTO.setCategorizada(transacao.getCategorizada());
-        responseDTO.setCategoriaId(
-                transacao.getCategoria() != null ? transacao.getCategoria().getId() : null
-        );
-        responseDTO.setImportacaoId(
-                transacao.getImportacao() != null ? transacao.getImportacao().getId() : null
-        );
-        return responseDTO;
-    }
+
 }
