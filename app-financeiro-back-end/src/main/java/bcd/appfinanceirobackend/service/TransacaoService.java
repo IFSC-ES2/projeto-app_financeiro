@@ -34,16 +34,17 @@ import java.util.regex.Pattern;
 public class TransacaoService {
 
     private final TransacaoRepository transacaoRepository;
-    private final CategoriaRepository categoriaRepository;
     private final ContaUsuarioService contaUsuarioService;
-    private final TransacaoMapper transacaoMapper = new TransacaoMapper();
+    private final TransacaoMapper transacaoMapper;
+    private final CategoriaService categoriaService;
 
     public TransacaoService(TransacaoRepository transacaoRepository,
-                            CategoriaRepository categoriaRepository,
-                            ContaUsuarioService contaUsuarioService) {
+                            ContaUsuarioService contaUsuarioService,
+                            TransacaoMapper transacaoMapper, CategoriaService categoriaService) {
         this.transacaoRepository = transacaoRepository;
-        this.categoriaRepository = categoriaRepository;
         this.contaUsuarioService = contaUsuarioService;
+        this.transacaoMapper = transacaoMapper;
+        this.categoriaService = categoriaService;
     }
 
     public TransacaoResponseDTO registrarManual (TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
@@ -62,10 +63,7 @@ public class TransacaoService {
         transacao.setFormaPagamento(dto.getFormaPagamento());
 
         if (dto.getCategoriaId() != null) {
-            Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
-
-            validarCategoriaPermitida(categoria, usuarioAutenticado);
+            Categoria categoria = categoriaService.buscarCategoriaPermitida(dto.getCategoriaId(), usuarioAutenticado);
 
             transacao.setCategoria(categoria);
             transacao.setCategorizada(true);
@@ -93,10 +91,7 @@ public class TransacaoService {
         transacao.setFormaPagamento(dto.getFormaPagamento());
 
         if (dto.getCategoriaId() != null) {
-            Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
-
-            validarCategoriaPermitida(categoria, usuarioAutenticado);
+            Categoria categoria = categoriaService.buscarCategoriaPermitida(dto.getCategoriaId(), usuarioAutenticado);
 
             transacao.setCategoria(categoria);
             transacao.setCategorizada(true);
@@ -149,10 +144,7 @@ public class TransacaoService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a essa transação");
         }
 
-        Categoria categoria = categoriaRepository.findById(categoriaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
-
-        validarCategoriaPermitida(categoria, usuarioAutenticado);
+        Categoria categoria = categoriaService.buscarCategoriaPermitida(categoriaId, usuarioAutenticado);
 
         transacao.setCategoria(categoria);
         transacao.setCategorizada(true);
@@ -160,15 +152,7 @@ public class TransacaoService {
         return transacaoMapper.toResponse(transacao);
     }
 
-    private void validarCategoriaPermitida(Categoria categoria, Usuario usuario) {
-        boolean categoriaPadrao = categoria.isPadrao();
-        boolean categoriaDoUsuario = categoria.getUsuario() != null
-                && categoria.getUsuario().getId().equals(usuario.getId());
 
-        if (!categoriaPadrao && !categoriaDoUsuario) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Categoria não pertence ao usuário autenticado");
-        }
-    }
 
     // Utils
 
