@@ -2,9 +2,12 @@ package bcd.appfinanceirobackend.service;
 
 import bcd.appfinanceirobackend.dto.comum.PaginaDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
+import bcd.appfinanceirobackend.model.Categoria;
 import bcd.appfinanceirobackend.model.Conta;
+import bcd.appfinanceirobackend.model.Importacao;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
+import bcd.appfinanceirobackend.model.enums.TipoPagamento;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
 import bcd.appfinanceirobackend.repository.CategoriaRepository;
 import bcd.appfinanceirobackend.repository.ContaRepository;
@@ -127,5 +130,64 @@ class ListarTransacoesPaginadoTests {
 
         assertThat(specCaptor.getValue()).isNotNull();
         assertThat(pageableCaptor.getValue()).isEqualTo(pageable);
+    }
+
+    @Test
+    @DisplayName("Mapeia todos os campos da Transacao para o TransacaoResponseDTO")
+    void deveMapearCamposDaTransacaoParaDTO() {
+        Categoria categoria = new Categoria();
+        categoria.setId(UUID.randomUUID());
+        categoria.setNome("Alimentação");
+        categoria.setPadrao(true);
+
+        Importacao importacao = new Importacao();
+        importacao.setId(UUID.randomUUID());
+
+        Transacao t = transacao();
+        t.setCategoria(categoria);
+        t.setImportacao(importacao);
+        t.setValor(new BigDecimal("120.50"));
+        t.setData(LocalDate.of(2026, 5, 30));
+        t.setDescricao("Mercado");
+        t.setTipo(TipoTransacao.DEBITO);
+        t.setFormaPagamento(TipoPagamento.PIX);
+
+        Pageable pageable = PageRequest.of(0, 20);
+        when(transacaoRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(t), pageable, 1));
+
+        PaginaDTO<TransacaoResponseDTO> resultado =
+                transacaoService.listarTransacoesPorUsuario(usuario, null, null, null, null, null, pageable);
+
+        assertThat(resultado.conteudo()).hasSize(1);
+        TransacaoResponseDTO dto = resultado.conteudo().getFirst();
+        assertThat(dto.getTransacaoId()).isEqualTo(t.getId());
+        assertThat(dto.getValor()).isEqualByComparingTo(t.getValor());
+        assertThat(dto.getData()).isEqualTo(t.getData());
+        assertThat(dto.getDescricao()).isEqualTo(t.getDescricao());
+        assertThat(dto.getTipoTransacao()).isEqualTo(t.getTipo());
+        assertThat(dto.getFormaPagamento()).isEqualTo(t.getFormaPagamento());
+        assertThat(dto.getContaId()).isEqualTo(conta.getId());
+        assertThat(dto.getCategoriaId()).isEqualTo(categoria.getId());
+        assertThat(dto.getImportacaoId()).isEqualTo(importacao.getId());
+    }
+
+    @Test
+    @DisplayName("Mapeia categoriaId e importacaoId como nulos quando não existem")
+    void deveMapearCategoriaIdEImportacaoIdNulosQuandoNaoExistem() {
+        Transacao t = transacao(); // sem categoria nem importação
+        t.setDescricao("Lanche");
+        t.setFormaPagamento(TipoPagamento.DINHEIRO);
+
+        Pageable pageable = PageRequest.of(0, 20);
+        when(transacaoRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(t), pageable, 1));
+
+        PaginaDTO<TransacaoResponseDTO> resultado =
+                transacaoService.listarTransacoesPorUsuario(usuario, null, null, null, null, null, pageable);
+
+        TransacaoResponseDTO dto = resultado.conteudo().getFirst();
+        assertThat(dto.getCategoriaId()).isNull();
+        assertThat(dto.getImportacaoId()).isNull();
     }
 }

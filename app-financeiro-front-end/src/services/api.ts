@@ -1,6 +1,12 @@
 import axios from 'axios';
 import { limparSessao, obterAccessToken } from '../utils/authStorage';
 
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    ignorarLogoutAutomatico?: boolean;
+  }
+}
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:8080',
   headers: {
@@ -21,7 +27,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (erro: unknown) => {
-    if (axios.isAxiosError(erro) && (erro.response?.status === 401 || erro.response?.status === 403)) {
+    if (
+      axios.isAxiosError(erro) &&
+      !erro.config?.ignorarLogoutAutomatico &&
+      (erro.response?.status === 401 || erro.response?.status === 403)
+    ) {
       limparSessao();
       window.dispatchEvent(new Event('smartbudget:unauthorized'));
     }
@@ -98,6 +108,14 @@ export interface TransacaoResponse {
   categorizada: boolean;
 }
 
+export interface ResumoPagamentoResponse {
+  formaPagamento: TipoPagamento | null;
+  rotulo: string;
+  total: number;
+  quantidade: number;
+  percentual: number;
+}
+
 export type StatusImportacao = 'PENDENTE' | 'PROCESSANDO' | 'CONCLUIDO' | 'ERRO';
 
 export interface ImportacaoResponse {
@@ -158,6 +176,14 @@ export const listarCategorias = async () => {
 
 export const registrarTransacaoManual = async (transacao: TransacaoRequest) => {
   const { data } = await api.post<TransacaoResponse>('/transacoes/manual', transacao);
+  return data;
+};
+
+export const buscarResumoPorPagamento = async () => {
+  const { data } = await api.get<ResumoPagamentoResponse[]>('/resumo/pagamentos', {
+    ignorarLogoutAutomatico: true,
+  });
+
   return data;
 };
 
