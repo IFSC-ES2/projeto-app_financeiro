@@ -9,10 +9,7 @@ import bcd.appfinanceirobackend.model.Categoria;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
-import bcd.appfinanceirobackend.repository.CategoriaRepository;
-import bcd.appfinanceirobackend.model.enums.TipoConta;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
-import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import bcd.appfinanceirobackend.repository.spec.TransacaoSpecs;
 import org.springframework.data.domain.Pageable;
@@ -23,12 +20,8 @@ import org.springframework.web.server.ResponseStatusException;
 import bcd.appfinanceirobackend.model.enums.TipoPagamento;
 
 import java.math.BigDecimal;
-import java.text.Normalizer;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 @Service
 public class TransacaoService {
@@ -137,12 +130,7 @@ public class TransacaoService {
     }
 
     public TransacaoResponseDTO categorizar(UUID transacaoId, UUID categoriaId, Usuario usuarioAutenticado){
-        Transacao transacao = transacaoRepository.findById(transacaoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Transacao não encontrada"));
-
-        if(!transacao.getConta().getUsuario().getId().equals(usuarioAutenticado.getId())){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a essa transação");
-        }
+        Transacao transacao = buscarTransacaoDoUsuario(transacaoId, usuarioAutenticado);
 
         Categoria categoria = categoriaService.buscarCategoriaPermitida(categoriaId, usuarioAutenticado);
 
