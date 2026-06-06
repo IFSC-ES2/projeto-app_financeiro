@@ -49,9 +49,9 @@ describe('ResumoFormaPagamentoPizza (Issue #158)', () => {
 
   it('renderiza os rótulos e percentuais na legenda', async () => {
     mockBuscarResumoPorPagamento.mockResolvedValue([
-      { formaPagamento: 'PIX', total: 600, quantidade: 3, percentual: 60 },
-      { formaPagamento: 'DINHEIRO', total: 300, quantidade: 2, percentual: 30 },
-      { formaPagamento: null, total: 100, quantidade: 1, percentual: 10 },
+      { formaPagamento: 'PIX', rotulo: 'Pix', total: 600, quantidade: 3, percentual: 60 },
+      { formaPagamento: 'DINHEIRO', rotulo: 'Dinheiro', total: 300, quantidade: 2, percentual: 30 },
+      { formaPagamento: null, rotulo: 'Não informado', total: 100, quantidade: 1, percentual: 10 },
     ]);
 
     render(<ResumoFormaPagamentoPizza />);

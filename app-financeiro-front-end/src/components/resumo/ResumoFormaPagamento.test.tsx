@@ -49,9 +49,9 @@ describe('ResumoFormaPagamento (Issue #158)', () => {
 
   it('renderiza forma de pagamento, total, quantidade e percentual', async () => {
     mockBuscarResumoPorPagamento.mockResolvedValue([
-      { formaPagamento: 'PIX', total: 1500.5, quantidade: 2, percentual: 75 },
-      { formaPagamento: 'DINHEIRO', total: 400, quantidade: 1, percentual: 20 },
-      { formaPagamento: null, total: 100, quantidade: 3, percentual: 5 },
+      { formaPagamento: 'PIX', rotulo: 'Pix', total: 1500.5, quantidade: 2, percentual: 75 },
+      { formaPagamento: 'DINHEIRO', rotulo: 'Dinheiro', total: 400, quantidade: 1, percentual: 20 },
+      { formaPagamento: null, rotulo: 'Não informado', total: 100, quantidade: 3, percentual: 5 },
     ]);
 
     render(<ResumoFormaPagamento />);
