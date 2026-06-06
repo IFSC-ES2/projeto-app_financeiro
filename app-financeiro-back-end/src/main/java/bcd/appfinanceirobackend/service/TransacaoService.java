@@ -1,6 +1,5 @@
 package bcd.appfinanceirobackend.service;
 
-import bcd.appfinanceirobackend.dto.comum.PaginaDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
@@ -10,12 +9,8 @@ import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.repository.CategoriaRepository;
 import bcd.appfinanceirobackend.model.enums.TipoConta;
-import bcd.appfinanceirobackend.model.enums.TipoTransacao;
 import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
-import bcd.appfinanceirobackend.repository.spec.TransacaoSpecs;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -154,21 +149,11 @@ public class TransacaoService {
         return transacao;
     }
 
-    public PaginaDTO<TransacaoResponseDTO> listarTransacoesPorUsuario(Usuario usuarioAutenticado,
-                                                                      LocalDate dataInicio,
-                                                                      LocalDate dataFim,
-                                                                      UUID categoriaId,
-                                                                      TipoTransacao tipo,
-                                                                      UUID contaId,
-                                                                      Pageable pageable) {
-        Specification<Transacao> filtro = Specification.where(TransacaoSpecs.daConta(usuarioAutenticado.getId()))
-                .and(TransacaoSpecs.dataDe(dataInicio))
-                .and(TransacaoSpecs.dataAte(dataFim))
-                .and(TransacaoSpecs.daCategoria(categoriaId))
-                .and(TransacaoSpecs.doTipo(tipo))
-                .and(TransacaoSpecs.daContaEspecifica(contaId));
-
-        return PaginaDTO.de(transacaoRepository.findAll(filtro, pageable), this::toResponse);
+    public List<TransacaoResponseDTO> listarTransacoesPorUsuario (Usuario usuarioAutenticado) {
+        return transacaoRepository.findAllByContaUsuarioId(usuarioAutenticado.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     public TransacaoResponseDTO categorizar(UUID transacaoId, UUID categoriaId, Usuario usuarioAutenticado){
