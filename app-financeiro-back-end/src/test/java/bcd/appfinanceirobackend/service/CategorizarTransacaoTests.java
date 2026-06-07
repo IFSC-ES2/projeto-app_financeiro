@@ -2,6 +2,7 @@ package bcd.appfinanceirobackend.service;
 
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
+import bcd.appfinanceirobackend.mapper.TransacaoMapper;
 import bcd.appfinanceirobackend.model.Categoria;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
@@ -17,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
@@ -36,11 +38,14 @@ class CategorizarTransacaoTests {
     @Mock
     private TransacaoRepository transacaoRepository;
 
+    @Mock
+    private ContaUsuarioService contaUsuarioService;
 
     @Mock
-    private CategoriaRepository categoriaRepository;
+    private CategoriaService categoriaService;
 
-    @InjectMocks
+    private TransacaoMapper transacaoMapper;
+
     private TransacaoService transacaoService;
 
     private Usuario dono;
@@ -51,6 +56,15 @@ class CategorizarTransacaoTests {
 
     @BeforeEach
     void setUp() {
+        transacaoMapper = new TransacaoMapper();
+
+        transacaoService = new TransacaoService(
+                transacaoRepository,
+                contaUsuarioService,
+                transacaoMapper,
+                categoriaService
+        );
+
         dono = usuario("dono@email.com");
         outro = usuario("outro@email.com");
 
@@ -85,7 +99,8 @@ class CategorizarTransacaoTests {
         @DisplayName("Atualiza a categoria e marca categorizada = true")
         void deveCategorizarComSucesso() {
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(categoriaRepository.findById(categoriaPadrao.getId())).thenReturn(Optional.of(categoriaPadrao));
+            when(categoriaService.buscarCategoriaPermitida(categoriaPadrao.getId(), dono))
+                    .thenReturn(categoriaPadrao);
             when(transacaoRepository.save(any(Transacao.class))).thenAnswer(inv -> inv.getArgument(0));
 
             TransacaoResponseDTO response =
@@ -101,7 +116,8 @@ class CategorizarTransacaoTests {
         void devePersistirCategorizadaTrue() {
             transacao.setCategorizada(false);
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(categoriaRepository.findById(categoriaPadrao.getId())).thenReturn(Optional.of(categoriaPadrao));
+            when(categoriaService.buscarCategoriaPermitida(categoriaPadrao.getId(), dono))
+                    .thenReturn(categoriaPadrao);
             when(transacaoRepository.save(any(Transacao.class))).thenAnswer(inv -> inv.getArgument(0));
 
             ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
@@ -122,7 +138,8 @@ class CategorizarTransacaoTests {
             minha.setUsuario(dono);
 
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(categoriaRepository.findById(minha.getId())).thenReturn(Optional.of(minha));
+            when(categoriaService.buscarCategoriaPermitida(minha.getId(), dono))
+                    .thenReturn(minha);
             when(transacaoRepository.save(any(Transacao.class))).thenAnswer(inv -> inv.getArgument(0));
 
             transacaoService.categorizar(transacao.getId(), minha.getId(), dono);
@@ -139,7 +156,7 @@ class CategorizarTransacaoTests {
 
             assertThatThrownBy(() -> transacaoService.categorizar(id, categoriaPadrao.getId(), dono))
                     .isInstanceOf(ResourceNotFoundException.class)
-                    .hasMessageContaining("Transacao não encontrada");
+                    .hasMessageContaining("Transação não encontrada");
 
             verify(transacaoRepository, never()).save(any());
         }
@@ -154,7 +171,7 @@ class CategorizarTransacaoTests {
                     .isInstanceOf(ResponseStatusException.class)
                     .hasMessageContaining("Acesso negado a essa transação");
 
-            verify(categoriaRepository, never()).findById(any());
+            verify(categoriaService, never()).buscarCategoriaPermitida(any(), any());
             verify(transacaoRepository, never()).save(any());
         }
 
@@ -163,7 +180,8 @@ class CategorizarTransacaoTests {
         void deveLancar404QuandoCategoriaInexistente() {
             UUID categoriaId = UUID.randomUUID();
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.empty());
+            when(categoriaService.buscarCategoriaPermitida(categoriaId, dono))
+                    .thenThrow(new ResourceNotFoundException("Categoria não encontrada"));
 
             assertThatThrownBy(() -> transacaoService.categorizar(transacao.getId(), categoriaId, dono))
                     .isInstanceOf(ResourceNotFoundException.class)
@@ -182,7 +200,11 @@ class CategorizarTransacaoTests {
             categoriaDoOutro.setUsuario(outro);
 
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(categoriaRepository.findById(categoriaDoOutro.getId())).thenReturn(Optional.of(categoriaDoOutro));
+            when(categoriaService.buscarCategoriaPermitida(categoriaDoOutro.getId(), dono))
+                    .thenThrow(new ResponseStatusException(
+                            HttpStatus.FORBIDDEN,
+                            "Categoria não pertence ao usuário autenticado"
+                    ));
 
             assertThatThrownBy(() -> transacaoService.categorizar(transacao.getId(), categoriaDoOutro.getId(), dono))
                     .isInstanceOf(ResponseStatusException.class)
@@ -191,5 +213,4 @@ class CategorizarTransacaoTests {
             verify(transacaoRepository, never()).save(any());
         }
     }
-
 }

@@ -3,6 +3,7 @@ package bcd.appfinanceirobackend.service;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
+import bcd.appfinanceirobackend.mapper.TransacaoMapper;
 import bcd.appfinanceirobackend.model.Categoria;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
@@ -10,7 +11,6 @@ import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.model.enums.TipoPagamento;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
 import bcd.appfinanceirobackend.repository.CategoriaRepository;
-import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,6 +23,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
@@ -45,9 +46,10 @@ class RegistrarManualTransacaoTests {
     private ContaUsuarioService contaUsuarioService;
 
     @Mock
-    private CategoriaRepository categoriaRepository;
+    private CategoriaService categoriaService;
 
-    @InjectMocks
+    private TransacaoMapper transacaoMapper;
+
     private TransacaoService transacaoService;
 
     private Usuario usuarioDono;
@@ -57,6 +59,14 @@ class RegistrarManualTransacaoTests {
 
     @BeforeEach
     void setUp() {
+        transacaoMapper = new TransacaoMapper();
+
+        transacaoService = new TransacaoService(
+                transacaoRepository,
+                contaUsuarioService,
+                transacaoMapper,
+                categoriaService
+        );
         usuarioDono = new Usuario();
         usuarioDono.setId(UUID.randomUUID());
         usuarioDono.setNome("João Silva");
@@ -159,7 +169,7 @@ class RegistrarManualTransacaoTests {
             assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
                     .isInstanceOf(IllegalArgumentException.class);
 
-            verifyNoInteractions(contaUsuarioService, transacaoRepository, categoriaRepository);
+            verifyNoInteractions(contaUsuarioService, transacaoRepository, categoriaService);;
         }
     }
 
@@ -172,24 +182,30 @@ class RegistrarManualTransacaoTests {
         @Test
         @DisplayName("Lança ResourceNotFoundException quando conta não existe")
         void deveLancarExcecaoQuandoContaNaoEncontrada() {
-            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono)).thenReturn(conta);
+            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono))
+                    .thenThrow(new ResourceNotFoundException("Conta não encontrada"));
 
             assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Conta não encontrada");
+
+            verifyNoInteractions(transacaoRepository, categoriaService);
         }
 
         @Test
         @DisplayName("Lança ResponseStatusException 403 quando a conta pertence a outro usuário")
         void deveLancarForbiddenQuandoContaNaoPertenceAoUsuario() {
-            conta.setUsuario(outroUsuario);
-            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono)).thenReturn(conta);
+            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono))
+                    .thenThrow(new ResponseStatusException(
+                            HttpStatus.FORBIDDEN,
+                            "Acesso negado a esta conta"
+                    ));
 
             assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
                     .isInstanceOf(ResponseStatusException.class)
                     .hasMessageContaining("Acesso negado a esta conta");
 
-            verifyNoInteractions(transacaoRepository);
+            verifyNoInteractions(transacaoRepository, categoriaService);
         }
     }
 
@@ -246,7 +262,8 @@ class RegistrarManualTransacaoTests {
 
             dtoValido.setCategoriaId(categoria.getId());
 
-            when(categoriaRepository.findById(categoria.getId())).thenReturn(Optional.of(categoria));
+            when(categoriaService.buscarCategoriaPermitida(categoria.getId(), usuarioDono))
+                    .thenReturn(categoria);
 
             ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
 
