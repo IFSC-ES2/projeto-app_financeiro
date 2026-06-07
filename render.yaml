@@ -50,7 +50,7 @@ services:
         generateValue: true
       # Origem do frontend permitida no CORS (ajuste se a URL mudar)
       - key: CORS_ALLOWED_ORIGINS
-        value: https://smartbudget-web.onrender.com
+        value: https://smartbudget-web-atkh.onrender.com
       # Limita o heap pra caber nos 512MB do plano free
       - key: JAVA_TOOL_OPTIONS
         value: -XX:MaxRAMPercentage=75.0
@@ -65,7 +65,7 @@ services:
     envVars:
       # URL publica da API embutida no build do Vite (ajuste se a URL mudar)
       - key: VITE_API_URL
-        value: https://smartbudget-api.onrender.com
+        value: https://smartbudget-api-4rtr.onrender.com
     routes:
       # SPA: qualquer rota cai no index.html (React Router)
       - type: rewrite
