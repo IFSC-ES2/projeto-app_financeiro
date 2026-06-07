@@ -259,3 +259,104 @@ Relatório HTML: `app-financeiro-front-end/coverage/index.html`. O CI executa `n
 | Branches | **61,2%** (341/557) |
 
 **Leitura:** a cobertura agregada do frontend reflete telas já testadas (login, cadastro, nova conta, nova transação, importação, resumo por pagamento) e componentes ainda sem testes dedicados (`Dashboard`, `PrimeiraConta`, `Transacoes` até merge dos PRs de teste, rotas, parte de `api.ts`). A meta de acompanhar evolução nas próximas sprints passa a ser **mensurável** no pipeline.
+
+## Comparação antes/depois da refatoração do TransacaoService
+
+### Contexto
+
+Durante a reengenharia realizada na issue #128, foi identificado que o `TransacaoService` concentrava responsabilidades de diferentes domínios do sistema, como regra de transação, resolução de conta, validação de categoria, sugestão automática de categoria e conversão para DTO.
+
+Essa concentração dificultava a manutenção, aumentava o acoplamento entre serviços e tornava futuras alterações mais arriscadas. A refatoração separou essas responsabilidades em componentes específicos, mantendo o comportamento externo da API.
+
+### Refatoração analisada
+
+Issue da refatoração: #128  
+Issue da comparação de métricas: #129  
+PR relacionado: #187
+
+ADR relacionado: [ADR-0008 — Decomposição do TransacaoService](adrs/ADR-0008-decomposicao-transacao-service.md)
+
+Classes afetadas diretamente:
+
+- `TransacaoService`
+- `ContaUsuarioService`
+- `SugestaoCategoriaService`
+- `CategoriaService`
+- `TransacaoMapper`
+- `ImportacaoService`
+
+### Métricas escolhidas
+
+Foram escolhidas métricas relacionadas ao problema tratado na refatoração:
+
+1. Quantidade de linhas no `TransacaoService`;
+2. Quantidade de responsabilidades concentradas no `TransacaoService`;
+3. Acoplamento entre `ImportacaoService` e `TransacaoService`.
+
+Essas métricas foram escolhidas porque o problema tratado era principalmente de manutenibilidade, coesão e acoplamento.
+
+### Como a medição foi feita
+
+A quantidade de linhas foi medida com o comando `wc -l app-financeiro-back-end/src/main/java/bcd/appfinanceirobackend/service/TransacaoService.java`.
+
+Na versão anterior à refatoração, o comando retornou `304` linhas para o arquivo `TransacaoService.java`.
+
+Na versão posterior à refatoração, o comando retornou `166` linhas para o arquivo `TransacaoService.java`.
+
+A quantidade de responsabilidades foi identificada por inspeção do código, considerando responsabilidades distintas de negócio, validação, mapeamento e integração com outros domínios.
+
+O acoplamento foi avaliado verificando se o `ImportacaoService` dependia diretamente do `TransacaoService` para executar a sugestão automática de categoria.
+
+### Comparação antes/depois
+
+| Métrica | Antes da refatoração | Depois da refatoração | Análise |
+|---|---:|---:|---|
+| Linhas no `TransacaoService` | 304 | 166 | Houve redução da classe crítica, pois parte da lógica foi movida para componentes específicos. |
+| Responsabilidades concentradas no `TransacaoService` | 14 | 7 | Houve melhora de coesão, pois o service passou a coordenar casos de uso de transação, delegando regras auxiliares. |
+| Dependência `ImportacaoService -> TransacaoService` para sugestão de categoria | Sim | Não | Houve redução de acoplamento. A importação passou a depender diretamente do `SugestaoCategoriaService`. |
+
+### Responsabilidades antes da refatoração
+
+Antes da refatoração, o `TransacaoService` concentrava aproximadamente as seguintes responsabilidades:
+
+- registrar transação manual;
+- editar transação;
+- excluir transação;
+- listar transações;
+- categorizar transação;
+- buscar transação do usuário;
+- validar campos obrigatórios;
+- resolver conta da transação;
+- obter ou criar conta automática de dinheiro;
+- validar se a conta pertencia ao usuário;
+- validar se a categoria era permitida ao usuário;
+- sugerir categoria automaticamente por palavras-chave;
+- normalizar texto para sugestão de categoria;
+- converter `Transacao` para `TransacaoResponseDTO`.
+
+### Responsabilidades depois da refatoração
+
+Depois da refatoração, o `TransacaoService` ficou responsável principalmente por:
+
+- registrar transação manual;
+- editar transação;
+- excluir transação;
+- listar transações;
+- categorizar transação;
+- buscar transação do usuário;
+- validar campos obrigatórios da transação.
+
+As responsabilidades auxiliares foram separadas:
+
+- `ContaUsuarioService`: resolução e validação de contas do usuário;
+- `SugestaoCategoriaService`: sugestão automática de categoria por palavras-chave;
+- `CategoriaService`: validação de categoria permitida ao usuário;
+- `TransacaoMapper`: conversão de entidade para DTO.
+
+### Conclusão
+
+A refatoração trouxe melhoria de manutenibilidade por reduzir a concentração de responsabilidades no `TransacaoService` e remover o acoplamento indevido entre `ImportacaoService` e `TransacaoService`.
+
+A redução de linhas no `TransacaoService` indica que a classe crítica ficou menor, mas a principal melhoria não foi apenas quantitativa. O ganho mais relevante foi de design: as regras auxiliares passaram a ficar em componentes mais coesos e específicos, facilitando testes unitários, leitura do código e evolução futura do sistema.
+
+A mudança não alterou o contrato externo da API e foi validada por testes automatizados.
