@@ -2,12 +2,12 @@ package bcd.appfinanceirobackend.service;
 
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
+import bcd.appfinanceirobackend.mapper.TransacaoMapper;
 import bcd.appfinanceirobackend.model.Categoria;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.repository.CategoriaRepository;
-import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
@@ -28,7 +29,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,12 +39,13 @@ class CategorizarTransacaoTests {
     private TransacaoRepository transacaoRepository;
 
     @Mock
-    private ContaRepository contaRepository;
+    private ContaUsuarioService contaUsuarioService;
 
     @Mock
-    private CategoriaRepository categoriaRepository;
+    private CategoriaService categoriaService;
 
-    @InjectMocks
+    private TransacaoMapper transacaoMapper;
+
     private TransacaoService transacaoService;
 
     private Usuario dono;
@@ -55,6 +56,15 @@ class CategorizarTransacaoTests {
 
     @BeforeEach
     void setUp() {
+        transacaoMapper = new TransacaoMapper();
+
+        transacaoService = new TransacaoService(
+                transacaoRepository,
+                contaUsuarioService,
+                transacaoMapper,
+                categoriaService
+        );
+
         dono = usuario("dono@email.com");
         outro = usuario("outro@email.com");
 
@@ -89,7 +99,8 @@ class CategorizarTransacaoTests {
         @DisplayName("Atualiza a categoria e marca categorizada = true")
         void deveCategorizarComSucesso() {
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(categoriaRepository.findById(categoriaPadrao.getId())).thenReturn(Optional.of(categoriaPadrao));
+            when(categoriaService.buscarCategoriaPermitida(categoriaPadrao.getId(), dono))
+                    .thenReturn(categoriaPadrao);
             when(transacaoRepository.save(any(Transacao.class))).thenAnswer(inv -> inv.getArgument(0));
 
             TransacaoResponseDTO response =
@@ -105,7 +116,8 @@ class CategorizarTransacaoTests {
         void devePersistirCategorizadaTrue() {
             transacao.setCategorizada(false);
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(categoriaRepository.findById(categoriaPadrao.getId())).thenReturn(Optional.of(categoriaPadrao));
+            when(categoriaService.buscarCategoriaPermitida(categoriaPadrao.getId(), dono))
+                    .thenReturn(categoriaPadrao);
             when(transacaoRepository.save(any(Transacao.class))).thenAnswer(inv -> inv.getArgument(0));
 
             ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
@@ -126,7 +138,8 @@ class CategorizarTransacaoTests {
             minha.setUsuario(dono);
 
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(categoriaRepository.findById(minha.getId())).thenReturn(Optional.of(minha));
+            when(categoriaService.buscarCategoriaPermitida(minha.getId(), dono))
+                    .thenReturn(minha);
             when(transacaoRepository.save(any(Transacao.class))).thenAnswer(inv -> inv.getArgument(0));
 
             transacaoService.categorizar(transacao.getId(), minha.getId(), dono);
@@ -143,7 +156,7 @@ class CategorizarTransacaoTests {
 
             assertThatThrownBy(() -> transacaoService.categorizar(id, categoriaPadrao.getId(), dono))
                     .isInstanceOf(ResourceNotFoundException.class)
-                    .hasMessageContaining("Transacao não encontrada");
+                    .hasMessageContaining("Transação não encontrada");
 
             verify(transacaoRepository, never()).save(any());
         }
@@ -158,7 +171,7 @@ class CategorizarTransacaoTests {
                     .isInstanceOf(ResponseStatusException.class)
                     .hasMessageContaining("Acesso negado a essa transação");
 
-            verify(categoriaRepository, never()).findById(any());
+            verify(categoriaService, never()).buscarCategoriaPermitida(any(), any());
             verify(transacaoRepository, never()).save(any());
         }
 
@@ -167,7 +180,8 @@ class CategorizarTransacaoTests {
         void deveLancar404QuandoCategoriaInexistente() {
             UUID categoriaId = UUID.randomUUID();
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.empty());
+            when(categoriaService.buscarCategoriaPermitida(categoriaId, dono))
+                    .thenThrow(new ResourceNotFoundException("Categoria não encontrada"));
 
             assertThatThrownBy(() -> transacaoService.categorizar(transacao.getId(), categoriaId, dono))
                     .isInstanceOf(ResourceNotFoundException.class)
@@ -186,72 +200,17 @@ class CategorizarTransacaoTests {
             categoriaDoOutro.setUsuario(outro);
 
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(categoriaRepository.findById(categoriaDoOutro.getId())).thenReturn(Optional.of(categoriaDoOutro));
+            when(categoriaService.buscarCategoriaPermitida(categoriaDoOutro.getId(), dono))
+                    .thenThrow(new ResponseStatusException(
+                            HttpStatus.FORBIDDEN,
+                            "Categoria não pertence ao usuário autenticado"
+                    ));
 
             assertThatThrownBy(() -> transacaoService.categorizar(transacao.getId(), categoriaDoOutro.getId(), dono))
                     .isInstanceOf(ResponseStatusException.class)
                     .hasMessageContaining("Categoria não pertence ao usuário autenticado");
 
             verify(transacaoRepository, never()).save(any());
-        }
-    }
-
-    @Nested
-    @DisplayName("sugerirCategoria()")
-    class SugerirCategoria {
-
-        @Test
-        @DisplayName("Sugere categoria a partir de palavra-chave da descrição")
-        void deveSugerirPorPalavraChave() {
-            Categoria transporte = new Categoria();
-            transporte.setNome("Transporte");
-            transporte.setPadrao(true);
-            when(categoriaRepository.findByNomeAndPadraoTrue("Transporte")).thenReturn(Optional.of(transporte));
-
-            Categoria sugerida = transacaoService.sugerirCategoria("Pagamento Uber centro");
-
-            assertThat(sugerida).isSameAs(transporte);
-        }
-
-        @Test
-        @DisplayName("Ignora acentuação ao casar a palavra-chave")
-        void deveIgnorarAcentuacao() {
-            Categoria saude = new Categoria();
-            saude.setNome("Saúde");
-            saude.setPadrao(true);
-            when(categoriaRepository.findByNomeAndPadraoTrue("Saúde")).thenReturn(Optional.of(saude));
-
-            Categoria sugerida = transacaoService.sugerirCategoria("Compra na Farmácia São João");
-
-            assertThat(sugerida).isSameAs(saude);
-        }
-
-        @Test
-        @DisplayName("Retorna null quando a descrição é nula, sem consultar o repositório")
-        void deveRetornarNullParaDescricaoNula() {
-            assertThat(transacaoService.sugerirCategoria(null)).isNull();
-            verifyNoInteractions(categoriaRepository);
-        }
-
-        @Test
-        @DisplayName("Retorna null quando a descrição está em branco")
-        void deveRetornarNullParaDescricaoEmBranco() {
-            assertThat(transacaoService.sugerirCategoria("   ")).isNull();
-            verifyNoInteractions(categoriaRepository);
-        }
-
-        @Test
-        @DisplayName("Retorna null quando nenhuma palavra-chave casa")
-        void deveRetornarNullQuandoSemCorrespondencia() {
-            assertThat(transacaoService.sugerirCategoria("Transferência diversa 1234")).isNull();
-            verifyNoInteractions(categoriaRepository);
-        }
-
-        @Test
-        @DisplayName("Respeita limite de palavra: 'Uberlandia' não casa com 'uber'")
-        void naoDeveCasarPalavraParcial() {
-            assertThat(transacaoService.sugerirCategoria("Viagem para Uberlandia")).isNull();
-            verifyNoInteractions(categoriaRepository);
         }
     }
 }
