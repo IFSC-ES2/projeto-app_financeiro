@@ -30,7 +30,7 @@ api.interceptors.response.use(
     if (
       axios.isAxiosError(erro) &&
       !erro.config?.ignorarLogoutAutomatico &&
-      (erro.response?.status === 401 || erro.response?.status === 403)
+      erro.response?.status === 401
     ) {
       limparSessao();
       window.dispatchEvent(new Event('smartbudget:unauthorized'));
