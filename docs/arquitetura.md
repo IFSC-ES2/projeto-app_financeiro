@@ -112,7 +112,8 @@ Principais camadas MVC/backend:
 | Camada | Pacotes/arquivos | Responsabilidade |
 | --- | --- | --- |
 | Controller | `controller/*Controller.java` | Receber requisições HTTP, validar entrada básica, acionar serviços e devolver respostas HTTP. |
-| Service | `service/*Service.java` | Concentrar regras de negócio, validações de propriedade do usuário, fluxo de importação e conversão para DTOs. |
+| Service | `service/*Service.java` | Concentrar regras de negócio, validações de propriedade do usuário e fluxo de importação. |
+| Mapper | `mapper/*Mapper.java` | Converter entidades de domínio em DTOs de resposta da API. |
 | Model | `model/*.java` | Representar entidades persistidas, como `Usuario`, `Conta`, `Transacao`, `Categoria`, `Importacao`, `Fatura` e `CartaoCredito`. |
 | Repository | `repository/*Repository.java` | Acessar o banco por meio de Spring Data JPA. |
 | DTO | `dto/**` | Definir contratos de entrada e saída da API sem expor diretamente as entidades. |
@@ -197,13 +198,23 @@ Esse módulo apoia a visualização futura de relatórios por categoria.
 
 ### Transações
 
-O módulo de transações permite registrar manualmente lançamentos financeiros e alterar a categoria de uma transação existente. `TransacaoService` também possui lógica de sugestão simples de categoria a partir da descrição.
+O módulo de transações permite registrar manualmente lançamentos financeiros, editar, excluir, listar e categorizar transações do usuário autenticado.
 
-Esse módulo é central para o MVP porque representa os gastos e receitas controlados pelo usuário.
+Na Sprint 4, o `TransacaoService` foi reengenhado para atuar como coordenador dos casos de uso, delegando responsabilidades auxiliares:
+
+| Componente | Responsabilidade no módulo |
+| --- | --- |
+| `TransacaoService` | Orquestra criação, edição, exclusão, listagem paginada e categorização de transações. |
+| `ContaUsuarioService` | Resolve a conta da transação e valida se ela pertence ao usuário autenticado. |
+| `CategoriaService` | Busca categoria por ID e valida se ela pode ser usada pelo usuário. |
+| `SugestaoCategoriaService` | Sugere categoria padrão a partir da descrição (palavras-chave). |
+| `TransacaoMapper` | Converte `Transacao` em `TransacaoResponseDTO`. |
+
+Esse módulo é central para o MVP porque representa os gastos e receitas controlados pelo usuário. A decomposição está registrada na ADR-0008.
 
 ### Importações
 
-O módulo de importação processa arquivos enviados pelo usuário. `ImportacaoController` recebe upload `multipart/form-data`, `ImportacaoService` seleciona o parser compatível e registra o resultado da importação.
+O módulo de importação processa arquivos enviados pelo usuário. `ImportacaoController` recebe upload `multipart/form-data`, `ImportacaoService` seleciona o parser compatível, aplica sugestão de categoria via `SugestaoCategoriaService` e registra o resultado da importação.
 
 Parsers implementados:
 
@@ -320,3 +331,19 @@ Quando um arquivo chega via requisição, o `ImportacaoService` itera sobre as e
 **Benefício (Open/Closed Principle):**
 
 Se o SmartBudget precisar suportar arquivos PDF ou OFX no futuro, a equipe precisará apenas criar uma nova classe `ParserOFX` que implemente `ParserExtrato`. O `ImportacaoService` não precisará sofrer nenhuma alteração estrutural, garantindo segurança contra regressões.
+
+### Decomposição de serviços: Módulo de Transações
+
+Na Sprint 4, o `TransacaoService` deixou de concentrar regras auxiliares de conta, categoria, sugestão automática e mapeamento de DTO. A decisão segue o princípio de responsabilidade única dentro da camada de serviços.
+
+**Como funciona no código:**
+
+1. **Coordenador:** `TransacaoService` valida campos obrigatórios e executa o fluxo de cada caso de uso (registrar, editar, excluir, listar, categorizar).
+2. **Serviços especializados:** `ContaUsuarioService`, `CategoriaService` e `SugestaoCategoriaService` concentram regras reutilizáveis entre transações manuais e importação.
+3. **Mapper:** `TransacaoMapper` isola a montagem de `TransacaoResponseDTO`.
+
+**Benefício:**
+
+Alterações em sugestão de categoria ou resolução de conta podem ser testadas e evoluídas sem modificar toda a classe de transações. O `ImportacaoService` deixa de depender do `TransacaoService` apenas para sugerir categoria.
+
+**Referência:** ADR-0008.
