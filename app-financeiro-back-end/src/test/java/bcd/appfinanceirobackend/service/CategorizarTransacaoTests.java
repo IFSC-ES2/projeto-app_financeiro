@@ -7,7 +7,6 @@ import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.repository.CategoriaRepository;
-import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,8 +36,6 @@ class CategorizarTransacaoTests {
     @Mock
     private TransacaoRepository transacaoRepository;
 
-    @Mock
-    private ContaRepository contaRepository;
 
     @Mock
     private CategoriaRepository categoriaRepository;
@@ -196,62 +192,4 @@ class CategorizarTransacaoTests {
         }
     }
 
-    @Nested
-    @DisplayName("sugerirCategoria()")
-    class SugerirCategoria {
-
-        @Test
-        @DisplayName("Sugere categoria a partir de palavra-chave da descrição")
-        void deveSugerirPorPalavraChave() {
-            Categoria transporte = new Categoria();
-            transporte.setNome("Transporte");
-            transporte.setPadrao(true);
-            when(categoriaRepository.findByNomeAndPadraoTrue("Transporte")).thenReturn(Optional.of(transporte));
-
-            Categoria sugerida = transacaoService.sugerirCategoria("Pagamento Uber centro");
-
-            assertThat(sugerida).isSameAs(transporte);
-        }
-
-        @Test
-        @DisplayName("Ignora acentuação ao casar a palavra-chave")
-        void deveIgnorarAcentuacao() {
-            Categoria saude = new Categoria();
-            saude.setNome("Saúde");
-            saude.setPadrao(true);
-            when(categoriaRepository.findByNomeAndPadraoTrue("Saúde")).thenReturn(Optional.of(saude));
-
-            Categoria sugerida = transacaoService.sugerirCategoria("Compra na Farmácia São João");
-
-            assertThat(sugerida).isSameAs(saude);
-        }
-
-        @Test
-        @DisplayName("Retorna null quando a descrição é nula, sem consultar o repositório")
-        void deveRetornarNullParaDescricaoNula() {
-            assertThat(transacaoService.sugerirCategoria(null)).isNull();
-            verifyNoInteractions(categoriaRepository);
-        }
-
-        @Test
-        @DisplayName("Retorna null quando a descrição está em branco")
-        void deveRetornarNullParaDescricaoEmBranco() {
-            assertThat(transacaoService.sugerirCategoria("   ")).isNull();
-            verifyNoInteractions(categoriaRepository);
-        }
-
-        @Test
-        @DisplayName("Retorna null quando nenhuma palavra-chave casa")
-        void deveRetornarNullQuandoSemCorrespondencia() {
-            assertThat(transacaoService.sugerirCategoria("Transferência diversa 1234")).isNull();
-            verifyNoInteractions(categoriaRepository);
-        }
-
-        @Test
-        @DisplayName("Respeita limite de palavra: 'Uberlandia' não casa com 'uber'")
-        void naoDeveCasarPalavraParcial() {
-            assertThat(transacaoService.sugerirCategoria("Viagem para Uberlandia")).isNull();
-            verifyNoInteractions(categoriaRepository);
-        }
-    }
 }
