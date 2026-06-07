@@ -4,14 +4,12 @@ import bcd.appfinanceirobackend.dto.comum.PaginaDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
+import bcd.appfinanceirobackend.mapper.TransacaoMapper;
 import bcd.appfinanceirobackend.model.Categoria;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
-import bcd.appfinanceirobackend.repository.CategoriaRepository;
-import bcd.appfinanceirobackend.model.enums.TipoConta;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
-import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import bcd.appfinanceirobackend.repository.spec.TransacaoSpecs;
 import org.springframework.data.domain.Pageable;
@@ -22,64 +20,30 @@ import org.springframework.web.server.ResponseStatusException;
 import bcd.appfinanceirobackend.model.enums.TipoPagamento;
 
 import java.math.BigDecimal;
-import java.text.Normalizer;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 @Service
 public class TransacaoService {
 
     private final TransacaoRepository transacaoRepository;
-    private final ContaRepository contaRepository;
-    private final CategoriaRepository categoriaRepository;
+    private final ContaUsuarioService contaUsuarioService;
+    private final TransacaoMapper transacaoMapper;
+    private final CategoriaService categoriaService;
 
     public TransacaoService(TransacaoRepository transacaoRepository,
-                            ContaRepository contaRepository,
-                            CategoriaRepository categoriaRepository) {
+                            ContaUsuarioService contaUsuarioService,
+                            TransacaoMapper transacaoMapper, CategoriaService categoriaService) {
         this.transacaoRepository = transacaoRepository;
-        this.contaRepository = contaRepository;
-        this.categoriaRepository = categoriaRepository;
+        this.contaUsuarioService = contaUsuarioService;
+        this.transacaoMapper = transacaoMapper;
+        this.categoriaService = categoriaService;
     }
 
-    private static final Map<String, List<String>> PALAVRAS_CHAVE = Map.of(
-            "Alimentação",  List.of("mercado", "supermercado", "padaria", "restaurante", "lanchonete", "ifood", "rappi"),
-            "Transporte",   List.of("uber", "99", "combustivel", "gasolina", "onibus", "metro", "estacionamento"),
-            "Saúde",        List.of("farmacia", "hospital", "clinica", "medico", "laboratorio", "drogaria"),
-            "Lazer",        List.of("netflix", "spotify", "cinema", "teatro", "steam", "jogos"),
-            "Habitação",    List.of("aluguel", "condominio", "agua", "luz", "energia", "gas"),
-            "Serviços",     List.of("internet", "telefone", "celular", "tim", "claro", "vivo"),
-            "Manutenção",   List.of("oficina", "reparo", "conserto", "ferragem", "material")
-    );
-
     public TransacaoResponseDTO registrarManual (TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
-        boolean pagamentoEmDinheiro = dto.getFormaPagamento() == TipoPagamento.DINHEIRO;
+        validarCamposObrigatorios(dto);
 
-        if (dto.getValor() == null ||
-                dto.getData() == null ||
-                dto.getTipoTransacao() == null ||
-                (!pagamentoEmDinheiro && dto.getContaId() == null)) {
-            throw new IllegalArgumentException("Campos obrigatórios não informados");
-        }
-
-        if(dto.getValor().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("O valor informado deve ser maior que zero");
-        }
-
-        Conta conta;
-
-        if (pagamentoEmDinheiro) {
-            conta = obterOuCriarContaDinheiro(usuarioAutenticado);
-        } else {
-            conta = contaRepository.findById(dto.getContaId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
-
-            if (!conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a esta conta");
-            }
-        }
+        Conta conta = contaUsuarioService.resolverConta(dto, usuarioAutenticado);
 
         Transacao transacao = new Transacao();
         transacao.setConta(conta);
@@ -92,10 +56,7 @@ public class TransacaoService {
         transacao.setFormaPagamento(dto.getFormaPagamento());
 
         if (dto.getCategoriaId() != null) {
-            Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
-
-            validarCategoriaPermitida(categoria, usuarioAutenticado);
+            Categoria categoria = categoriaService.buscarCategoriaPermitida(dto.getCategoriaId(), usuarioAutenticado);
 
             transacao.setCategoria(categoria);
             transacao.setCategorizada(true);
@@ -105,14 +66,13 @@ public class TransacaoService {
 
         Transacao transacaoSalva = transacaoRepository.save(transacao);
 
-        return toResponse(transacaoSalva);
+        return transacaoMapper.toResponse(transacaoSalva);
     }
 
     public TransacaoResponseDTO editar(UUID transacaoId, TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
         validarCamposObrigatorios(dto);
-
         Transacao transacao = buscarTransacaoDoUsuario(transacaoId, usuarioAutenticado);
-        Conta conta = resolverConta(dto, usuarioAutenticado);
+        Conta conta = contaUsuarioService.resolverConta(dto, usuarioAutenticado);
 
         transacao.setConta(conta);
         transacao.setValor(dto.getValor());
@@ -123,10 +83,7 @@ public class TransacaoService {
         transacao.setFormaPagamento(dto.getFormaPagamento());
 
         if (dto.getCategoriaId() != null) {
-            Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
-
-            validarCategoriaPermitida(categoria, usuarioAutenticado);
+            Categoria categoria = categoriaService.buscarCategoriaPermitida(dto.getCategoriaId(), usuarioAutenticado);
 
             transacao.setCategoria(categoria);
             transacao.setCategorizada(true);
@@ -135,7 +92,7 @@ public class TransacaoService {
             transacao.setCategorizada(false);
         }
 
-        return toResponse(transacaoRepository.save(transacao));
+        return transacaoMapper.toResponse(transacaoRepository.save(transacao));
     }
 
     public void excluir(UUID transacaoId, Usuario usuarioAutenticado) {
@@ -168,101 +125,23 @@ public class TransacaoService {
                 .and(TransacaoSpecs.doTipo(tipo))
                 .and(TransacaoSpecs.daContaEspecifica(contaId));
 
-        return PaginaDTO.de(transacaoRepository.findAll(filtro, pageable), this::toResponse);
+        return PaginaDTO.de(transacaoRepository.findAll(filtro, pageable), transacaoMapper::toResponse);
     }
 
     public TransacaoResponseDTO categorizar(UUID transacaoId, UUID categoriaId, Usuario usuarioAutenticado){
-        Transacao transacao = transacaoRepository.findById(transacaoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Transacao não encontrada"));
+        Transacao transacao = buscarTransacaoDoUsuario(transacaoId, usuarioAutenticado);
 
-        if(!transacao.getConta().getUsuario().getId().equals(usuarioAutenticado.getId())){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a essa transação");
-        }
-
-        Categoria categoria = categoriaRepository.findById(categoriaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
-
-        validarCategoriaPermitida(categoria, usuarioAutenticado);
+        Categoria categoria = categoriaService.buscarCategoriaPermitida(categoriaId, usuarioAutenticado);
 
         transacao.setCategoria(categoria);
         transacao.setCategorizada(true);
         transacaoRepository.save(transacao);
-        return toResponse(transacao);
-    }
-
-    public Categoria sugerirCategoria (String descricao) {
-        if(descricao == null || descricao.isBlank()){
-            return null;
-        }
-        String descricaoMinuscula = descricao.toLowerCase();
-        String descricaoNormalizada = normalizarTexto(descricaoMinuscula);
-        for (Map.Entry<String, List<String>> entry: PALAVRAS_CHAVE.entrySet()) {
-            boolean encontrou = entry.getValue().stream().anyMatch( palavraChave ->
-                    contemPalavra(descricaoNormalizada, palavraChave));
-            if(encontrou) {
-                return categoriaRepository.findByNomeAndPadraoTrue(entry.getKey()).orElse(null);
-            }
-        }
-        return null;
-    }
-    
-    private Conta obterOuCriarContaDinheiro(Usuario usuario) {
-        return contaRepository
-                .findByUsuarioIdAndTipoContaAndNome(
-                        usuario.getId(),
-                        TipoConta.CARTEIRA,
-                        "Dinheiro / Carteira"
-                )
-                .orElseGet(() -> {
-                    Conta conta = new Conta();
-                    conta.setNome("Dinheiro / Carteira");
-                    conta.setTipoConta(TipoConta.CARTEIRA);
-                    conta.setBanco("Dinheiro");
-                    conta.setDescricao("Conta automática para transações em dinheiro");
-                    conta.setUsuario(usuario);
-
-                    return contaRepository.save(conta);
-                });
+        return transacaoMapper.toResponse(transacao);
     }
 
 
-    private void validarCategoriaPermitida(Categoria categoria, Usuario usuario) {
-        boolean categoriaPadrao = categoria.isPadrao();
-        boolean categoriaDoUsuario = categoria.getUsuario() != null
-                && categoria.getUsuario().getId().equals(usuario.getId());
-
-        if (!categoriaPadrao && !categoriaDoUsuario) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Categoria não pertence ao usuário autenticado");
-        }
-    }
 
     // Utils
-
-    private String normalizarTexto(String texto) {
-        return Normalizer.normalize(texto, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "")
-                .toLowerCase()
-                .trim();
-    }
-
-    private boolean contemPalavra(String descricao, String palavraChave) {
-        return descricao.matches(".*\\b" + Pattern.quote(palavraChave) + "\\b.*");
-    }
-
-    private Conta resolverConta(TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
-        if (dto.getFormaPagamento() == TipoPagamento.DINHEIRO) {
-            return obterOuCriarContaDinheiro(usuarioAutenticado);
-        }
-
-        Conta conta = contaRepository.findById(dto.getContaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
-
-        if (!conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a esta conta");
-        }
-
-        return conta;
-    }
 
     private void validarCamposObrigatorios(TransacaoRequestDTO dto) {
         if (dto.getValor() == null ||
@@ -283,22 +162,5 @@ public class TransacaoService {
         }
     }
 
-    public TransacaoResponseDTO toResponse(Transacao transacao) {
-        TransacaoResponseDTO responseDTO = new TransacaoResponseDTO();
-        responseDTO.setTransacaoId(transacao.getId());
-        responseDTO.setData(transacao.getData());
-        responseDTO.setValor(transacao.getValor());
-        responseDTO.setFormaPagamento(transacao.getFormaPagamento());
-        responseDTO.setTipoTransacao(transacao.getTipo());
-        responseDTO.setDescricao(transacao.getDescricao());
-        responseDTO.setContaId(transacao.getConta().getId());
-        responseDTO.setCategorizada(transacao.getCategorizada());
-        responseDTO.setCategoriaId(
-                transacao.getCategoria() != null ? transacao.getCategoria().getId() : null
-        );
-        responseDTO.setImportacaoId(
-                transacao.getImportacao() != null ? transacao.getImportacao().getId() : null
-        );
-        return responseDTO;
-    }
+
 }

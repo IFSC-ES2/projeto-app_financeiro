@@ -2,10 +2,7 @@ package bcd.appfinanceirobackend.service;
 
 import bcd.appfinanceirobackend.dto.importacao.ImportacaoResponseDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
-import bcd.appfinanceirobackend.model.Conta;
-import bcd.appfinanceirobackend.model.Importacao;
-import bcd.appfinanceirobackend.model.Transacao;
-import bcd.appfinanceirobackend.model.Usuario;
+import bcd.appfinanceirobackend.model.*;
 import bcd.appfinanceirobackend.model.enums.FormatoArquivo;
 import bcd.appfinanceirobackend.model.enums.StatusImportacao;
 import bcd.appfinanceirobackend.parser.ParserExtrato;
@@ -45,7 +42,7 @@ class ImportacaoServiceTest {
     @Mock private ContaRepository contaRepository;
     @Mock private ImportacaoRepository importacaoRepository;
     @Mock private TransacaoRepository transacaoRepository;
-    @Mock private TransacaoService transacaoService;
+    @Mock private SugestaoCategoriaService sugestaoCategoriaService;
     @Mock private ParserExtrato parserMock;
 
     private ImportacaoService service;
@@ -61,7 +58,7 @@ class ImportacaoServiceTest {
                 importacaoRepository,
                 transacaoRepository,
                 contaRepository,
-                transacaoService
+                sugestaoCategoriaService
         );
 
         usuarioDono = new Usuario();
