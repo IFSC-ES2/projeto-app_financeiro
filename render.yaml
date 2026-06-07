@@ -10,7 +10,7 @@
 databases:
   - name: smartbudget-db
     databaseName: app_financeiro
-    user: postgres
+    user: smartbudget
     plan: free
 
 services:
