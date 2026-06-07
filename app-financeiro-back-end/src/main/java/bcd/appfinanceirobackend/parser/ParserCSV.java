@@ -36,6 +36,8 @@ import java.util.List;
  * - Datas aceitas: yyyy-MM-dd, dd/MM/yyyy, dd-MM-yyyy
  * - Separador decimal aceito: ponto ou vírgula
  * - Linhas de cabeçalho são ignoradas automaticamente (detecção por ausência de data válida)
+ * Linhas inválidas não interrompem a importação. Elas são ignoradas e
+ * contabilizadas em ResultadoParser.linhasInvalidas.
  */
 @Component
 public class ParserCSV implements ParserExtrato {

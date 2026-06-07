@@ -38,7 +38,9 @@ import java.util.regex.Pattern;
  *   data<TAB>descricao<TAB>valor
  *   Exemplo: "15/01/2024\tSupermercado\t-150,00"
  *
- * Linhas que não encaixam em nenhum padrão são ignoradas silenciosamente.
+ *  Linhas que não encaixam em nenhum padrão são ignoradas e contabilizadas
+ *  em ResultadoParser.linhasInvalidas, sem interromper o processamento das
+ *  demais linhas válidas.
  */
 @Component
 public class ParserTXT implements ParserExtrato {
@@ -47,7 +49,8 @@ public class ParserTXT implements ParserExtrato {
      * Regex que captura:
      * Grupo 1: data (dd/MM/yyyy, yyyy-MM-dd ou dd-MM-yyyy)
      * Grupo 2: descrição (qualquer texto no meio)
-     * Grupo 3: valor monetário (com ou sem sinal, vírgula ou ponto decimal)
+     * Grupo 3: prefixo monetário opcional "R$"
+     * Grupo 4: valor monetário (com ou sem sinal, vírgula ou ponto decimal)
      */
     private static final Pattern PADRAO_LINHA = Pattern.compile(
             "^(\\d{2}[/\\-]\\d{2}[/\\-]\\d{2,4}|\\d{4}[/\\-]\\d{2}[/\\-]\\d{2})" // data
@@ -120,8 +123,7 @@ public class ParserTXT implements ParserExtrato {
 
         String descricao = matcher.group(2).trim();
 
-        String prefixo = matcher.group(3) != null ? matcher.group(3) : "";
-        BigDecimal valor = parsearValor(matcher.group(3));
+        BigDecimal valor = parsearValor(matcher.group(4));
         if (valor == null) return null;
 
         return montarTransacao(conta, data, descricao, valor);
