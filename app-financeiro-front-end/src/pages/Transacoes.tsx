@@ -6,6 +6,7 @@ import MensagemAlerta from '../components/ui/MensagemAlerta';
 import ResumoFormaPagamento from '../components/resumo/ResumoFormaPagamento';
 import {
   categorizarTransacao,
+  excluirTransacao,
   listarCategorias,
   listarContas,
   listarTransacoes,
@@ -85,7 +86,9 @@ const Transacoes = () => {
   const [erro, setErro] = useState('');
   const [mensagemSucesso, setMensagemSucesso] = useState(estado?.mensagem ?? '');
   const [transacaoAtualizandoId, setTransacaoAtualizandoId] = useState<string | null>(null);
+  const [transacaoExcluindoId, setTransacaoExcluindoId] = useState<string | null>(null);
   const [mensagemCategoria, setMensagemCategoria] = useState('');
+  const [atualizacaoLista, setAtualizacaoLista] = useState(0);
 
   useEffect(() => {
     if (estado?.mensagem) {
@@ -176,7 +179,7 @@ const Transacoes = () => {
     return () => {
       ativo = false;
     };
-  }, [filtros, paginaAtual, tamanho]);
+  }, [filtros, paginaAtual, tamanho, atualizacaoLista]);
 
   const contaPorId = useMemo(() => new Map(contas.map((conta) => [conta.contaId, conta])), [contas]);
 
@@ -223,6 +226,34 @@ const Transacoes = () => {
       setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível atualizar a categoria da transação.'));
     } finally {
       setTransacaoAtualizandoId(null);
+    }
+  };
+
+  const excluirTransacaoSelecionada = async (transacao: TransacaoResponse) => {
+    const confirmou = window.confirm(
+      `Deseja excluir a transação "${transacao.descricao || 'Transação manual'}"? Esta ação não pode ser desfeita.`
+    );
+
+    if (!confirmou) return;
+
+    setTransacaoExcluindoId(transacao.transacaoId);
+    setErro('');
+    setMensagemCategoria('');
+    setMensagemSucesso('');
+
+    try {
+      await excluirTransacao(transacao.transacaoId);
+      setMensagemSucesso('Transação excluída com sucesso.');
+
+      if (transacoes.length === 1 && paginaAtual > 0) {
+        setPaginaAtual((atual) => Math.max(atual - 1, 0));
+      } else {
+        setAtualizacaoLista((atual) => atual + 1);
+      }
+    } catch (erroCapturado) {
+      setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível excluir a transação.'));
+    } finally {
+      setTransacaoExcluindoId(null);
     }
   };
 
@@ -350,6 +381,7 @@ const Transacoes = () => {
                     <th>Conta</th>
                     <th>Data</th>
                     <th className="text-end">Valor</th>
+                    <th className="text-end">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -401,6 +433,25 @@ const Transacoes = () => {
                         <td>{formatarData(transacao.data)}</td>
                         <td className={receita ? 'text-end amount-positive' : 'text-end amount-negative'}>
                           {formatarMoeda(transacao.valor)}
+                        </td>
+                        <td className="text-end">
+                          <div className="transaction-actions">
+                            <Link
+                              to={`/transacoes/${transacao.transacaoId}/editar`}
+                              state={{ transacao }}
+                              className="sb-button sb-button-secondary sb-button-xs"
+                            >
+                              Editar
+                            </Link>
+                            <button
+                              type="button"
+                              className="sb-button sb-button-danger sb-button-xs"
+                              disabled={transacaoExcluindoId === transacao.transacaoId}
+                              onClick={() => excluirTransacaoSelecionada(transacao)}
+                            >
+                              {transacaoExcluindoId === transacao.transacaoId ? 'Excluindo...' : 'Excluir'}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
