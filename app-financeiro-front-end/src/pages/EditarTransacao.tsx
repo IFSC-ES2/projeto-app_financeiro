@@ -64,7 +64,10 @@ const EditarTransacao = () => {
   const { transacaoId = '' } = useParams();
   const estado = location.state as EstadoEdicaoTransacao | null;
   const transacao = estado?.transacao;
-  const mensagemTransacaoAusente = 'Abra a edição pela lista de transações para carregar os dados atuais.';
+  // Limitação temporária: o backend ainda não expõe GET /transacoes/{id}.
+  // Por isso, a tela usa location.state quando a edição é aberta pela listagem.
+  const mensagemTransacaoAusente =
+    'Não foi possível carregar os dados diretamente por esta URL. No momento a API não possui busca de transação por ID, então acesse a edição pela lista de transações.';
 
   const [campos, setCampos] = useState<CamposTransacao | null>(() => (transacao ? montarCampos(transacao) : null));
   const [contas, setContas] = useState<ContaResponse[]>([]);
