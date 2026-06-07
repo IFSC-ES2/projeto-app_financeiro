@@ -1,9 +1,19 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { AxiosError } from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import ImportarExtrato from './ImportarExtrato';
 import type { ContaResponse, ImportacaoResponse } from '../services/api';
+
+const criarErroAxios = (status: number, mensagem: string) =>
+  new AxiosError(mensagem, AxiosError.ERR_BAD_REQUEST, undefined, undefined, {
+    status,
+    statusText: String(status),
+    headers: {},
+    config: {} as never,
+    data: { erro: mensagem },
+  });
 
 const contaPrincipal: ContaResponse = {
   contaId: 'conta-1',
@@ -353,5 +363,47 @@ describe('Tela de Importação de Extratos', () => {
     await waitFor(() => {
       expect(screen.getByText('Não foi possível carregar suas contas. Tente novamente.')).toBeInTheDocument();
     });
+  });
+
+  it('nao deve deslogar o usuario quando criarImportacao retornar 403 Forbidden', async () => {
+    mockCriarImportacao.mockRejectedValueOnce(
+      criarErroAxios(403, 'Conta não pertence ao usuário autenticado.'),
+    );
+
+    renderizarComponente();
+    await aguardarContas();
+    await preencherEEnviar(criarArquivo('extrato.csv', 'text/csv'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Conta não pertence ao usuário autenticado.')).toBeInTheDocument();
+    });
+
+    expect(authState.sair).not.toHaveBeenCalled();
+    expect(screen.getByText(/Importar extrato ou NF-e/i)).toBeInTheDocument();
+  });
+
+  it('deve deslogar o usuario quando criarImportacao retornar 401 Unauthorized', async () => {
+    mockCriarImportacao.mockRejectedValueOnce(criarErroAxios(401, 'Sessão expirada.'));
+
+    renderizarComponente();
+    await aguardarContas();
+    await preencherEEnviar(criarArquivo('extrato.csv', 'text/csv'));
+
+    await waitFor(() => {
+      expect(authState.sair).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('nao deve deslogar o usuario quando listarContas retornar 403 Forbidden', async () => {
+    mockListarContas.mockReset();
+    mockListarContas.mockRejectedValue(criarErroAxios(403, 'Acesso negado.'));
+
+    renderizarComponente();
+
+    await waitFor(() => {
+      expect(screen.getByText('Acesso negado.')).toBeInTheDocument();
+    });
+
+    expect(authState.sair).not.toHaveBeenCalled();
   });
 });
