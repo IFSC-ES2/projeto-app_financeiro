@@ -139,12 +139,10 @@ class RegistrarManualIntegrationTests {
         }
 
         @Test
-        @DisplayName("Retorna 201 quando descrição e forma de pagamento são omitidos")
+        @DisplayName("Retorna 201 quando descrição é omitidos")
         void deveRetornar201SemCamposOpcionais() throws Exception {
             dtoValido.setDescricao(null);
-            dtoValido.setFormaPagamento(null);
             responseValido.setDescricao(null);
-            responseValido.setFormaPagamento(null);
 
             when(transacaoService.registrarManual(any(), any())).thenReturn(responseValido);
 
@@ -271,6 +269,25 @@ class RegistrarManualIntegrationTests {
                     .andExpect(status().is4xxClientError());
 
             verify(transacaoService, never()).registrarManual(any(), any());
+        }
+
+        @Test
+        @DisplayName("Deve retornar 400 quando forma de pagamento não é informada")
+        void deveRetornar400QuandoFormaPagamentoNaoInformada() throws Exception {
+            TransacaoRequestDTO request = new TransacaoRequestDTO();
+            request.setContaId(contaId);
+            request.setValor(BigDecimal.valueOf(100));
+            request.setData(LocalDate.now());
+            request.setTipoTransacao(TipoTransacao.DEBITO);
+            request.setFormaPagamento(null);
+
+            when(transacaoService.registrarManual(any(TransacaoRequestDTO.class), any(Usuario.class)))
+                    .thenThrow(new IllegalArgumentException("Campos obrigatórios não informados"));
+
+            mockMvc.perform(post("/transacoes/manual")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest());
         }
     }
 }
