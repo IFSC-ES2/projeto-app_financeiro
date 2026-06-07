@@ -10,7 +10,6 @@ import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.model.enums.TipoPagamento;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
 import bcd.appfinanceirobackend.repository.CategoriaRepository;
-import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -45,7 +44,7 @@ class ListarTransacoesPaginadoTests {
     private TransacaoRepository transacaoRepository;
 
     @Mock
-    private ContaRepository contaRepository;
+    private ContaUsuarioService contaUsuarioService;
 
     @Mock
     private CategoriaRepository categoriaRepository;
