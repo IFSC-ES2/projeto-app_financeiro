@@ -10,7 +10,6 @@ import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.model.enums.TipoPagamento;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
-import bcd.appfinanceirobackend.repository.CategoriaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -28,7 +26,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
@@ -170,6 +167,18 @@ class RegistrarManualTransacaoTests {
                     .isInstanceOf(IllegalArgumentException.class);
 
             verifyNoInteractions(contaUsuarioService, transacaoRepository, categoriaService);;
+        }
+
+        @Test
+        @DisplayName("Lança exceção quando forma de pagamento é nula")
+        void deveLancarExcecaoQuandoFormaPagamentoNula() {
+            dtoValido.setFormaPagamento(null);
+
+            assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Campos obrigatórios não informados");
+
+            verifyNoInteractions(contaUsuarioService, transacaoRepository, categoriaService);
         }
     }
 
@@ -322,18 +331,8 @@ class RegistrarManualTransacaoTests {
             assertThat(captor.getValue().getConta()).isEqualTo(conta);
         }
 
-        @Test
-        @DisplayName("Lança exceção quando forma de pagamento é nula")
-        void deveLancarExcecaoQuandoFormaPagamentoNula() {
-            dtoValido.setFormaPagamento(null);
 
-            assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("Campos obrigatórios não informados");
 
-            verifyNoInteractions(contaUsuarioService, transacaoRepository, categoriaService);
-        }
-        
 
         @Test
         @DisplayName("Persiste e retorna transação não categorizada quando categoriaId não é informado")
