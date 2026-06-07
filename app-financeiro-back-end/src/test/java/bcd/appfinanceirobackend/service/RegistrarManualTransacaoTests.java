@@ -42,7 +42,7 @@ class RegistrarManualTransacaoTests {
     private TransacaoRepository transacaoRepository;
 
     @Mock
-    private ContaRepository contaRepository;
+    private ContaUsuarioService contaUsuarioService;
 
     @Mock
     private CategoriaRepository categoriaRepository;
@@ -159,7 +159,7 @@ class RegistrarManualTransacaoTests {
             assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
                     .isInstanceOf(IllegalArgumentException.class);
 
-            verifyNoInteractions(contaRepository, transacaoRepository, categoriaRepository);
+            verifyNoInteractions(contaUsuarioService, transacaoRepository, categoriaRepository);
         }
     }
 
@@ -172,7 +172,7 @@ class RegistrarManualTransacaoTests {
         @Test
         @DisplayName("Lança ResourceNotFoundException quando conta não existe")
         void deveLancarExcecaoQuandoContaNaoEncontrada() {
-            when(contaRepository.findById(dtoValido.getContaId())).thenReturn(Optional.empty());
+            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono)).thenReturn(conta);
 
             assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
                     .isInstanceOf(ResourceNotFoundException.class)
@@ -183,7 +183,7 @@ class RegistrarManualTransacaoTests {
         @DisplayName("Lança ResponseStatusException 403 quando a conta pertence a outro usuário")
         void deveLancarForbiddenQuandoContaNaoPertenceAoUsuario() {
             conta.setUsuario(outroUsuario);
-            when(contaRepository.findById(dtoValido.getContaId())).thenReturn(Optional.of(conta));
+            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono)).thenReturn(conta);
 
             assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
                     .isInstanceOf(ResponseStatusException.class)
@@ -201,7 +201,7 @@ class RegistrarManualTransacaoTests {
 
         @BeforeEach
         void mockRepositorios() {
-            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
+            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono)).thenReturn(conta);
             when(transacaoRepository.save(any(Transacao.class))).thenAnswer(inv -> {
                 Transacao t = inv.getArgument(0);
                 t.setId(UUID.randomUUID());

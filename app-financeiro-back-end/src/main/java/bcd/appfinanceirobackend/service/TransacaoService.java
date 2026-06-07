@@ -71,7 +71,6 @@ public class TransacaoService {
 
     public TransacaoResponseDTO editar(UUID transacaoId, TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
         validarCamposObrigatorios(dto);
-
         Transacao transacao = buscarTransacaoDoUsuario(transacaoId, usuarioAutenticado);
         Conta conta = contaUsuarioService.resolverConta(dto, usuarioAutenticado);
 
@@ -147,8 +146,7 @@ public class TransacaoService {
     private void validarCamposObrigatorios(TransacaoRequestDTO dto) {
         if (dto.getValor() == null ||
                 dto.getData() == null ||
-                dto.getTipoTransacao() == null ||
-                dto.getFormaPagamento() == null) {
+                dto.getTipoTransacao() == null) {
             throw new IllegalArgumentException("Campos obrigatórios não informados");
         }
 
