@@ -46,7 +46,7 @@ class CategorizacaoNaImportacaoTests {
     private TransacaoRepository transacaoRepository;
 
     @Mock
-    private TransacaoService transacaoService;
+    private SugestaoCategoriaService sugestaoCategoriaService;
 
     @Mock
     private ParserExtrato parser;
@@ -59,7 +59,11 @@ class CategorizacaoNaImportacaoTests {
     @BeforeEach
     void setUp() {
         importacaoService = new ImportacaoService(
-                List.of(parser), importacaoRepository, transacaoRepository, contaRepository, transacaoService);
+                List.of(parser),
+                importacaoRepository,
+                transacaoRepository,
+                contaRepository,
+                sugestaoCategoriaService);
 
         usuario = new Usuario();
         usuario.setId(UUID.randomUUID());
@@ -100,7 +104,7 @@ class CategorizacaoNaImportacaoTests {
         when(parser.aceita(any())).thenReturn(true);
         when(parser.parsear(any(), eq(conta))).thenReturn(umaTransacao("Mercado Central"));
         when(importacaoRepository.save(any(Importacao.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(transacaoService.sugerirCategoria("Mercado Central")).thenReturn(alimentacao);
+        when(sugestaoCategoriaService.sugerirCategoria("Mercado Central")).thenReturn(alimentacao);
 
         importacaoService.processar(csv("linha"), conta.getId(), usuario);
 
@@ -117,7 +121,7 @@ class CategorizacaoNaImportacaoTests {
         when(parser.aceita(any())).thenReturn(true);
         when(parser.parsear(any(), eq(conta))).thenReturn(umaTransacao("Transferência avulsa"));
         when(importacaoRepository.save(any(Importacao.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(transacaoService.sugerirCategoria("Transferência avulsa")).thenReturn(null);
+        when(sugestaoCategoriaService.sugerirCategoria("Transferência avulsa")).thenReturn(null);
 
         importacaoService.processar(csv("linha"), conta.getId(), usuario);
 
