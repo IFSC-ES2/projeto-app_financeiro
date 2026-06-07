@@ -271,7 +271,25 @@ npm run build
 npm run preview
 npm run lint
 npm test
+npm run test:coverage
 ```
+
+### Cobertura de testes do frontend
+
+Para gerar o relatório de cobertura com Vitest (provider `v8`):
+
+```bash
+cd app-financeiro-front-end
+npm run test:coverage
+```
+
+O resumo aparece no terminal. O relatório detalhado fica em:
+
+```text
+app-financeiro-front-end/coverage/index.html
+```
+
+No CI, o job **Frontend** executa apenas `npm run test:coverage` (sem duplicar `npm test`), e imprime o resumo a partir de `coverage/coverage-summary.json`, no mesmo espírito do JaCoCo do backend.
 
 ## 6. Problemas comuns
 
