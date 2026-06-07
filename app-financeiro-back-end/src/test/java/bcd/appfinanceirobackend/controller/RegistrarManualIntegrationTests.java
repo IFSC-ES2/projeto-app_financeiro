@@ -139,12 +139,10 @@ class RegistrarManualIntegrationTests {
         }
 
         @Test
-        @DisplayName("Retorna 201 quando descrição e forma de pagamento são omitidos")
+        @DisplayName("Retorna 201 quando descrição é omitidos")
         void deveRetornar201SemCamposOpcionais() throws Exception {
             dtoValido.setDescricao(null);
-            dtoValido.setFormaPagamento(null);
             responseValido.setDescricao(null);
-            responseValido.setFormaPagamento(null);
 
             when(transacaoService.registrarManual(any(), any())).thenReturn(responseValido);
 
@@ -166,8 +164,7 @@ class RegistrarManualIntegrationTests {
         @DisplayName("Retorna 400 quando o service lança IllegalArgumentException por campo obrigatório ausente")
         void deveRetornar400QuandoCampoObrigatorioAusente() throws Exception {
             when(transacaoService.registrarManual(any(), any()))
-                    .thenThrow(new IllegalArgumentException(
-                            "Campos obrigatórios não informados(valor, data, contaId, tipoTransacao)"));
+                    .thenThrow(new IllegalArgumentException("Campos obrigatórios não informados"));
 
             dtoValido.setValor(null);
 
@@ -271,6 +268,22 @@ class RegistrarManualIntegrationTests {
                     .andExpect(status().is4xxClientError());
 
             verify(transacaoService, never()).registrarManual(any(), any());
+        }
+
+        @Test
+        @DisplayName("Retorna 400 quando forma de pagamento não é informada")
+        void deveRetornar400QuandoFormaPagamentoNaoInformada() throws Exception {
+            dtoValido.setFormaPagamento(null);
+
+            when(transacaoService.registrarManual(any(), any()))
+                    .thenThrow(new IllegalArgumentException("Campos obrigatórios não informados"));
+
+            mockMvc.perform(post("/transacoes/manual")
+                            .with(user(usuarioAutenticado))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(mapper.writeValueAsString(dtoValido)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString("Campos obrigatórios")));
         }
     }
 }

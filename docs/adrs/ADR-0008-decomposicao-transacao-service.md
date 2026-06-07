@@ -33,6 +33,14 @@ Papéis após a mudança:
 
 A API pública dos endpoints de transação e importação permanece a mesma; a mudança é interna à organização do backend.
 
+## Regra de negócio consolidada
+
+Durante a refatoração, foi consolidada a decisão de tratar `formaPagamento` como campo obrigatório nos fluxos de registro manual e edição de transações.
+
+Embora a entidade `Transacao` permita valor nulo para esse campo por compatibilidade com registros importados ou dados legados, os fluxos manuais passam a exigir essa informação para garantir consistência na resolução da conta e na classificação da transação.
+
+Essa regra foi implementada em `TransacaoService.validarCamposObrigatorios(...)` e coberta por testes unitários e de controller.
+
 ## Alternativas consideradas
 
 - **Manter o `TransacaoService` monolítico:** Descartado por perpetuar acoplamento entre importação e transações, dificultar testes isolados e aumentar o risco de regressão em refatorações futuras.
