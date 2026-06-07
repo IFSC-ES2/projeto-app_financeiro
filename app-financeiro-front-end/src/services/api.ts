@@ -179,6 +179,15 @@ export const registrarTransacaoManual = async (transacao: TransacaoRequest) => {
   return data;
 };
 
+export const editarTransacao = async (transacaoId: string, transacao: TransacaoRequest) => {
+  const { data } = await api.put<TransacaoResponse>(`/transacoes/${transacaoId}`, transacao);
+  return data;
+};
+
+export const excluirTransacao = async (transacaoId: string) => {
+  await api.delete(`/transacoes/${transacaoId}`);
+};
+
 export const buscarResumoPorPagamento = async () => {
   const { data } = await api.get<ResumoPagamentoResponse[]>('/resumo/pagamentos', {
     ignorarLogoutAutomatico: true,
