@@ -10,7 +10,6 @@ import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.model.enums.TipoPagamento;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
 import bcd.appfinanceirobackend.repository.CategoriaRepository;
-import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -45,7 +44,7 @@ class TransacaoEdicaoExclusaoServiceTest {
     private TransacaoRepository transacaoRepository;
 
     @Mock
-    private ContaRepository contaRepository;
+    private ContaUsuarioService contaUsuarioService;
 
     @Mock
     private CategoriaRepository categoriaRepository;
@@ -114,7 +113,7 @@ class TransacaoEdicaoExclusaoServiceTest {
         @DisplayName("Edita transação própria com dados válidos")
         void deveEditarTransacaoPropriaComDadosValidos() {
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(contaRepository.findById(novaConta.getId())).thenReturn(Optional.of(novaConta));
+            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono)).thenReturn(novaConta);
             when(transacaoRepository.save(any(Transacao.class))).thenAnswer(inv -> inv.getArgument(0));
 
             TransacaoResponseDTO response = transacaoService.editar(transacao.getId(), dtoValido, usuarioDono);
@@ -132,7 +131,7 @@ class TransacaoEdicaoExclusaoServiceTest {
         @DisplayName("Persiste a transação editada")
         void devePersistirTransacaoEditada() {
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(contaRepository.findById(novaConta.getId())).thenReturn(Optional.of(novaConta));
+            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono)).thenReturn(novaConta);
             when(transacaoRepository.save(any(Transacao.class))).thenAnswer(inv -> inv.getArgument(0));
 
             ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
@@ -157,7 +156,7 @@ class TransacaoEdicaoExclusaoServiceTest {
             dtoValido.setCategoriaId(null);
 
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(contaRepository.findById(novaConta.getId())).thenReturn(Optional.of(novaConta));
+            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono)).thenReturn(novaConta);
             when(transacaoRepository.save(any(Transacao.class))).thenAnswer(inv -> inv.getArgument(0));
 
             TransacaoResponseDTO response = transacaoService.editar(transacao.getId(), dtoValido, usuarioDono);
@@ -179,7 +178,7 @@ class TransacaoEdicaoExclusaoServiceTest {
             dtoValido.setCategoriaId(categoria.getId());
 
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(contaRepository.findById(novaConta.getId())).thenReturn(Optional.of(novaConta));
+            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono)).thenReturn(novaConta);
             when(categoriaRepository.findById(categoria.getId())).thenReturn(Optional.of(categoria));
             when(transacaoRepository.save(any(Transacao.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -199,7 +198,7 @@ class TransacaoEdicaoExclusaoServiceTest {
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Transação não encontrada");
 
-            verifyNoInteractions(contaRepository, categoriaRepository);
+            verifyNoInteractions(contaUsuarioService, categoriaRepository);
             verify(transacaoRepository, never()).save(any());
         }
 
@@ -214,7 +213,7 @@ class TransacaoEdicaoExclusaoServiceTest {
                     .isInstanceOf(ResponseStatusException.class)
                     .hasMessageContaining("Acesso negado a essa transação");
 
-            verifyNoInteractions(contaRepository, categoriaRepository);
+            verifyNoInteractions(contaUsuarioService, categoriaRepository);
             verify(transacaoRepository, never()).save(any());
         }
 
@@ -224,7 +223,7 @@ class TransacaoEdicaoExclusaoServiceTest {
             novaConta.setUsuario(outroUsuario);
 
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(contaRepository.findById(novaConta.getId())).thenReturn(Optional.of(novaConta));
+            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono)).thenReturn(novaConta);
 
             assertThatThrownBy(() -> transacaoService.editar(transacao.getId(), dtoValido, usuarioDono))
                     .isInstanceOf(ResponseStatusException.class)
@@ -271,7 +270,7 @@ class TransacaoEdicaoExclusaoServiceTest {
             dtoValido.setCategoriaId(categoriaDeOutroUsuario.getId());
 
             when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
-            when(contaRepository.findById(novaConta.getId())).thenReturn(Optional.of(novaConta));
+            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono)).thenReturn(novaConta);
             when(categoriaRepository.findById(categoriaDeOutroUsuario.getId()))
                     .thenReturn(Optional.of(categoriaDeOutroUsuario));
 
