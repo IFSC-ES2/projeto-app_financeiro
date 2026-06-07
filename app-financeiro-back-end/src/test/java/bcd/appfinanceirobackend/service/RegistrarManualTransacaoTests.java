@@ -323,24 +323,17 @@ class RegistrarManualTransacaoTests {
         }
 
         @Test
-        @DisplayName("Registra transação sem descrição (campo opcional)")
-        void deveRegistrarTransacaoSemDescricao() {
-            dtoValido.setDescricao(null);
-
-            TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
-
-            assertThat(response.getDescricao()).isNull();
-        }
-
-        @Test
-        @DisplayName("Registra transação sem forma de pagamento (campo opcional)")
-        void deveRegistrarTransacaoSemFormaPagamento() {
+        @DisplayName("Lança exceção quando forma de pagamento é nula")
+        void deveLancarExcecaoQuandoFormaPagamentoNula() {
             dtoValido.setFormaPagamento(null);
 
-            TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
+            assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Campos obrigatórios não informados");
 
-            assertThat(response.getFormaPagamento()).isNull();
+            verifyNoInteractions(contaUsuarioService, transacaoRepository, categoriaService);
         }
+        
 
         @Test
         @DisplayName("Persiste e retorna transação não categorizada quando categoriaId não é informado")

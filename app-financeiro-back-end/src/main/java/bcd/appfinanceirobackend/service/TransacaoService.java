@@ -146,7 +146,8 @@ public class TransacaoService {
     private void validarCamposObrigatorios(TransacaoRequestDTO dto) {
         if (dto.getValor() == null ||
                 dto.getData() == null ||
-                dto.getTipoTransacao() == null) {
+                dto.getTipoTransacao() == null ||
+                dto.getFormaPagamento() == null) {
             throw new IllegalArgumentException("Campos obrigatórios não informados");
         }
 
