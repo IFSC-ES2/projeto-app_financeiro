@@ -43,6 +43,16 @@ const IconeNavegacao = ({ nome }: { nome: string }) => {
     );
   }
 
+  if (nome === "contas") {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 7h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <path d="M3 7l9-4 9 4" />
+      <path d="M7 10v6M12 10v6M17 10v6" />
+    </svg>
+  );
+}
+
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M4 13h6V4H4zM14 20h6V4h-6zM4 20h6v-4H4z" />
