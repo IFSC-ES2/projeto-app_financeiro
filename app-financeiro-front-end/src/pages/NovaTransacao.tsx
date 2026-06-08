@@ -124,10 +124,14 @@ const NovaTransacao = () => {
     setCampos((atual) => {
       if (name === 'formaPagamento') {
         const formaPagamento = value as TipoPagamento;
+
         return {
           ...atual,
           formaPagamento,
-          contaId: formaPagamento === 'DINHEIRO' ? '' : atual.contaId || contas[0]?.contaId || '',
+          contaId:
+            formaPagamento === 'DINHEIRO'
+              ? ''
+              : atual.contaId || contasSelecionaveis[0]?.contaId || '',
         };
       }
 
