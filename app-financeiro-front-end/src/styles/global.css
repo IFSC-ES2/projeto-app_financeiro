@@ -1678,3 +1678,31 @@ button:disabled {
   overflow: hidden;
 }
 }
+
+.sb-button-danger {
+  color: #ffffff !important;
+  background: var(--sb-danger);
+  border-color: var(--sb-danger);
+}
+
+.sb-button-xs {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 0.82rem;
+}
+
+.transaction-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.form-empty-state {
+  padding: 22px;
+}
+
+.form-empty-state p {
+  margin: 0 0 16px;
+  color: var(--sb-text-muted);
+}
