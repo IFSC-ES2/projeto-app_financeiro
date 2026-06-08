@@ -410,10 +410,10 @@ Leitura adotada:
 
 | Item | Situação observada | Impacto nas métricas |
 |------|--------------------|----------------------|
-| #65 - Interface de categorização de transações | Concluído no recorte da sprint | Melhora a usabilidade do histórico de transações e fecha o fluxo de categorização manual pela interface. |
-| #66 - Resumo por forma de pagamento e gestão de contas | Concluído no recorte da sprint | Avança a visualização agregada por forma de pagamento e complementa regras de contas. |
+| #65 - Interface de categorização de transações | Concluído | Melhora a usabilidade do histórico de transações e fecha o fluxo de categorização manual pela interface. |
+| #66 - Resumo por forma de pagamento e gestão de contas | Concluído | Avança a visualização agregada por forma de pagamento e complementa regras de contas. |
 | #67 - Resumo mensal/backend do dashboard | **Não concluído / replanejado** | Não deve ser contabilizado como funcionalidade finalizada do MVP nesta sprint. Na fonte atual, `ResumoMensalDTO` e `GrupoCategoriaDTO` ainda estão vazios e o `ResumoController` não expõe `GET /resumo` nem `GET /resumo/categorias`. |
-| #106 - Filtros/listagem paginada de transações | Concluído no recorte da sprint | Melhora a consulta de movimentações por filtros e paginação. |
+| #106 - Filtros/listagem paginada de transações | Concluído | Melhora a consulta de movimentações por filtros e paginação. |
 | #107 - Testes de categorização de transações | Concluído | Reforça a confiabilidade das regras de categorização e reduz risco de regressão. |
 | #122 - Manutenção do CI com Gradle Wrapper e lint frontend | Concluído | Melhora a reprodutibilidade do pipeline e reduz divergência entre ambiente local e CI. |
 | #124 - Ajuste técnico da Sprint 4 | Concluído | Contribui para consolidação técnica do MVP na Sprint 4. |
