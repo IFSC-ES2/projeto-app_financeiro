@@ -194,12 +194,18 @@ const ImportarExtrato: React.FC = () => {
     const novosErros: ErrosFormulario = {};
     if (!contaId) novosErros.contaId = 'Selecione uma conta de destino.';
     if (!arquivo) novosErros.arquivo = 'Selecione um arquivo para importar.';
+
+    const contaSelecionada = contas.find((conta) => conta.contaId === contaId);
+    if (contaId && !contaSelecionada) {
+      novosErros.contaId = 'Selecione uma conta válida.';
+    }
+
     setErros(novosErros);
     if (Object.keys(novosErros).length > 0) return;
 
     setEnviando(true);
     try {
-      const resultado = await criarImportacao(arquivo!, contaId);
+      const resultado = await criarImportacao(arquivo!, contaSelecionada!.contaId);
       setImportacao(resultado);
       setStatusAtual(resultado.status);
     } catch (err) {
