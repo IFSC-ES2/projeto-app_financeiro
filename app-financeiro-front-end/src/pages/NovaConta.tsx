@@ -100,11 +100,12 @@ const NovaConta = () => {
   };
 
   const fecharModal = () => {
-    if (salvando) return;
+  if (salvando) return;
 
-    setModalAberto(false);
-    setCampos(valoresIniciais);
-    setErros({});
+  setModalAberto(false);
+  setCampos(valoresIniciais);
+  setErros({});
+  setContaEmEdicao(null);
   };
 
   const alterarCampo = (evento: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
