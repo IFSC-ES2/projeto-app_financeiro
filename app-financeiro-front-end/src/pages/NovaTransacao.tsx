@@ -75,7 +75,7 @@ const NovaTransacao = () => {
   const contasSelecionaveis = useMemo(
   () => contas.filter((conta) => !ehCarteiraAutomaticaDinheiro(conta)),
   [contas]
-  );
+);
 
   useEffect(() => {
     let ativo = true;
@@ -90,9 +90,13 @@ const NovaTransacao = () => {
         if (!ativo) return;
         setContas(contasCarregadas);
         setCategorias(categoriasCarregadas);
+        const contasDisponiveis = contasCarregadas.filter(
+        (conta) => !ehCarteiraAutomaticaDinheiro(conta)
+        );
+
         setCampos((atual) => ({
           ...atual,
-          contaId: atual.contaId || contasCarregadas[0]?.contaId || '',
+          contaId: atual.contaId || contasDisponiveis[0]?.contaId || '',
         }));
       } catch (err) {
         if (!ativo) return;
