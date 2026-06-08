@@ -1,16 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import LayoutPrivado from '../components/layout/LayoutPrivado';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
 import {
+  editarTransacao,
   listarCategorias,
   listarContas,
   obterMensagemErroApi,
-  registrarTransacaoManual,
 } from '../services/api';
-import type { CategoriaResponse, ContaResponse, TipoPagamento, TipoTransacao } from '../services/api';
+import type {
+  CategoriaResponse,
+  ContaResponse,
+  TipoPagamento,
+  TipoTransacao,
+  TransacaoResponse,
+} from '../services/api';
 import { ehCarteiraAutomaticaDinheiro } from '../utils/contas';
 
 interface CamposTransacao {
@@ -23,15 +29,16 @@ interface CamposTransacao {
   contaId: string;
 }
 
-const valoresIniciais: CamposTransacao = {
-  valor: '',
-  data: new Date().toISOString().slice(0, 10),
-  descricao: '',
-  tipoTransacao: 'DEBITO',
-  formaPagamento: 'PIX',
-  categoriaId: '',
-  contaId: '',
-};
+interface EstadoEdicaoTransacao {
+  transacao?: TransacaoResponse;
+}
+
+const tiposTransacao: Array<{ valor: TipoTransacao; rotulo: string }> = [
+  { valor: 'DEBITO', rotulo: 'Saída / despesa' },
+  { valor: 'CREDITO', rotulo: 'Entrada / receita' },
+  { valor: 'PARCELAMENTO', rotulo: 'Parcelamento' },
+  { valor: 'BOLETO', rotulo: 'Boleto' },
+];
 
 const formasPagamento: Array<{ valor: TipoPagamento; rotulo: string }> = [
   { valor: 'PIX', rotulo: 'Pix' },
@@ -42,15 +49,33 @@ const formasPagamento: Array<{ valor: TipoPagamento; rotulo: string }> = [
   { valor: 'TED_DOC', rotulo: 'TED/DOC' },
 ];
 
-const NovaTransacao = () => {
-  const navigate = useNavigate();
+const montarCampos = (transacao: TransacaoResponse): CamposTransacao => ({
+  valor: String(transacao.valor),
+  data: transacao.data.slice(0, 10),
+  descricao: transacao.descricao ?? '',
+  tipoTransacao: transacao.tipoTransacao,
+  formaPagamento: transacao.formaPagamento ?? 'PIX',
+  categoriaId: transacao.categoriaId ?? '',
+  contaId: transacao.contaId ?? '',
+});
 
-  const [campos, setCampos] = useState<CamposTransacao>(valoresIniciais);
+const EditarTransacao = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { transacaoId = '' } = useParams();
+  const estado = location.state as EstadoEdicaoTransacao | null;
+  const transacao = estado?.transacao;
+  // Limitação temporária: o backend ainda não expõe GET /transacoes/{id}.
+  // Por isso, a tela usa location.state quando a edição é aberta pela listagem.
+  const mensagemTransacaoAusente =
+    'Não foi possível carregar os dados diretamente por esta URL. No momento a API não possui busca de transação por ID, então acesse a edição pela lista de transações.';
+
+  const [campos, setCampos] = useState<CamposTransacao | null>(() => (transacao ? montarCampos(transacao) : null));
   const [contas, setContas] = useState<ContaResponse[]>([]);
   const [categorias, setCategorias] = useState<CategoriaResponse[]>([]);
   const [erros, setErros] = useState<Partial<Record<keyof CamposTransacao, string>>>({});
-  const [erroGeral, setErroGeral] = useState('');
-  const [carregandoDados, setCarregandoDados] = useState(true);
+  const [erroGeral, setErroGeral] = useState(transacao ? '' : mensagemTransacaoAusente);
+  const [carregandoDados, setCarregandoDados] = useState(Boolean(transacao));
   const [salvando, setSalvando] = useState(false);
 
   const contasSelecionaveis = useMemo(
@@ -59,6 +84,8 @@ const NovaTransacao = () => {
   );
 
   useEffect(() => {
+    if (!transacao) return;
+
     let ativo = true;
 
     const carregarDados = async () => {
@@ -71,14 +98,6 @@ const NovaTransacao = () => {
         if (!ativo) return;
         setContas(contasCarregadas);
         setCategorias(categoriasCarregadas);
-        const contasDisponiveis = contasCarregadas.filter(
-          (conta) => !ehCarteiraAutomaticaDinheiro(conta)
-        );
-
-        setCampos((atual) => ({
-          ...atual,
-          contaId: atual.contaId || contasDisponiveis[0]?.contaId || '',
-        }));
       } catch (err) {
         if (!ativo) return;
         setErroGeral(obterMensagemErroApi(err, 'Não foi possível carregar contas e categorias.'));
@@ -92,27 +111,25 @@ const NovaTransacao = () => {
     return () => {
       ativo = false;
     };
-  }, []);
+  }, [transacao]);
 
-  const permiteSalvar = useMemo(
-    () => campos.formaPagamento === 'DINHEIRO' || contasSelecionaveis.length > 0,
-    [campos.formaPagamento, contasSelecionaveis.length]
-  );
+  const permiteSalvar = useMemo(() => {
+    if (!campos) return false;
+    return campos.formaPagamento === 'DINHEIRO' || contasSelecionaveis.length > 0;
+  }, [campos, contasSelecionaveis.length]);
 
   const alterarCampo = (evento: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = evento.target;
 
     setCampos((atual) => {
+      if (!atual) return atual;
+
       if (name === 'formaPagamento') {
         const formaPagamento = value as TipoPagamento;
-
         return {
           ...atual,
           formaPagamento,
-          contaId:
-            formaPagamento === 'DINHEIRO'
-              ? ''
-              : atual.contaId || contasSelecionaveis[0]?.contaId || '',
+          contaId: formaPagamento === 'DINHEIRO' ? '' : atual.contaId || contasSelecionaveis[0]?.contaId || '',
         };
       }
 
@@ -123,6 +140,8 @@ const NovaTransacao = () => {
   };
 
   const validar = () => {
+    if (!campos) return false;
+
     const novosErros: Partial<Record<keyof CamposTransacao, string>> = {};
     const valorNumerico = Number(campos.valor);
 
@@ -158,12 +177,12 @@ const NovaTransacao = () => {
     evento.preventDefault();
     setErroGeral('');
 
-    if (!validar()) return;
+    if (!campos || !validar()) return;
 
     setSalvando(true);
 
     try {
-      const transacaoCriada = await registrarTransacaoManual({
+      await editarTransacao(transacaoId, {
         valor: Number(campos.valor),
         data: campos.data,
         descricao: campos.descricao.trim() || undefined,
@@ -176,12 +195,11 @@ const NovaTransacao = () => {
       navigate('/transacoes', {
         replace: true,
         state: {
-          mensagem: 'Transação registrada com sucesso.',
-          transacaoCriada,
+          mensagem: 'Transação atualizada com sucesso.',
         },
       });
     } catch (err) {
-      setErroGeral(obterMensagemErroApi(err, 'Não foi possível registrar a transação.'));
+      setErroGeral(obterMensagemErroApi(err, 'Não foi possível atualizar a transação.'));
     } finally {
       setSalvando(false);
     }
@@ -189,8 +207,8 @@ const NovaTransacao = () => {
 
   return (
     <LayoutPrivado
-      titulo="Nova transação"
-      subtitulo="Registre manualmente uma movimentação financeira."
+      titulo="Editar transação"
+      subtitulo="Altere os dados de uma movimentação financeira existente."
       acaoPrimaria={
         <Link to="/transacoes" className="sb-button sb-button-secondary sb-button-sm">
           Voltar
@@ -202,12 +220,19 @@ const NovaTransacao = () => {
       <section className="form-panel">
         <div className="form-panel-header">
           <h2>Dados da transação</h2>
-          <p>Campos marcados com asterisco são obrigatórios pelo contrato atual do backend.</p>
+          <p>Confira as informações carregadas antes de salvar a alteração.</p>
         </div>
 
         {carregandoDados ? (
           <div className="loading-inline" aria-live="polite">
-            Carregando dados de apoio...
+            Carregando dados da transação...
+          </div>
+        ) : !campos ? (
+          <div className="form-empty-state">
+            <p>Não foi possível carregar a transação para edição.</p>
+            <Link to="/transacoes" className="sb-button sb-button-secondary">
+              Voltar para transações
+            </Link>
           </div>
         ) : (
           <form onSubmit={enviar} noValidate className="sb-form">
@@ -253,18 +278,13 @@ const NovaTransacao = () => {
 
               <label>
                 <span>Tipo *</span>
-                <select
-                  name="tipoTransacao"
-                  value={campos.tipoTransacao}
-                  onChange={alterarCampo}
-                  className={erros.tipoTransacao ? 'invalid' : ''}
-                >
-                  <option value="DEBITO">Saída / despesa</option>
-                  <option value="CREDITO">Entrada / receita</option>
-                  <option value="PARCELAMENTO">Parcelamento</option>
-                  <option value="BOLETO">Boleto</option>
+                <select name="tipoTransacao" value={campos.tipoTransacao} onChange={alterarCampo}>
+                  {tiposTransacao.map((tipo) => (
+                    <option key={tipo.valor} value={tipo.valor}>
+                      {tipo.rotulo}
+                    </option>
+                  ))}
                 </select>
-                {erros.tipoTransacao && <small className="field-error">{erros.tipoTransacao}</small>}
               </label>
 
               <label>
@@ -315,7 +335,7 @@ const NovaTransacao = () => {
 
             {!permiteSalvar && (
               <p className="helper-text">
-                Cadastre uma conta bancária para pagamentos digitais ou selecione Dinheiro para usar a carteira automática.
+                Cadastre uma conta bancária antes de salvar ou selecione Dinheiro como forma de pagamento.
               </p>
             )}
 
@@ -330,7 +350,7 @@ const NovaTransacao = () => {
                 className="sb-button sb-button-primary"
                 disabled={!permiteSalvar}
               >
-                Salvar transação
+                Salvar alterações
               </BotaoCarregando>
             </div>
           </form>
@@ -340,4 +360,4 @@ const NovaTransacao = () => {
   );
 };
 
-export default NovaTransacao;
+export default EditarTransacao;

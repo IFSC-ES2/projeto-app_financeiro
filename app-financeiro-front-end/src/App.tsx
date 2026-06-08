@@ -9,6 +9,7 @@ import ImportarExtrato from './pages/ImportarExtrato';
 import Dashboard from './pages/Dashboard';
 import Transacoes from './pages/Transacoes';
 import NovaTransacao from './pages/NovaTransacao';
+import EditarTransacao from './pages/EditarTransacao';
 import Categorias from './pages/Categorias';
 import Parcelamentos from './pages/Parcelamentos';
 import PrimeiraConta from './pages/PrimeiraConta';
@@ -30,6 +31,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transacoes" element={<Transacoes />} />
             <Route path="/transacoes/nova" element={<NovaTransacao />} />
+            <Route path="/transacoes/:transacaoId/editar" element={<EditarTransacao />} />
             <Route path="/categorias" element={<Categorias />} />
             <Route path="/parcelamentos" element={<Parcelamentos />} />
             <Route path="/importacoes/nova" element={<ImportarExtrato />} />

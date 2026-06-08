@@ -30,7 +30,7 @@ api.interceptors.response.use(
     if (
       axios.isAxiosError(erro) &&
       !erro.config?.ignorarLogoutAutomatico &&
-      (erro.response?.status === 401 || erro.response?.status === 403)
+      erro.response?.status === 401
     ) {
       limparSessao();
       window.dispatchEvent(new Event('smartbudget:unauthorized'));
@@ -66,6 +66,11 @@ export interface ContaRequest {
   nome: string;
   tipoConta: TipoConta;
   banco?: string;
+  descricao?: string;
+}
+
+export interface ContaEdicaoRequest {
+  nome: string;
   descricao?: string;
 }
 
@@ -169,6 +174,15 @@ export const registrarConta = async (conta: ContaRequest) => {
   return data;
 };
 
+export const editarConta = async (contaId: string, conta: ContaEdicaoRequest) => {
+  const { data } = await api.put<ContaResponse>(`/contas/${contaId}`, conta);
+  return data;
+};
+
+export const excluirConta = async (contaId: string) => {
+  await api.delete(`/contas/${contaId}`);
+};
+
 export const listarCategorias = async () => {
   const { data } = await api.get<CategoriaResponse[]>('/categorias');
   return data;
@@ -177,6 +191,15 @@ export const listarCategorias = async () => {
 export const registrarTransacaoManual = async (transacao: TransacaoRequest) => {
   const { data } = await api.post<TransacaoResponse>('/transacoes/manual', transacao);
   return data;
+};
+
+export const editarTransacao = async (transacaoId: string, transacao: TransacaoRequest) => {
+  const { data } = await api.put<TransacaoResponse>(`/transacoes/${transacaoId}`, transacao);
+  return data;
+};
+
+export const excluirTransacao = async (transacaoId: string) => {
+  await api.delete(`/transacoes/${transacaoId}`);
 };
 
 export const buscarResumoPorPagamento = async () => {
