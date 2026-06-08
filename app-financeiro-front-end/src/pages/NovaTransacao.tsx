@@ -263,15 +263,21 @@ const NovaTransacao = () => {
                 />
               </label>
 
-              <label>
-                <span>Tipo *</span>
-                  {contasSelecionaveis.map((conta) => (
-                    <option key={conta.contaId} value={conta.contaId}>
-                      {conta.nome}
-                      {conta.banco ? ` - ${conta.banco}` : ''}
-                    </option>
-                  ))}
-              </label>
+                <label>
+                  <span>Tipo *</span>
+                  <select
+                    name="tipoTransacao"
+                    value={campos.tipoTransacao}
+                    onChange={alterarCampo}
+                    className={erros.tipoTransacao ? 'invalid' : ''}
+                  >
+                    <option value="DEBITO">Saída / despesa</option>
+                    <option value="CREDITO">Entrada / receita</option>
+                    <option value="PARCELAMENTO">Parcelamento</option>
+                    <option value="BOLETO">Boleto</option>
+                  </select>
+                  {erros.tipoTransacao && <small className="field-error">{erros.tipoTransacao}</small>}
+                </label>
 
               <label>
                 <span>Forma de pagamento</span>
