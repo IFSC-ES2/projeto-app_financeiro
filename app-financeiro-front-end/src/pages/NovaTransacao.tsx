@@ -72,6 +72,11 @@ const NovaTransacao = () => {
   const [carregandoDados, setCarregandoDados] = useState(true);
   const [salvando, setSalvando] = useState(false);
 
+  const contasSelecionaveis = useMemo(
+  () => contas.filter((conta) => !ehCarteiraAutomaticaDinheiro(conta)),
+  [contas]
+  );
+
   useEffect(() => {
     let ativo = true;
 
