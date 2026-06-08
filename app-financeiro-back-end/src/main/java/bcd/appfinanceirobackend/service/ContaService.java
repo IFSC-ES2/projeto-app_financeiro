@@ -85,8 +85,8 @@ public class ContaService {
     }
 
     private void validarCamposObrigatoriosEdicao(ContaEdicaoRequestDTO dto) {
-        if (dto.getNome() == null || dto.getNome().isBlank()) {
-            throw new IllegalArgumentException("Campo obrigatório não informado: nome");
+        if (dto == null || dto.getNome() == null || dto.getNome().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Campo obrigatório não informado: nome");
         }
     }
 
