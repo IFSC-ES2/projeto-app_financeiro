@@ -1,5 +1,6 @@
 package bcd.appfinanceirobackend.controller;
 
+import bcd.appfinanceirobackend.dto.conta.ContaEdicaoRequestDTO;
 import bcd.appfinanceirobackend.dto.conta.ContaRequestDTO;
 import bcd.appfinanceirobackend.dto.conta.ContaResponseDTO;
 import bcd.appfinanceirobackend.model.Usuario;
@@ -29,6 +30,13 @@ public class ContaController {
     public ResponseEntity<ContaResponseDTO> registrarConta (@RequestBody ContaRequestDTO dto,
                                                             @AuthenticationPrincipal Usuario usuario) {
         return ResponseEntity.status(HttpStatus.CREATED).body(contaService.registrar(dto, usuario));
+    }
+
+    @PutMapping("/{contaId}")
+    public ResponseEntity<ContaResponseDTO> editarConta(@PathVariable UUID contaId,
+                                                        @RequestBody ContaEdicaoRequestDTO dto,
+                                                        @AuthenticationPrincipal Usuario usuario) {
+        return ResponseEntity.ok(contaService.editar(contaId, dto, usuario));
     }
 
     @DeleteMapping("/{id}")

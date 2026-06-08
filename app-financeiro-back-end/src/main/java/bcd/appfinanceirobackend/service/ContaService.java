@@ -1,5 +1,6 @@
 package bcd.appfinanceirobackend.service;
 
+import bcd.appfinanceirobackend.dto.conta.ContaEdicaoRequestDTO;
 import bcd.appfinanceirobackend.dto.conta.ContaRequestDTO;
 import bcd.appfinanceirobackend.dto.conta.ContaResponseDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
@@ -64,6 +65,29 @@ public class ContaService {
                      "Não é possível remover uma conta com transações vinculadas");
          }
          contaRepository.delete(conta);
+    }
+
+    public ContaResponseDTO editar(UUID contaId, ContaEdicaoRequestDTO dto, Usuario usuarioAutenticado) {
+        validarCamposObrigatoriosEdicao(dto);
+
+        Conta conta = contaRepository.findById(contaId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada"));
+
+        if (!conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Conta não pertence ao usuário autenticado");
+        }
+
+        conta.setNome(dto.getNome());
+        conta.setDescricao(dto.getDescricao());
+
+        Conta contaAtualizada = contaRepository.save(conta);
+        return toResponse(contaAtualizada);
+    }
+
+    private void validarCamposObrigatoriosEdicao(ContaEdicaoRequestDTO dto) {
+        if (dto == null || dto.getNome() == null || dto.getNome().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Campo obrigatório não informado: nome");
+        }
     }
 
     public ContaResponseDTO toResponse(Conta conta) {
