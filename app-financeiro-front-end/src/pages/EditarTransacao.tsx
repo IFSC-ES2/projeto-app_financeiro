@@ -17,6 +17,7 @@ import type {
   TipoTransacao,
   TransacaoResponse,
 } from '../services/api';
+import { ehCarteiraAutomaticaDinheiro } from '../utils/contas';
 
 interface CamposTransacao {
   valor: string;
@@ -48,19 +49,6 @@ const formasPagamento: Array<{ valor: TipoPagamento; rotulo: string }> = [
   { valor: 'TED_DOC', rotulo: 'TED/DOC' },
 ];
 
-const ehCarteiraAutomaticaDinheiro = (conta: ContaResponse) => {
-  const nome = conta.nome.trim().toLowerCase();
-  const banco = (conta.banco || '').trim().toLowerCase();
-  const descricao = (conta.descricao || '').trim().toLowerCase();
-
-  return (
-    conta.tipoConta === 'CARTEIRA' &&
-    banco === 'dinheiro' &&
-    nome.startsWith('dinheiro / carteira') &&
-    descricao.includes('transações em dinheiro')
-  );
-};
-
 const montarCampos = (transacao: TransacaoResponse): CamposTransacao => ({
   valor: String(transacao.valor),
   data: transacao.data.slice(0, 10),
@@ -91,8 +79,8 @@ const EditarTransacao = () => {
   const [salvando, setSalvando] = useState(false);
 
   const contasSelecionaveis = useMemo(
-  () => contas.filter((conta) => !ehCarteiraAutomaticaDinheiro(conta)),
-  [contas]
+    () => contas.filter((conta) => !ehCarteiraAutomaticaDinheiro(conta)),
+    [contas]
   );
 
   useEffect(() => {
@@ -180,9 +168,6 @@ const EditarTransacao = () => {
     ) {
       novosErros.contaId = 'A carteira automática só pode ser usada para transações em dinheiro.';
     }
-
-    setErros(novosErros);
-    return Object.keys(novosErros).length === 0;
 
     setErros(novosErros);
     return Object.keys(novosErros).length === 0;

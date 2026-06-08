@@ -3,8 +3,9 @@ import type { ChangeEvent, FormEvent } from 'react';
 import LayoutPrivado from '../components/layout/LayoutPrivado';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { editarConta, excluirConta, listarContas, obterMensagemErroApi, registrarConta,} from '../services/api';
+import { editarConta, excluirConta, listarContas, obterMensagemErroApi, registrarConta } from '../services/api';
 import type { ContaRequest, ContaResponse, TipoConta } from '../services/api';
+import { ehCarteiraAutomaticaDinheiro } from '../utils/contas';
 
 type CamposConta = {
   nome: string;
@@ -40,19 +41,6 @@ const IconeEditar = () => (
     <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" />
   </svg>
 );
-
-const ehCarteiraAutomaticaDinheiro = (conta: ContaResponse) => {
-  const nome = conta.nome.trim().toLowerCase();
-  const banco = (conta.banco || '').trim().toLowerCase();
-  const descricao = (conta.descricao || '').trim().toLowerCase();
-
-  return (
-    conta.tipoConta === 'CARTEIRA' &&
-    banco === 'dinheiro' &&
-    nome.startsWith('dinheiro / carteira') &&
-    descricao.includes('transações em dinheiro')
-  );
-};
 
 const IconeExcluir = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true" className="account-action-icon">
@@ -105,37 +93,38 @@ const NovaConta = () => {
   }, []);
 
   const abrirModal = () => {
-  setCampos(valoresIniciais);
-  setErros({});
-  setErroGeral('');
-  setSucesso('');
-  setContaEmEdicao(null);
-  setModalAberto(true);
+    setCampos(valoresIniciais);
+    setErros({});
+    setErroGeral('');
+    setSucesso('');
+    setContaEmEdicao(null);
+    setModalAberto(true);
   };
 
   const abrirModalEdicao = (conta: ContaResponse) => {
-  if (ehCarteiraAutomaticaDinheiro(conta)) return;
-  setCampos({
-    nome: conta.nome,
-    banco: conta.banco || '',
-    tipoConta: conta.tipoConta,
-    descricao: conta.descricao || '',
-  });
+    if (ehCarteiraAutomaticaDinheiro(conta)) return;
 
-  setErros({});
-  setErroGeral('');
-  setSucesso('');
-  setContaEmEdicao(conta);
-  setModalAberto(true);
+    setCampos({
+      nome: conta.nome,
+      banco: conta.banco || '',
+      tipoConta: conta.tipoConta,
+      descricao: conta.descricao || '',
+    });
+
+    setErros({});
+    setErroGeral('');
+    setSucesso('');
+    setContaEmEdicao(conta);
+    setModalAberto(true);
   };
 
   const fecharModal = () => {
-  if (salvando) return;
+    if (salvando) return;
 
-  setModalAberto(false);
-  setCampos(valoresIniciais);
-  setErros({});
-  setContaEmEdicao(null);
+    setModalAberto(false);
+    setCampos(valoresIniciais);
+    setErros({});
+    setContaEmEdicao(null);
   };
 
   const alterarCampo = (evento: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -153,77 +142,77 @@ const NovaConta = () => {
   };
 
   const validar = () => {
-  const novosErros: Partial<Record<keyof CamposConta, string>> = {};
+    const novosErros: Partial<Record<keyof CamposConta, string>> = {};
 
-  if (!campos.nome.trim()) {
-    novosErros.nome = 'Nome da conta é obrigatório.';
-  }
-
-  if (!contaEmEdicao) {
-    if (!campos.banco.trim()) {
-      novosErros.banco = 'Banco é obrigatório.';
+    if (!campos.nome.trim()) {
+      novosErros.nome = 'Nome da conta é obrigatório.';
     }
 
-    if (!campos.tipoConta) {
-      novosErros.tipoConta = 'Tipo de conta é obrigatório.';
-    }
-  }
+    if (!contaEmEdicao) {
+      if (!campos.banco.trim()) {
+        novosErros.banco = 'Banco é obrigatório.';
+      }
 
-  setErros(novosErros);
-  return Object.keys(novosErros).length === 0;
+      if (!campos.tipoConta) {
+        novosErros.tipoConta = 'Tipo de conta é obrigatório.';
+      }
+    }
+
+    setErros(novosErros);
+    return Object.keys(novosErros).length === 0;
   };
 
   const enviar = async (evento: FormEvent) => {
-  evento.preventDefault();
+    evento.preventDefault();
 
-  setErroGeral('');
-  setSucesso('');
+    setErroGeral('');
+    setSucesso('');
 
-  if (!validar()) return;
+    if (!validar()) return;
 
-  setSalvando(true);
+    setSalvando(true);
 
-  try {
-    if (contaEmEdicao) {
-      const contaAtualizada = await editarConta(contaEmEdicao.contaId, {
-        nome: campos.nome.trim(),
-        descricao: campos.descricao.trim() || undefined,
-      });
+    try {
+      if (contaEmEdicao) {
+        const contaAtualizada = await editarConta(contaEmEdicao.contaId, {
+          nome: campos.nome.trim(),
+          descricao: campos.descricao.trim() || undefined,
+        });
 
-      setContas((atuais) =>
-        atuais.map((conta) =>
-          conta.contaId === contaAtualizada.contaId ? contaAtualizada : conta
-        )
-      );
+        setContas((atuais) =>
+          atuais.map((conta) =>
+            conta.contaId === contaAtualizada.contaId ? contaAtualizada : conta
+          )
+        );
 
-      setSucesso('Conta bancária atualizada com sucesso.');
-      setContaEmEdicao(null);
-    } else {
-      const novaConta: ContaRequest = {
-        nome: campos.nome.trim(),
-        banco: campos.banco.trim(),
-        tipoConta: campos.tipoConta,
-        descricao: campos.descricao.trim() || undefined,
-      };
+        setSucesso('Conta bancária atualizada com sucesso.');
+        setContaEmEdicao(null);
+      } else {
+        const novaConta: ContaRequest = {
+          nome: campos.nome.trim(),
+          banco: campos.banco.trim(),
+          tipoConta: campos.tipoConta,
+          descricao: campos.descricao.trim() || undefined,
+        };
 
-      const contaCriada = await registrarConta(novaConta);
+        const contaCriada = await registrarConta(novaConta);
 
-      setContas((atuais) => [...atuais, contaCriada]);
-      setSucesso('Conta bancária cadastrada com sucesso.');
+        setContas((atuais) => [...atuais, contaCriada]);
+        setSucesso('Conta bancária cadastrada com sucesso.');
+      }
+
+      setCampos(valoresIniciais);
+      setErros({});
+      setModalAberto(false);
+    } catch (erro) {
+      const mensagemPadrao = contaEmEdicao
+        ? 'Não foi possível atualizar a conta bancária.'
+        : 'Não foi possível cadastrar a conta bancária.';
+
+      setErroGeral(obterMensagemErroApi(erro, mensagemPadrao));
+    } finally {
+      setSalvando(false);
     }
-
-    setCampos(valoresIniciais);
-    setErros({});
-    setModalAberto(false);
-  } catch (erro) {
-    const mensagemPadrao = contaEmEdicao
-      ? 'Não foi possível atualizar a conta bancária.'
-      : 'Não foi possível cadastrar a conta bancária.';
-
-    setErroGeral(obterMensagemErroApi(erro, mensagemPadrao));
-  } finally {
-    setSalvando(false);
-  }
   };
 
   const confirmarExclusaoConta = async (conta: ContaResponse) => {
@@ -293,11 +282,11 @@ const NovaConta = () => {
         ) : (
           <div className="accounts-list">
             {contas.map((conta) => {
-  const contaProtegida = ehCarteiraAutomaticaDinheiro(conta);
+              const contaProtegida = ehCarteiraAutomaticaDinheiro(conta);
 
-  return (
-    <article key={conta.contaId} className="account-card">
-      <div className="account-icon" aria-hidden="true">
+              return (
+                <article key={conta.contaId} className="account-card">
+                  <div className="account-icon" aria-hidden="true">
                     {conta.banco?.slice(0, 2).toUpperCase() || conta.nome.slice(0, 2).toUpperCase()}
                   </div>
 
@@ -306,7 +295,7 @@ const NovaConta = () => {
                     <p>
                       {conta.banco || 'Banco não informado'} • {rotulosTipoConta[conta.tipoConta]}
                     </p>
-                    {conta.descricao && <small>{conta.descricao}</small>}               
+                    {conta.descricao && <small>{conta.descricao}</small>}
                   </div>
                   {!contaProtegida && (
                     <div className="account-card-actions" aria-label="Ações da conta">
