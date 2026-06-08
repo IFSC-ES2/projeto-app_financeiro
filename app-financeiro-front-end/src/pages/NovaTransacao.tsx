@@ -159,6 +159,16 @@ const NovaTransacao = () => {
       novosErros.contaId = 'Conta é obrigatória para esta forma de pagamento.';
     }
 
+    const contaSelecionada = contas.find((conta) => conta.contaId === campos.contaId);
+
+    if (
+      campos.formaPagamento !== 'DINHEIRO' &&
+      contaSelecionada &&
+      ehCarteiraAutomaticaDinheiro(contaSelecionada)
+    ) {
+      novosErros.contaId = 'A carteira automática só pode ser usada para transações em dinheiro.';
+    }
+
     setErros(novosErros);
     return Object.keys(novosErros).length === 0;
   };
