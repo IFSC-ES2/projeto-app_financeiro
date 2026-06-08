@@ -1638,18 +1638,27 @@ button:disabled {
 }
 
 .account-card-action {
-  width: 34px;
-  height: 34px;
-  flex: 0 0 34px;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
   border: 0;
   border-radius: 999px;
   display: inline-grid;
   place-items: center;
   background: rgba(45, 191, 155, 0.1);
   color: var(--sb-primary-dark);
-  font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
+}
+
+.account-action-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .account-card-action:hover {
