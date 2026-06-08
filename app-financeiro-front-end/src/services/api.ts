@@ -69,6 +69,11 @@ export interface ContaRequest {
   descricao?: string;
 }
 
+export interface ContaEdicaoRequest {
+  nome: string;
+  descricao?: string;
+}
+
 export interface ContaResponse {
   contaId: string;
   nome: string;
