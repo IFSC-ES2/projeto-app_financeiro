@@ -5,13 +5,17 @@ import NovaConta from './NovaConta';
 import { ProvedorAutenticacao } from '../contexts/ContextoAutenticacao';
 
 
-const { mockListarContas, mockRegistrarConta, mockNavigate } = vi.hoisted(() => ({
+const { mockEditarConta, mockExcluirConta, mockListarContas, mockRegistrarConta, mockNavigate } = vi.hoisted(() => ({
+  mockEditarConta: vi.fn(),
+  mockExcluirConta: vi.fn(),
   mockListarContas: vi.fn(),
   mockRegistrarConta: vi.fn(),
   mockNavigate: vi.fn(),
 }));
 
 vi.mock('../services/api', () => ({
+  editarConta: mockEditarConta,
+  excluirConta: mockExcluirConta,
   listarContas: mockListarContas,
   registrarConta: mockRegistrarConta,
   obterMensagemErroApi: vi.fn((_err: unknown, fallback: string) => fallback),
@@ -29,6 +33,8 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #136)', () 
   beforeEach(() => {
     vi.clearAllMocks();
     vi.clearAllTimers();
+    mockEditarConta.mockReset();
+    mockExcluirConta.mockReset();
     mockRegistrarConta.mockReset();
     mockNavigate.mockClear();
     mockListarContas.mockReset();
@@ -201,5 +207,40 @@ describe.sequential('Tela de Cadastro de Nova Conta Bancária (Issue #136)', () 
     });
 
     vi.clearAllTimers();
+  });
+
+  it('deve confirmar exclusão em modal próprio antes de remover a conta', async () => {
+    mockListarContas.mockResolvedValueOnce([
+      {
+        contaId: 'conta-1',
+        nome: 'Conta Principal',
+        tipoConta: 'CORRENTE' as const,
+        banco: 'Itaú',
+        descricao: '',
+      },
+    ]);
+    mockExcluirConta.mockResolvedValueOnce(undefined);
+
+    renderizarComponente();
+
+    expect(await screen.findByText('Conta Principal')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Excluir conta Conta Principal' }));
+
+    expect(screen.getByRole('dialog', { name: /Excluir conta/i })).toBeInTheDocument();
+    expect(screen.getByText(/Esta ação removerá a conta Conta Principal/i)).toBeInTheDocument();
+    expect(mockExcluirConta).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: /^Excluir conta$/i }));
+
+    await waitFor(() => {
+      expect(mockExcluirConta).toHaveBeenCalledWith('conta-1');
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Conta Principal')).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Conta removida com sucesso/i)).toBeInTheDocument();
   });
 });

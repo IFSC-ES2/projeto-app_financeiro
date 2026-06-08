@@ -61,6 +61,7 @@ const NovaConta = () => {
   const [salvando, setSalvando] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
   const [contaEmEdicao, setContaEmEdicao] = useState<ContaResponse | null>(null);
+  const [contaParaExcluir, setContaParaExcluir] = useState<ContaResponse | null>(null);
   const [excluindoId, setExcluindoId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -215,13 +216,24 @@ const NovaConta = () => {
     }
   };
 
-  const confirmarExclusaoConta = async (conta: ContaResponse) => {
+  const abrirConfirmacaoExclusao = (conta: ContaResponse) => {
     if (excluindoId || ehCarteiraAutomaticaDinheiro(conta)) return;
 
-    const contaId = conta.contaId;
-    const confirmou = window.confirm('Tem certeza que deseja excluir esta conta?');
+    setErroGeral('');
+    setSucesso('');
+    setContaParaExcluir(conta);
+  };
 
-    if (!confirmou) return;
+  const fecharConfirmacaoExclusao = () => {
+    if (excluindoId) return;
+
+    setContaParaExcluir(null);
+  };
+
+  const excluirContaConfirmada = async () => {
+    if (!contaParaExcluir || excluindoId) return;
+
+    const contaId = contaParaExcluir.contaId;
 
     setErroGeral('');
     setSucesso('');
@@ -232,6 +244,7 @@ const NovaConta = () => {
 
       setContas((atuais) => atuais.filter((item) => item.contaId !== contaId));
       setSucesso('Conta removida com sucesso.');
+      setContaParaExcluir(null);
     } catch (erro) {
       setErroGeral(obterMensagemErroApi(erro, 'Não foi possível remover a conta.'));
     } finally {
@@ -312,7 +325,7 @@ const NovaConta = () => {
                       <button
                         type="button"
                         className="account-card-action account-card-action-danger"
-                        onClick={() => confirmarExclusaoConta(conta)}
+                        onClick={() => abrirConfirmacaoExclusao(conta)}
                         aria-label={`Excluir conta ${conta.nome}`}
                         title="Excluir conta"
                         disabled={excluindoId === conta.contaId}
@@ -421,6 +434,53 @@ const NovaConta = () => {
                 </BotaoCarregando>
               </div>
             </form>
+          </section>
+        </div>
+      )}
+
+      {contaParaExcluir && (
+        <div className="modal-backdrop-custom" role="presentation">
+          <section
+            className="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titulo-modal-exclusao-conta"
+          >
+            <div className="modal-card-header">
+              <div>
+                <h2 id="titulo-modal-exclusao-conta">Excluir conta</h2>
+                <p>
+                  Esta ação removerá a conta {contaParaExcluir.nome}. Confirme apenas se ela não deve mais aparecer
+                  na sua lista.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="modal-close-button"
+                onClick={fecharConfirmacaoExclusao}
+                aria-label="Fechar modal"
+                disabled={excluindoId === contaParaExcluir.contaId}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="form-actions">
+              <button type="button" className="sb-button sb-button-secondary" onClick={fecharConfirmacaoExclusao}>
+                Cancelar
+              </button>
+
+              <BotaoCarregando
+                type="button"
+                carregando={excluindoId === contaParaExcluir.contaId}
+                textoCarregando="Excluindo..."
+                className="sb-button sb-button-danger"
+                onClick={excluirContaConfirmada}
+              >
+                Excluir conta
+              </BotaoCarregando>
+            </div>
           </section>
         </div>
       )}
