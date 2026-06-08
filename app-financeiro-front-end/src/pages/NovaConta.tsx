@@ -196,6 +196,29 @@ const NovaConta = () => {
   }
   };
 
+  const confirmarExclusaoConta = async (contaId: string) => {
+  if (excluindoId) return;
+
+  const confirmou = window.confirm('Tem certeza que deseja excluir esta conta?');
+
+  if (!confirmou) return;
+
+  setErroGeral('');
+  setSucesso('');
+  setExcluindoId(contaId);
+
+  try {
+    await excluirConta(contaId);
+
+    setContas((atuais) => atuais.filter((conta) => conta.contaId !== contaId));
+    setSucesso('Conta removida com sucesso.');
+  } catch (erro) {
+    setErroGeral(obterMensagemErroApi(erro, 'Não foi possível remover a conta.'));
+  } finally {
+    setExcluindoId(null);
+  }
+  };
+
   return (
     <LayoutPrivado
       titulo="Contas"
