@@ -389,10 +389,10 @@ const NovaConta = () => {
                 <BotaoCarregando
                   type="submit"
                   carregando={salvando}
-                  textoCarregando="Cadastrando..."
+                  textoCarregando={contaEmEdicao ? 'Salvando...' : 'Cadastrando...'}
                   className="sb-button sb-button-primary"
                 >
-                  Cadastrar conta
+                  {contaEmEdicao ? 'Salvar alterações' : 'Cadastrar conta'}
                 </BotaoCarregando>
               </div>
             </form>
