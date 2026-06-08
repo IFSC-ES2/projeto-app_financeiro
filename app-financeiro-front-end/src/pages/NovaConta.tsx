@@ -76,11 +76,27 @@ const NovaConta = () => {
   }, []);
 
   const abrirModal = () => {
-    setCampos(valoresIniciais);
-    setErros({});
-    setErroGeral('');
-    setSucesso('');
-    setModalAberto(true);
+  setCampos(valoresIniciais);
+  setErros({});
+  setErroGeral('');
+  setSucesso('');
+  setContaEmEdicao(null);
+  setModalAberto(true);
+  };
+
+  const abrirModalEdicao = (conta: ContaResponse) => {
+  setCampos({
+    nome: conta.nome,
+    banco: conta.banco || '',
+    tipoConta: conta.tipoConta,
+    descricao: conta.descricao || '',
+  });
+
+  setErros({});
+  setErroGeral('');
+  setSucesso('');
+  setContaEmEdicao(conta);
+  setModalAberto(true);
   };
 
   const fecharModal = () => {
