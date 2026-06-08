@@ -179,6 +179,10 @@ export const editarConta = async (contaId: string, conta: ContaEdicaoRequest) =>
   return data;
 };
 
+export const excluirConta = async (contaId: string) => {
+  await api.delete(`/contas/${contaId}`);
+};
+
 export const listarCategorias = async () => {
   const { data } = await api.get<CategoriaResponse[]>('/categorias');
   return data;
