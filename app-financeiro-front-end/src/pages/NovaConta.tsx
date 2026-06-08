@@ -144,16 +144,31 @@ const NovaConta = () => {
   };
 
   const enviar = async (evento: FormEvent) => {
-    evento.preventDefault();
+  evento.preventDefault();
 
-    setErroGeral('');
-    setSucesso('');
+  setErroGeral('');
+  setSucesso('');
 
-    if (!validar()) return;
+  if (!validar()) return;
 
-    setSalvando(true);
+  setSalvando(true);
 
-    try {
+  try {
+    if (contaEmEdicao) {
+      const contaAtualizada = await editarConta(contaEmEdicao.contaId, {
+        nome: campos.nome.trim(),
+        descricao: campos.descricao.trim() || undefined,
+      });
+
+      setContas((atuais) =>
+        atuais.map((conta) =>
+          conta.contaId === contaAtualizada.contaId ? contaAtualizada : conta
+        )
+      );
+
+      setSucesso('Conta bancária atualizada com sucesso.');
+      setContaEmEdicao(null);
+    } else {
       const novaConta: ContaRequest = {
         nome: campos.nome.trim(),
         banco: campos.banco.trim(),
@@ -165,14 +180,20 @@ const NovaConta = () => {
 
       setContas((atuais) => [...atuais, contaCriada]);
       setSucesso('Conta bancária cadastrada com sucesso.');
-      setCampos(valoresIniciais);
-      setErros({});
-      setModalAberto(false);
-    } catch (erro) {
-      setErroGeral(obterMensagemErroApi(erro, 'Não foi possível cadastrar a conta bancária.'));
-    } finally {
-      setSalvando(false);
     }
+
+    setCampos(valoresIniciais);
+    setErros({});
+    setModalAberto(false);
+  } catch (erro) {
+    const mensagemPadrao = contaEmEdicao
+      ? 'Não foi possível atualizar a conta bancária.'
+      : 'Não foi possível cadastrar a conta bancária.';
+
+    setErroGeral(obterMensagemErroApi(erro, mensagemPadrao));
+  } finally {
+    setSalvando(false);
+  }
   };
 
   return (
