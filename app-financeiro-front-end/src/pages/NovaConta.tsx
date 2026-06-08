@@ -274,6 +274,29 @@ const NovaConta = () => {
                   </p>
                   {conta.descricao && <small>{conta.descricao}</small>}
                 </div>
+
+                <div className="account-card-actions" aria-label="Ações da conta">
+                  <button
+                    type="button"
+                    className="account-card-action"
+                    onClick={() => abrirModalEdicao(conta)}
+                    aria-label={`Editar conta ${conta.nome}`}
+                    title="Editar conta"
+                  >
+                    ✏️
+                  </button>
+
+                  <button
+                    type="button"
+                    className="account-card-action account-card-action-danger"
+                    onClick={() => confirmarExclusaoConta(conta.contaId)}
+                    aria-label={`Excluir conta ${conta.nome}`}
+                    title="Excluir conta"
+                    disabled={excluindoId === conta.contaId}
+                  >
+                    {excluindoId === conta.contaId ? '...' : '🗑️'}
+                  </button>
+                </div>
               </article>
             ))}
           </div>
@@ -285,8 +308,14 @@ const NovaConta = () => {
           <section className="modal-card" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-conta">
             <div className="modal-card-header">
               <div>
-                <h2 id="titulo-modal-conta">Adicionar nova conta</h2>
-                <p>Preencha os dados da conta bancária.</p>
+                <h2 id="titulo-modal-conta">
+                  {contaEmEdicao ? 'Editar conta' : 'Adicionar nova conta'}
+                </h2>
+                <p>
+                  {contaEmEdicao
+                    ? 'Altere o nome e a descrição da conta bancária.'
+                    : 'Preencha os dados da conta bancária.'}
+                </p>
               </div>
 
               <button type="button" className="modal-close-button" onClick={fecharModal} aria-label="Fechar modal">
