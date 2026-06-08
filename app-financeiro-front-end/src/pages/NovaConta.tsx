@@ -114,6 +114,7 @@ const NovaConta = () => {
   };
 
   const abrirModalEdicao = (conta: ContaResponse) => {
+  if (ehCarteiraAutomaticaDinheiro(conta)) return;
   setCampos({
     nome: conta.nome,
     banco: conta.banco || '',
@@ -225,27 +226,28 @@ const NovaConta = () => {
   }
   };
 
-  const confirmarExclusaoConta = async (contaId: string) => {
-  if (excluindoId) return;
+  const confirmarExclusaoConta = async (conta: ContaResponse) => {
+    if (excluindoId || ehCarteiraAutomaticaDinheiro(conta)) return;
 
-  const confirmou = window.confirm('Tem certeza que deseja excluir esta conta?');
+    const contaId = conta.contaId;
+    const confirmou = window.confirm('Tem certeza que deseja excluir esta conta?');
 
-  if (!confirmou) return;
+    if (!confirmou) return;
 
-  setErroGeral('');
-  setSucesso('');
-  setExcluindoId(contaId);
+    setErroGeral('');
+    setSucesso('');
+    setExcluindoId(contaId);
 
-  try {
-    await excluirConta(contaId);
+    try {
+      await excluirConta(contaId);
 
-    setContas((atuais) => atuais.filter((conta) => conta.contaId !== contaId));
-    setSucesso('Conta removida com sucesso.');
-  } catch (erro) {
-    setErroGeral(obterMensagemErroApi(erro, 'Não foi possível remover a conta.'));
-  } finally {
-    setExcluindoId(null);
-  }
+      setContas((atuais) => atuais.filter((item) => item.contaId !== contaId));
+      setSucesso('Conta removida com sucesso.');
+    } catch (erro) {
+      setErroGeral(obterMensagemErroApi(erro, 'Não foi possível remover a conta.'));
+    } finally {
+      setExcluindoId(null);
+    }
   };
 
   return (
@@ -290,44 +292,50 @@ const NovaConta = () => {
           </div>
         ) : (
           <div className="accounts-list">
-            {contas.map((conta) => (
-              <article key={conta.contaId} className="account-card">
-                <div className="account-icon" aria-hidden="true">
-                  {conta.banco?.slice(0, 2).toUpperCase() || conta.nome.slice(0, 2).toUpperCase()}
-                </div>
+            {contas.map((conta) => {
+  const contaProtegida = ehCarteiraAutomaticaDinheiro(conta);
 
-                <div className="account-card-content">
-                  <h3>{conta.nome}</h3>
-                  <p>
-                    {conta.banco || 'Banco não informado'} • {rotulosTipoConta[conta.tipoConta]}
-                  </p>
-                  {conta.descricao && <small>{conta.descricao}</small>}
-                </div>
+  return (
+    <article key={conta.contaId} className="account-card">
+      <div className="account-icon" aria-hidden="true">
+                    {conta.banco?.slice(0, 2).toUpperCase() || conta.nome.slice(0, 2).toUpperCase()}
+                  </div>
 
-                <div className="account-card-actions" aria-label="Ações da conta">
-                  <button
-                    type="button"
-                    className="account-card-action"
-                    onClick={() => abrirModalEdicao(conta)}
-                    aria-label={`Editar conta ${conta.nome}`}
-                    title="Editar conta"
-                  >
-                    <IconeEditar />
-                  </button>
+                  <div className="account-card-content">
+                    <h3>{conta.nome}</h3>
+                    <p>
+                      {conta.banco || 'Banco não informado'} • {rotulosTipoConta[conta.tipoConta]}
+                    </p>
+                    {conta.descricao && <small>{conta.descricao}</small>}
+                  </div>
 
-                  <button
-                    type="button"
-                    className="account-card-action account-card-action-danger"
-                    onClick={() => confirmarExclusaoConta(conta.contaId)}
-                    aria-label={`Excluir conta ${conta.nome}`}
-                    title="Excluir conta"
-                    disabled={excluindoId === conta.contaId}
-                  >
-                    {excluindoId === conta.contaId ? '...' : <IconeExcluir />}
-                  </button>
-                </div>
-              </article>
-            ))}
+                  {!contaProtegida && (
+                    <div className="account-card-actions" aria-label="Ações da conta">
+                      <button
+                        type="button"
+                        className="account-card-action"
+                        onClick={() => abrirModalEdicao(conta)}
+                        aria-label={`Editar conta ${conta.nome}`}
+                        title="Editar conta"
+                      >
+                        <IconeEditar />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="account-card-action account-card-action-danger"
+                        onClick={() => confirmarExclusaoConta(conta)}
+                        aria-label={`Excluir conta ${conta.nome}`}
+                        title="Excluir conta"
+                        disabled={excluindoId === conta.contaId}
+                      >
+                        {excluindoId === conta.contaId ? '...' : <IconeExcluir />}
+                      </button>
+                    </div>
+                  )}
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
