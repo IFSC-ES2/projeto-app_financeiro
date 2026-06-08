@@ -27,6 +27,7 @@ vi.mock('../services/api', async (importOriginal) => {
     listarCategorias: vi.fn(),
     listarTransacoes: vi.fn(),
     categorizarTransacao: vi.fn(),
+    excluirTransacao: vi.fn(),
     obterMensagemErroApi: vi.fn((_err: unknown, fallback: string) => fallback),
   };
 });
@@ -118,6 +119,7 @@ describe('Tela de listagem de Transações (Issue #155)', () => {
     vi.mocked(api.listarCategorias).mockReset();
     vi.mocked(api.listarTransacoes).mockReset();
     vi.mocked(api.categorizarTransacao).mockReset();
+    vi.mocked(api.excluirTransacao).mockReset();
     vi.mocked(api.listarContas).mockResolvedValue(mockContas);
     vi.mocked(api.listarCategorias).mockResolvedValue(mockCategorias);
     vi.mocked(api.listarTransacoes).mockResolvedValue(paginaVazia());
@@ -335,5 +337,127 @@ describe('Tela de listagem de Transações (Issue #155)', () => {
       expect(api.categorizarTransacao).toHaveBeenCalledWith('tx-2', 'cat-1');
       expect(screen.getByText('Categoria atualizada com sucesso.')).toBeInTheDocument();
     });
+  });
+});
+
+describe('Fluxo de exclusão de Transações (Issue #150)', () => {
+  let confirmSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    vi.mocked(api.excluirTransacao).mockReset();
+    vi.mocked(api.listarContas).mockResolvedValue(mockContas);
+    vi.mocked(api.listarCategorias).mockResolvedValue(mockCategorias);
+    vi.mocked(api.listarTransacoes).mockResolvedValue(paginaComConteudo([transacaoDespesa]));
+  });
+
+  afterEach(() => {
+    confirmSpy.mockRestore();
+  });
+
+  it('deve exibir link de edição com rota e state da transação', async () => {
+    renderTransacoes();
+    await aguardarCarregamento();
+
+    const linkEditar = screen.getByRole('link', { name: /Editar/i });
+    expect(linkEditar).toHaveAttribute('href', '/transacoes/tx-1/editar');
+  });
+
+  it('deve solicitar confirmação ao acionar excluir em uma transação', async () => {
+    confirmSpy.mockReturnValue(false);
+
+    const usuario = userEvent.setup();
+    renderTransacoes();
+    await aguardarCarregamento();
+
+    await usuario.click(screen.getByRole('button', { name: /^Excluir$/i }));
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Deseja excluir a transação "Supermercado"? Esta ação não pode ser desfeita.',
+    );
+    expect(api.excluirTransacao).not.toHaveBeenCalled();
+  });
+
+  it('deve manter a transação na listagem quando a exclusão for cancelada', async () => {
+    confirmSpy.mockReturnValue(false);
+
+    const usuario = userEvent.setup();
+    renderTransacoes();
+    await aguardarCarregamento();
+
+    await usuario.click(screen.getByRole('button', { name: /^Excluir$/i }));
+
+    expect(screen.getByText('Supermercado')).toBeInTheDocument();
+    expect(api.excluirTransacao).not.toHaveBeenCalled();
+  });
+
+  it('deve remover a transação da listagem e exibir sucesso ao confirmar exclusão', async () => {
+    confirmSpy.mockReturnValue(true);
+    vi.mocked(api.excluirTransacao).mockResolvedValueOnce(undefined);
+    vi.mocked(api.listarTransacoes)
+      .mockResolvedValueOnce(paginaComConteudo([transacaoDespesa]))
+      .mockResolvedValueOnce(paginaVazia());
+
+    const usuario = userEvent.setup();
+    renderTransacoes();
+    await aguardarCarregamento();
+
+    await usuario.click(screen.getByRole('button', { name: /^Excluir$/i }));
+
+    await waitFor(() => {
+      expect(api.excluirTransacao).toHaveBeenCalledWith('tx-1');
+      expect(screen.getByText('Transação excluída com sucesso.')).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(api.listarTransacoes).toHaveBeenCalledTimes(2);
+      expect(screen.getByText(/Nenhuma transação encontrada/i)).toBeInTheDocument();
+    });
+  });
+
+  it('deve exibir estado de carregamento enquanto a exclusão estiver pendente', async () => {
+    confirmSpy.mockReturnValue(true);
+
+    let resolverExclusao: () => void = () => undefined;
+    vi.mocked(api.excluirTransacao).mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolverExclusao = () => resolve();
+        }),
+    );
+
+    const usuario = userEvent.setup();
+    renderTransacoes();
+    await aguardarCarregamento();
+
+    await usuario.click(screen.getByRole('button', { name: /^Excluir$/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Excluindo/i })).toBeDisabled();
+    });
+
+    resolverExclusao();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /^Excluir$/i })).toBeInTheDocument();
+    });
+  });
+
+  it('deve exibir erro quando excluirTransacao falhar', async () => {
+    confirmSpy.mockReturnValue(true);
+    vi.mocked(api.excluirTransacao).mockRejectedValueOnce(new Error('Falha na API'));
+
+    const usuario = userEvent.setup();
+    renderTransacoes();
+    await aguardarCarregamento();
+
+    await usuario.click(screen.getByRole('button', { name: /^Excluir$/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Não foi possível excluir a transação.')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Supermercado')).toBeInTheDocument();
   });
 });
