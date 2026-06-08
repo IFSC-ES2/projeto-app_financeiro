@@ -66,6 +66,11 @@ export interface ContaRequest {
   descricao?: string;
 }
 
+export interface ContaEdicaoRequest {
+  nome: string;
+  descricao?: string;
+}
+
 export interface ContaResponse {
   contaId: string;
   nome: string;
@@ -164,6 +169,15 @@ export const listarContas = async () => {
 export const registrarConta = async (conta: ContaRequest) => {
   const { data } = await api.post<ContaResponse>('/contas/registrar', conta);
   return data;
+};
+
+export const editarConta = async (contaId: string, conta: ContaEdicaoRequest) => {
+  const { data } = await api.put<ContaResponse>(`/contas/${contaId}`, conta);
+  return data;
+};
+
+export const excluirConta = async (contaId: string) => {
+  await api.delete(`/contas/${contaId}`);
 };
 
 export const listarCategorias = async () => {
