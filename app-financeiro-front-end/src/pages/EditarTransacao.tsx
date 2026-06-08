@@ -17,6 +17,7 @@ import type {
   TipoTransacao,
   TransacaoResponse,
 } from '../services/api';
+import { ehCarteiraAutomaticaDinheiro } from '../utils/contas';
 
 interface CamposTransacao {
   valor: string;
@@ -77,6 +78,11 @@ const EditarTransacao = () => {
   const [carregandoDados, setCarregandoDados] = useState(Boolean(transacao));
   const [salvando, setSalvando] = useState(false);
 
+  const contasSelecionaveis = useMemo(
+    () => contas.filter((conta) => !ehCarteiraAutomaticaDinheiro(conta)),
+    [contas]
+  );
+
   useEffect(() => {
     if (!transacao) return;
 
@@ -109,8 +115,8 @@ const EditarTransacao = () => {
 
   const permiteSalvar = useMemo(() => {
     if (!campos) return false;
-    return campos.formaPagamento === 'DINHEIRO' || contas.length > 0;
-  }, [campos, contas.length]);
+    return campos.formaPagamento === 'DINHEIRO' || contasSelecionaveis.length > 0;
+  }, [campos, contasSelecionaveis.length]);
 
   const alterarCampo = (evento: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = evento.target;
@@ -123,7 +129,7 @@ const EditarTransacao = () => {
         return {
           ...atual,
           formaPagamento,
-          contaId: formaPagamento === 'DINHEIRO' ? '' : atual.contaId || contas[0]?.contaId || '',
+          contaId: formaPagamento === 'DINHEIRO' ? '' : atual.contaId || contasSelecionaveis[0]?.contaId || '',
         };
       }
 
@@ -151,6 +157,16 @@ const EditarTransacao = () => {
 
     if (campos.formaPagamento !== 'DINHEIRO' && !campos.contaId) {
       novosErros.contaId = 'Conta é obrigatória para esta forma de pagamento.';
+    }
+
+    const contaSelecionada = contas.find((conta) => conta.contaId === campos.contaId);
+
+    if (
+      campos.formaPagamento !== 'DINHEIRO' &&
+      contaSelecionada &&
+      ehCarteiraAutomaticaDinheiro(contaSelecionada)
+    ) {
+      novosErros.contaId = 'A carteira automática só pode ser usada para transações em dinheiro.';
     }
 
     setErros(novosErros);
@@ -306,7 +322,7 @@ const EditarTransacao = () => {
                   <option value="">
                     {campos.formaPagamento === 'DINHEIRO' ? 'Conta automática em dinheiro' : 'Selecione uma conta'}
                   </option>
-                  {contas.map((conta) => (
+                  {contasSelecionaveis.map((conta) => (
                     <option key={conta.contaId} value={conta.contaId}>
                       {conta.nome}
                       {conta.banco ? ` - ${conta.banco}` : ''}
