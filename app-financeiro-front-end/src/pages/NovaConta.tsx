@@ -306,9 +306,8 @@ const NovaConta = () => {
                     <p>
                       {conta.banco || 'Banco não informado'} • {rotulosTipoConta[conta.tipoConta]}
                     </p>
-                    {conta.descricao && <small>{conta.descricao}</small>}
+                    {conta.descricao && <small>{conta.descricao}</small>}               
                   </div>
-
                   {!contaProtegida && (
                     <div className="account-card-actions" aria-label="Ações da conta">
                       <button
