@@ -3,8 +3,9 @@ import type { ChangeEvent, FormEvent } from 'react';
 import LayoutPrivado from '../components/layout/LayoutPrivado';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { listarContas, obterMensagemErroApi, registrarConta } from '../services/api';
+import { editarConta, excluirConta, listarContas, obterMensagemErroApi, registrarConta } from '../services/api';
 import type { ContaRequest, ContaResponse, TipoConta } from '../services/api';
+import { ehCarteiraAutomaticaDinheiro } from '../utils/contas';
 
 type CamposConta = {
   nome: string;
@@ -34,6 +35,22 @@ const rotulosTipoConta: Record<TipoConta, string> = {
   CARTEIRA: 'Carteira',
 };
 
+const IconeEditar = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" className="account-action-icon">
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" />
+  </svg>
+);
+
+const IconeExcluir = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" className="account-action-icon">
+    <path d="M3 6h18" />
+    <path d="M8 6V4h8v2" />
+    <path d="M19 6l-1 14H6L5 6" />
+    <path d="M10 11v5M14 11v5" />
+  </svg>
+);
+
 const NovaConta = () => {
   const [contas, setContas] = useState<ContaResponse[]>([]);
   const [campos, setCampos] = useState<CamposConta>(valoresIniciais);
@@ -43,6 +60,9 @@ const NovaConta = () => {
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
+  const [contaEmEdicao, setContaEmEdicao] = useState<ContaResponse | null>(null);
+  const [contaParaExcluir, setContaParaExcluir] = useState<ContaResponse | null>(null);
+  const [excluindoId, setExcluindoId] = useState<string | null>(null);
 
   useEffect(() => {
     let ativo = true;
@@ -78,6 +98,24 @@ const NovaConta = () => {
     setErros({});
     setErroGeral('');
     setSucesso('');
+    setContaEmEdicao(null);
+    setModalAberto(true);
+  };
+
+  const abrirModalEdicao = (conta: ContaResponse) => {
+    if (ehCarteiraAutomaticaDinheiro(conta)) return;
+
+    setCampos({
+      nome: conta.nome,
+      banco: conta.banco || '',
+      tipoConta: conta.tipoConta,
+      descricao: conta.descricao || '',
+    });
+
+    setErros({});
+    setErroGeral('');
+    setSucesso('');
+    setContaEmEdicao(conta);
     setModalAberto(true);
   };
 
@@ -87,6 +125,7 @@ const NovaConta = () => {
     setModalAberto(false);
     setCampos(valoresIniciais);
     setErros({});
+    setContaEmEdicao(null);
   };
 
   const alterarCampo = (evento: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -110,12 +149,14 @@ const NovaConta = () => {
       novosErros.nome = 'Nome da conta é obrigatório.';
     }
 
-    if (!campos.banco.trim()) {
-      novosErros.banco = 'Banco é obrigatório.';
-    }
+    if (!contaEmEdicao) {
+      if (!campos.banco.trim()) {
+        novosErros.banco = 'Banco é obrigatório.';
+      }
 
-    if (!campos.tipoConta) {
-      novosErros.tipoConta = 'Tipo de conta é obrigatório.';
+      if (!campos.tipoConta) {
+        novosErros.tipoConta = 'Tipo de conta é obrigatório.';
+      }
     }
 
     setErros(novosErros);
@@ -133,24 +174,81 @@ const NovaConta = () => {
     setSalvando(true);
 
     try {
-      const novaConta: ContaRequest = {
-        nome: campos.nome.trim(),
-        banco: campos.banco.trim(),
-        tipoConta: campos.tipoConta,
-        descricao: campos.descricao.trim() || undefined,
-      };
+      if (contaEmEdicao) {
+        const contaAtualizada = await editarConta(contaEmEdicao.contaId, {
+          nome: campos.nome.trim(),
+          descricao: campos.descricao.trim() || undefined,
+        });
 
-      const contaCriada = await registrarConta(novaConta);
+        setContas((atuais) =>
+          atuais.map((conta) =>
+            conta.contaId === contaAtualizada.contaId ? contaAtualizada : conta
+          )
+        );
 
-      setContas((atuais) => [...atuais, contaCriada]);
-      setSucesso('Conta bancária cadastrada com sucesso.');
+        setSucesso('Conta bancária atualizada com sucesso.');
+        setContaEmEdicao(null);
+      } else {
+        const novaConta: ContaRequest = {
+          nome: campos.nome.trim(),
+          banco: campos.banco.trim(),
+          tipoConta: campos.tipoConta,
+          descricao: campos.descricao.trim() || undefined,
+        };
+
+        const contaCriada = await registrarConta(novaConta);
+
+        setContas((atuais) => [...atuais, contaCriada]);
+        setSucesso('Conta bancária cadastrada com sucesso.');
+      }
+
       setCampos(valoresIniciais);
       setErros({});
       setModalAberto(false);
     } catch (erro) {
-      setErroGeral(obterMensagemErroApi(erro, 'Não foi possível cadastrar a conta bancária.'));
+      const mensagemPadrao = contaEmEdicao
+        ? 'Não foi possível atualizar a conta bancária.'
+        : 'Não foi possível cadastrar a conta bancária.';
+
+      setErroGeral(obterMensagemErroApi(erro, mensagemPadrao));
     } finally {
       setSalvando(false);
+    }
+  };
+
+  const abrirConfirmacaoExclusao = (conta: ContaResponse) => {
+    if (excluindoId || ehCarteiraAutomaticaDinheiro(conta)) return;
+
+    setErroGeral('');
+    setSucesso('');
+    setContaParaExcluir(conta);
+  };
+
+  const fecharConfirmacaoExclusao = () => {
+    if (excluindoId) return;
+
+    setContaParaExcluir(null);
+  };
+
+  const excluirContaConfirmada = async () => {
+    if (!contaParaExcluir || excluindoId) return;
+
+    const contaId = contaParaExcluir.contaId;
+
+    setErroGeral('');
+    setSucesso('');
+    setExcluindoId(contaId);
+
+    try {
+      await excluirConta(contaId);
+
+      setContas((atuais) => atuais.filter((item) => item.contaId !== contaId));
+      setSucesso('Conta removida com sucesso.');
+      setContaParaExcluir(null);
+    } catch (erro) {
+      setErroGeral(obterMensagemErroApi(erro, 'Não foi possível remover a conta.'));
+    } finally {
+      setExcluindoId(null);
     }
   };
 
@@ -196,21 +294,49 @@ const NovaConta = () => {
           </div>
         ) : (
           <div className="accounts-list">
-            {contas.map((conta) => (
-              <article key={conta.contaId} className="account-card">
-                <div className="account-icon" aria-hidden="true">
-                  {conta.banco?.slice(0, 2).toUpperCase() || conta.nome.slice(0, 2).toUpperCase()}
-                </div>
+            {contas.map((conta) => {
+              const contaProtegida = ehCarteiraAutomaticaDinheiro(conta);
 
-                <div className="account-card-content">
-                  <h3>{conta.nome}</h3>
-                  <p>
-                    {conta.banco || 'Banco não informado'} • {rotulosTipoConta[conta.tipoConta]}
-                  </p>
-                  {conta.descricao && <small>{conta.descricao}</small>}
-                </div>
-              </article>
-            ))}
+              return (
+                <article key={conta.contaId} className="account-card">
+                  <div className="account-icon" aria-hidden="true">
+                    {conta.banco?.slice(0, 2).toUpperCase() || conta.nome.slice(0, 2).toUpperCase()}
+                  </div>
+
+                  <div className="account-card-content">
+                    <h3>{conta.nome}</h3>
+                    <p>
+                      {conta.banco || 'Banco não informado'} • {rotulosTipoConta[conta.tipoConta]}
+                    </p>
+                    {conta.descricao && <small>{conta.descricao}</small>}
+                  </div>
+                  {!contaProtegida && (
+                    <div className="account-card-actions" aria-label="Ações da conta">
+                      <button
+                        type="button"
+                        className="account-card-action"
+                        onClick={() => abrirModalEdicao(conta)}
+                        aria-label={`Editar conta ${conta.nome}`}
+                        title="Editar conta"
+                      >
+                        <IconeEditar />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="account-card-action account-card-action-danger"
+                        onClick={() => abrirConfirmacaoExclusao(conta)}
+                        aria-label={`Excluir conta ${conta.nome}`}
+                        title="Excluir conta"
+                        disabled={excluindoId === conta.contaId}
+                      >
+                        {excluindoId === conta.contaId ? '...' : <IconeExcluir />}
+                      </button>
+                    </div>
+                  )}
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
@@ -220,8 +346,14 @@ const NovaConta = () => {
           <section className="modal-card" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-conta">
             <div className="modal-card-header">
               <div>
-                <h2 id="titulo-modal-conta">Adicionar nova conta</h2>
-                <p>Preencha os dados da conta bancária.</p>
+                <h2 id="titulo-modal-conta">
+                  {contaEmEdicao ? 'Editar conta' : 'Adicionar nova conta'}
+                </h2>
+                <p>
+                  {contaEmEdicao
+                    ? 'Altere o nome e a descrição da conta bancária.'
+                    : 'Preencha os dados da conta bancária.'}
+                </p>
               </div>
 
               <button type="button" className="modal-close-button" onClick={fecharModal} aria-label="Fechar modal">
@@ -253,6 +385,7 @@ const NovaConta = () => {
                     onChange={alterarCampo}
                     className={erros.banco ? 'invalid' : ''}
                     placeholder="Ex.: Nubank"
+                    disabled={Boolean(contaEmEdicao)}
                   />
                   {erros.banco && <small className="field-error">{erros.banco}</small>}
                 </label>
@@ -264,6 +397,7 @@ const NovaConta = () => {
                     value={campos.tipoConta}
                     onChange={alterarCampo}
                     className={erros.tipoConta ? 'invalid' : ''}
+                    disabled={Boolean(contaEmEdicao)}
                   >
                     {tiposConta.map((tipo) => (
                       <option key={tipo.valor} value={tipo.valor}>
@@ -293,13 +427,60 @@ const NovaConta = () => {
                 <BotaoCarregando
                   type="submit"
                   carregando={salvando}
-                  textoCarregando="Cadastrando..."
+                  textoCarregando={contaEmEdicao ? 'Salvando...' : 'Cadastrando...'}
                   className="sb-button sb-button-primary"
                 >
-                  Cadastrar conta
+                  {contaEmEdicao ? 'Salvar alterações' : 'Cadastrar conta'}
                 </BotaoCarregando>
               </div>
             </form>
+          </section>
+        </div>
+      )}
+
+      {contaParaExcluir && (
+        <div className="modal-backdrop-custom" role="presentation">
+          <section
+            className="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titulo-modal-exclusao-conta"
+          >
+            <div className="modal-card-header">
+              <div>
+                <h2 id="titulo-modal-exclusao-conta">Excluir conta</h2>
+                <p>
+                  Esta ação removerá a conta {contaParaExcluir.nome}. Confirme apenas se ela não deve mais aparecer
+                  na sua lista.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="modal-close-button"
+                onClick={fecharConfirmacaoExclusao}
+                aria-label="Fechar modal"
+                disabled={excluindoId === contaParaExcluir.contaId}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="form-actions">
+              <button type="button" className="sb-button sb-button-secondary" onClick={fecharConfirmacaoExclusao}>
+                Cancelar
+              </button>
+
+              <BotaoCarregando
+                type="button"
+                carregando={excluindoId === contaParaExcluir.contaId}
+                textoCarregando="Excluindo..."
+                className="sb-button sb-button-danger"
+                onClick={excluirContaConfirmada}
+              >
+                Excluir conta
+              </BotaoCarregando>
+            </div>
           </section>
         </div>
       )}
