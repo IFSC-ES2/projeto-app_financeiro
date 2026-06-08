@@ -347,6 +347,7 @@ const NovaConta = () => {
                     onChange={alterarCampo}
                     className={erros.banco ? 'invalid' : ''}
                     placeholder="Ex.: Nubank"
+                    disabled={Boolean(contaEmEdicao)}
                   />
                   {erros.banco && <small className="field-error">{erros.banco}</small>}
                 </label>
@@ -358,6 +359,7 @@ const NovaConta = () => {
                     value={campos.tipoConta}
                     onChange={alterarCampo}
                     className={erros.tipoConta ? 'invalid' : ''}
+                    disabled={Boolean(contaEmEdicao)}
                   >
                     {tiposConta.map((tipo) => (
                       <option key={tipo.valor} value={tipo.valor}>
