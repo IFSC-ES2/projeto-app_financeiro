@@ -363,71 +363,91 @@ A mudança não alterou o contrato externo da API e foi validada por testes auto
 
 ## Valores observados - Sprint 4
 
-> **Recorte usado para esta atualização:** entregas associadas à consolidação da Sprint 4, incluindo evolução do MVP, manutenção do CI, medição de cobertura do frontend, refatoração/reengenharia do `TransacaoService`, registro da ADR relacionada e preparação do marco `v0.4.0`.
+> **Recorte usado para esta atualização:** entregas associadas à consolidação da Sprint 4, incluindo evolução funcional do MVP, manutenção do CI, medição de cobertura do frontend, refatoração/reengenharia do `TransacaoService`, documentação técnica associada, documentação de deploy e preparação da entrega `v0.4.0`.
 
-Como o projeto ainda não usa story points padronizados no GitHub Projects, as métricas de velocidade e conclusão continuam usando contagem de issues/PRs relevantes como aproximação. Essa limitação deve ser considerada na interpretação dos resultados.
+Como o projeto ainda não usa story points padronizados no GitHub Projects, as métricas de velocidade e taxa de conclusão continuam usando contagem de issues como aproximação operacional. Essa limitação deve ser considerada na interpretação dos resultados.
+
+> Observação: a contagem da Sprint 4 considera issues únicas.  As issues `#67` e `#170` foram consideradas no recorte da Sprint 4, porém não foram concluídas. A issue `#127` corresponde a esta própria atualização de métricas e deve ser considerada concluída após o merge deste PR.
 
 ### Comparação Sprint 3 x Sprint 4
 
 | Métrica | Sprint 3 | Sprint 4 | Comparação | Leitura |
 |--------|----------|----------|------------|---------|
-| Taxa de sucesso na importação de arquivos | **100% nos cenários automatizados válidos do backend** | **100% nos cenários automatizados válidos mantidos no backend** | **Estável** | A importação já estava consolidada na Sprint 3. Na Sprint 4, a métrica continua baseada nos testes automatizados e validações do backend, pois não há amostra operacional ampla de arquivos reais de usuários para medir taxa produtiva. |
+| Taxa de sucesso na importação de arquivos | **100% nos cenários automatizados válidos do backend** | **Parcialmente comprometida por bug identificado na `#170`** | **Regressão operacional identificada** | A Sprint 4 identificou um bug no fluxo de importação em que o usuário podia ser redirecionado para login e a importação não era concluída corretamente. Houve PR com correção parcial, mas a issue ainda não foi concluída; por isso, a métrica de importação não deve ser registrada como plenamente estável nesta sprint. |
 | Eficiência de categorização automática | **Parcialmente mensurável: funcionalidade implementada, sem amostra real de produção** | **Parcialmente mensurável: regras e fluxo de categorização evoluídos, ainda sem base real suficiente para percentual operacional** | **Melhoria qualitativa** | A Sprint 4 avançou no fluxo de categorização pela interface e em testes relacionados. Porém, a métrica percentual ainda depende de uma base real de transações importadas para medir quantas foram categorizadas automaticamente sem intervenção manual. |
-| Taxa de erros reportados por usuários | **0 bugs válidos reportados/fechados como bug no recorte consultado** | **1 bugs válidos reportados/fechados como bug no recorte consultado** | **Estável** | Foi encontrado um Bug na tela de importação do frontEnd da aplicação, o mesmo já foi corrigido. |
-| Velocidade do time (Velocity) | **Não medida em story points; 14 itens relevantes considerados na Sprint 3** | **Não medida em story points; 26 issues únicas consideradas na Sprint 4, sendo 25 concluídas** | **Melhoria operacional, sem comparação formal em SP** | O volume de issues trabalhadas aumentou, mas a ausência de story points impede comparação formal de velocity Scrum. A contagem de issues serve apenas como aproximação operacional. |
-| Taxa de conclusão de itens planejados | **92,9%** em critério estrito na Sprint 3 | **96,2%** em critério estrito na Sprint 4 (**25/26 issues concluídas**) | **Melhoria** | A Sprint 4 concluiu 25 das 26 issues únicas consideradas. A issue `#67` permaneceu não concluída/replanejada, então não deve ser contabilizada como entrega fechada. |
-| Cobertura de testes automatizados | **Backend: 75,5% geral; 68,6% service. Frontend: medição consolidada com 70,3% de linhas** | **Backend: 87.4%(BackEnd) 91.5%(Service). Frontend: 81,0% linhas (658/812), 78,0% statements (726/931), 74,2% funções (158/213) e 72,8% branches (402/552)** | **Melhoria** | A Sprint 4 apresentou avanço expressivo na cobertura backend e frontend. No backend, a cobertura geral subiu de 75,5% para 87,4%, e o pacote `service` subiu de 68,6% para 91,5%. No frontend, a cobertura de linhas subiu de 70,3% para 81,0%, com melhoria também em funções, branches e statements. |
-| Lead time de resolução de defeitos | **Não aplicável / amostra vazia** | **Não aplicável / amostra vazia** | **Estável** | Não houve amostra suficiente de issues classificadas como bug, abertas e fechadas no recorte, para calcular média ou mediana de lead time. |
-| Percentual de escopo entregue no MVP | **60%** (3 de 5 funcionalidades essenciais) | **70% estimado** | **Melhoria parcial** | A Sprint 4 consolidou categorização pela interface, filtros/listagem, resumo por forma de pagamento, edição/exclusão de transações, CI e documentação. Porém, como a issue `#67` de resumo mensal/dashboard backend não foi concluída, o dashboard mensal não deve ser contabilizado como funcionalidade essencial finalizada. |
-| Índice de participação e presença da equipe | **100%** | **100%** | **Estável** | A sprint apresentou contribuição distribuída em funcionalidades, testes, documentação, CI, refatoração e reviews. |
-| Riscos identificados vs. mitigados | **100% dos riscos documentados com plano de mitigação registrado** | **100% dos riscos documentados com plano de mitigação registrado** | **Estável** | O arquivo de riscos possui riscos documentados com planos de resposta. Como não há nova seção específica de revisão da Sprint 4 no documento de riscos, a métrica permanece estável e deve ser tratada como limitação. |
+| Taxa de erros reportados por usuários | **0 bugs válidos reportados/fechados como bug no recorte consultado** | **1 bug válido registrado (`#170`), com correção parcial em PR e ainda não concluído** | **Regressão** | A `#170` registra falha no fluxo de importação de extrato, incluindo redirecionamento indevido para login e tratamento incorreto de erros que não deveriam encerrar a sessão. |
+| Velocidade do time (Velocity) | **Não medida em story points; 14 itens relevantes considerados na Sprint 3** | **Não medida em story points; 27 issues únicas consideradas na Sprint 4** | **Melhoria operacional, sem comparação formal em SP** | O volume de issues trabalhadas aumentou, mas a ausência de story points impede comparação formal de velocity Scrum. A contagem de issues serve apenas como aproximação operacional. |
+| Taxa de conclusão de itens planejados | **92,9%** em critério estrito na Sprint 3 | **92,6%** em critério estrito na Sprint 4 (**25/27 issues concluídas após merge deste PR**) | **Estável, com leve queda** | A Sprint 4 conclui 25 das 27 issues únicas consideradas se este PR fechar a `#127`. As issues `#67` e `#170` permaneceram não concluídas; a `#170` teve correção parcial, mas ainda não deve contar como entrega finalizada. |
+| Cobertura de testes automatizados | **Backend: 75,5%** geral (**694/919** linhas); **68,6%** no pacote `service` (**188/274**). Frontend: **70,3%** linhas, **67,6%** statements, **58,7%** funções, **61,2%** branches | **Backend: 87,4%** geral (**936/1071** linhas); **91,5%** no pacote `service` (**343/375**). Frontend: **81,0%** linhas (**658/812**), **78,0%** statements (**726/931**), **74,2%** funções (**158/213**) e **72,8%** branches (**402/552**) | **Melhoria** | A Sprint 4 apresentou avanço expressivo na cobertura backend e frontend. No backend, a cobertura geral subiu de 75,5% para 87,4%, e o pacote `service` subiu de 68,6% para 91,5%. No frontend, a cobertura de linhas subiu de 70,3% para 81,0%, com melhoria também em funções, branches e statements. |
+| Lead time de resolução de defeitos | **Não aplicável / amostra vazia** | **Ainda não calculável: 1 bug válido aberto/parcial (`#170`)** | **Pendente de fechamento** | Como a issue `#170` ainda não foi concluída, não há lead time final de resolução. A métrica deve ser atualizada quando o bug for fechado. |
+| Percentual de escopo entregue no MVP | **60%** (3 de 5 funcionalidades essenciais) | **70% estimado** | **Melhoria parcial** | A Sprint 4 consolidou categorização pela interface, filtros/listagem, resumo por forma de pagamento, edição/exclusão de transações, CI e documentação. Porém, como a issue `#67` de resumo mensal/dashboard backend não foi concluída e a `#170` mantém bug aberto na importação, o MVP não deve ser tratado como plenamente consolidado. |
+| Índice de participação e presença da equipe | **100%** | **100%** | **Estável** | A sprint apresentou contribuição distribuída em funcionalidades, testes, documentação, CI, refatoração, correções e reviews. |
+| Riscos identificados vs. mitigados | **100% dos riscos documentados com plano de mitigação registrado** | **100% dos riscos documentados com plano de mitigação registrado** | **Estável, com novo ponto de atenção operacional** | Os riscos documentados permanecem com plano de mitigação. A `#170` reforça a necessidade de monitorar riscos ligados à importação, autenticação e tratamento de erros no frontend. |
 
 ### Itens considerados na Sprint 4
 
 | Item | Situação observada | Impacto nas métricas |
 |------|--------------------|----------------------|
+| #65 - Interface de categorização de transações | Concluído no recorte da sprint | Melhora a usabilidade do histórico de transações e fecha o fluxo de categorização manual pela interface. |
+| #66 - Resumo por forma de pagamento e gestão de contas | Concluído no recorte da sprint | Avança a visualização agregada por forma de pagamento e complementa regras de contas. |
+| #67 - Resumo mensal/backend do dashboard | **Não concluído / replanejado** | Não deve ser contabilizado como funcionalidade finalizada do MVP nesta sprint. Mantém pendente a base do dashboard mensal com `GET /resumo`, `GET /resumo/categorias`, `ResumoMensalDTO` e `GrupoCategoriaDTO`. |
+| #106 - Filtros/listagem paginada de transações | Concluído no recorte da sprint | Melhora a consulta de movimentações por filtros e paginação. A issue pede filtros por data, categoria, tipo e paginação, com backend retornando dados paginados. :contentReference[oaicite:2]{index=2} |
+| #107 - Testes de categorização de transações | Concluído | Reforça a confiabilidade das regras de categorização e reduz risco de regressão. |
+| #122 - Manutenção do CI com Gradle Wrapper e lint frontend | Concluído | Melhora a reprodutibilidade do pipeline e reduz divergência entre ambiente local e CI. |
+| #124 - Ajuste técnico da Sprint 4 | Concluído | Contribui para consolidação técnica do MVP na Sprint 4. |
+| #125 - Ajuste técnico/documental da Sprint 4 | Concluído | Contribui para organização, documentação ou fechamento de pendências da entrega. |
+| #126 - Deploy/documentação de deploy | Concluído | A issue exige `docs/DEPLOY.md` com pré-requisitos, variáveis, build, execução, banco, validação e acesso ao ambiente. :contentReference[oaicite:3]{index=3} |
+| #127 - Atualização de métricas da Sprint 4 | Em andamento neste PR | Atualiza o acompanhamento quantitativo e qualitativo do projeto ao final da Sprint 4. Deve ser contabilizada como concluída após o merge deste PR. |
 | #128 - Refatoração/reengenharia do `TransacaoService` | Concluído | Melhora manutenibilidade, reduz responsabilidades concentradas e sustenta a comparação antes/depois registrada no documento. |
-| #129 - Comparação de métrica antes/depois da refatoração | Concluído | Atende ao requisito de registrar métrica antes/depois da Sprint 4. |
-| #130 - ADR da refatoração da Sprint 4 | Concluído | Registra a decisão arquitetural da decomposição do `TransacaoService`. |
-| #177 - Medição de cobertura do frontend | Concluído | Torna a cobertura do frontend mensurável no CI com Vitest. |
-| #122 - Manutenção do CI com Gradle Wrapper e lint frontend | Concluído, se mergeado na Sprint 4 | Melhora confiabilidade do pipeline e reduz divergência entre ambiente local e CI. |
-| #65 - Interface de categorização de transações | Preencher situação real | Impacta usabilidade e fechamento do fluxo de categorização. |
-| #66 - Resumo por forma de pagamento e contas | Preencher situação real | Impacta visualização agregada e gestão de contas. |
-| #67 - Resumo mensal/backend do dashboard | **Não concluído / replanejado** | Não deve ser contabilizado como funcionalidade finalizada do MVP nesta sprint. Mantém pendente a base do dashboard mensal com `GET /resumo`, `GET /resumo/categorias`, `ResumoMensalDTO` e `GrupoCategoriaDTO`. || #126 - Deploy/documentação de deploy | Preencher situação real | Impacta requisito de staging/equivalente e documentação da Sprint 4. |
-| #127 - Atualização de métricas da Sprint 4 | Em andamento neste PR | Atualiza o acompanhamento de métricas do projeto no fechamento da sprint. |
-| #141 - Atualização de métricas da Sprint 4 | Em andamento neste PR | Atualiza o acompanhamento de métricas do projeto no fechamento da sprint. |
-| #154 - Atualização de métricas da Sprint 4 | Em andamento neste PR | Atualiza o acompanhamento de métricas do projeto no fechamento da sprint. |
-| #152 - Atualização de métricas da Sprint 4 | Em andamento neste PR | Atualiza o acompanhamento de métricas do projeto no fechamento da sprint. |
+| #129 - Comparação de métrica antes/depois da refatoração | Concluído | Atende ao requisito de registrar métrica antes/depois da reengenharia. |
+| #130 - ADR da refatoração da Sprint 4 | Concluído | Registra a decisão de design relacionada à decomposição do `TransacaoService` em ADR própria. |
+| #134 - Ajuste técnico da Sprint 4 | Concluído | Contribui para estabilização ou evolução do MVP. |
+| #136 - Tela para cadastro de nova conta bancária | Concluído | Contribui para o fluxo de contas no frontend e melhora a experiência de onboarding/gestão de contas. |
+| #146 - Testes da tela de registro manual de transações | Concluído | Amplia a cobertura de frontend em fluxo essencial do MVP. |
+| #147 - Testes da tela de cadastro de nova conta bancária | Concluído | Amplia a cobertura de frontend em fluxo de contas. |
+| #151 - Testes da tela de importação de extratos | Concluído | Reforça a cobertura do fluxo de importação no frontend. |
+| #155 - Testes da tela de listagem de transações | Concluído | Reforça a confiabilidade da listagem/histórico de movimentações. |
+| #157 - Frontend do resumo por forma de pagamento | Concluído | Complementa a entrega da #66 na interface, exibindo os agrupamentos por pagamento. |
+| #158 - Testes do resumo por pagamento e contas | Concluído | Reforça a confiança sobre agrupamento por pagamento e regras de contas. |
+| #162 - Testes para edição e exclusão de transações | Concluído | Reforça a cobertura de fluxos de manutenção de transações. |
+| #165 - Tela de gerenciamento de contas bancárias | Concluído | Consolida a gestão de contas no frontend. |
+| #170 - Bug no fluxo de importação de extrato | **Não concluído / correção parcial em PR** | Registra regressão funcional na importação: usuário podia ser redirecionado para login e a importação não era concluída corretamente. Impacta a métrica de sucesso de importação e deve permanecer como ponto de atenção até validação ponta a ponta. |
+| #174 - Contrato comum dos parsers de importação | Concluído | Melhora organização/manutenção do fluxo de importação e reduz acoplamento entre parsers. |
+| #177 - Relatório de cobertura dos testes frontend | Concluído | Torna a cobertura do frontend mensurável no pipeline com Vitest. |
+| #184 - Testes da tela Primeira Conta | Concluído | Amplia a cobertura do frontend no fluxo de onboarding após cadastro. A issue limita o escopo a `PrimeiraConta.test.tsx` com Vitest/Testing Library. :contentReference[oaicite:4]{index=4} |
 
 ### Resumo quantitativo da Sprint 4
 
 | Indicador | Valor |
 |----------|-------|
-| Issues únicas consideradas na Sprint 4 | **26** |
-| Issues concluídas no controle da sprint | **25** |
-| Issues não concluídas/replanejadas | **1** |
-| Taxa de conclusão em critério estrito | **96,2%** |
+| Issues únicas consideradas na Sprint 4 | **27** |
+| Issues concluídas após merge deste PR | **25** |
+| Issues não concluídas/replanejadas ou parciais | **2** |
+| Issues não concluídas identificadas | **#67** e **#170** |
+| Taxa de conclusão em critério estrito | **92,6%** |
 | Velocity formal em story points | **Não medida** |
 | Forma alternativa de acompanhamento de velocidade | **Contagem de issues concluídas** |
 | Funcionalidades essenciais do MVP consideradas | **5** |
 | Funcionalidades essenciais concluídas ou com base funcional validável até a Sprint 4 | **3 a 4, conforme critério conservador** |
 | Percentual estimado de escopo entregue no MVP | **70%** |
-| Bugs válidos reportados por usuários | **0 no recorte consultado** |
+| Bugs válidos reportados por usuários | **1** |
+| Bugs válidos totalmente resolvidos na sprint | **0** |
+| Bugs com correção parcial em PR | **1** |
 | Participação da equipe | **100%** |
 | Cobertura backend | **87,4%** geral (**936/1071** linhas); **91,5%** no pacote `service` (**343/375**) |
 | Cobertura frontend | **81,0%** linhas (**658/812**); **78,0%** statements (**726/931**); **74,2%** funções (**158/213**); **72,8%** branches (**402/552**) |
 
 ### Análise qualitativa (Sprint 4)
 
-**O que foi planejado:** A Sprint 4 teve foco na consolidação do MVP, fechamento de pendências funcionais, manutenção do CI, documentação de deploy, atualização das métricas, reengenharia do `TransacaoService`, registro de ADR e preparação do marco `v0.4.0`.
+**O que foi planejado:** A Sprint 4 teve foco na consolidação do MVP, fechamento de pendências funcionais, manutenção do CI, documentação de deploy, atualização das métricas, reengenharia do `TransacaoService`, registro de ADR, ampliação de testes frontend/backend e preparação do marco `v0.4.0`.
 
-**O que foi executado:** Foram consideradas 26 issues únicas no recorte da Sprint 4, das quais 25 foram concluídas. A sprint evidenciou avanços em categorização pela interface, filtros e listagem de transações, resumo por forma de pagamento, edição/exclusão de transações, testes frontend, testes backend, CI com Gradle Wrapper, lint, cobertura com Vitest e refatoração do `TransacaoService`.
+**O que foi executado:** Foram consideradas 27 issues únicas no recorte da Sprint 4. Após o merge deste PR de métricas, 25 delas podem ser consideradas concluídas. A sprint evidenciou avanços em categorização pela interface, filtros e listagem de transações, resumo por forma de pagamento, edição/exclusão de transações, gestão de contas, testes frontend, testes backend, CI com Gradle Wrapper, lint, cobertura com Vitest, documentação de deploy e refatoração do `TransacaoService`. Também foi identificado o bug `#170` no fluxo de importação, com PR aberto e correção parcial aplicada.
 
-**Melhorias observadas:** A taxa de conclusão subiu de 92,9% na Sprint 3 para 96,2% na Sprint 4. A cobertura backend apresentou melhoria significativa, saindo de **75,5%** para **87,4%** no projeto como um todo e de **68,6%** para **91,5%** no pacote `service`. No frontend, a cobertura de linhas subiu de **0** (não era medida) para **81,0%**, com avanço também em statements, funções e branches. Além disso, a refatoração do `TransacaoService` reduziu concentração de responsabilidades, melhorando a manutenibilidade do backend.
+**Melhorias observadas:** A cobertura backend apresentou melhoria significativa, saindo de **75,5%** para **87,4%** no projeto como um todo e de **68,6%** para **91,5%** no pacote `service`. No frontend, a cobertura de linhas subiu de **70,3%** para **81,0%**, com avanço também em statements, funções e branches. Além disso, a refatoração do `TransacaoService` reduziu concentração de responsabilidades, melhorando a manutenibilidade do backend.
 
-**Regressões ou pontos de atenção:** A issue `#67`, relacionada ao resumo mensal/backend do dashboard, não foi concluída. Por isso, o dashboard mensal não deve ser contabilizado como funcionalidade essencial finalizada no MVP. A velocity ainda não é medida por story points, o que limita comparações formais de produtividade.
+**Regressões ou pontos de atenção:** A issue `#67`, relacionada ao resumo mensal/backend do dashboard, não foi concluída. Além disso, a issue `#170` revelou uma regressão no fluxo de importação de extratos: em determinados cenários, o usuário era redirecionado para login e a importação não era concluída corretamente. Embora já exista correção parcial em PR, o bug ainda não deve ser considerado resolvido até validação ponta a ponta.
 
-**Fatores que influenciaram o resultado:** A Sprint 4 combinou atividades funcionais, técnicas, documentais e de qualidade. Apesar do alto volume de issues concluídas, a pendência da `#67` mostra que ainda existe trabalho relevante para consolidar a visualização mensal do MVP.
+**Fatores que influenciaram o resultado:** A Sprint 4 combinou atividades funcionais, técnicas, documentais, correções de bug e qualidade. O alto volume de issues concluídas mostra avanço relevante, mas as pendências da `#67` e da `#170` indicam que ainda existem pontos importantes para consolidar a visualização mensal e estabilizar totalmente o fluxo de importação.
 
 ### Referência de cobertura da Sprint 4
 
@@ -450,14 +470,13 @@ Cobertura de branches (frontend): 72,8% (402/552)
 ### Limitações da medição
 
 - A velocity continua não medida em story points; a comparação usa contagem de issues concluídas como aproximação operacional.
-- A taxa de conclusão da Sprint 4 considera o estado do board/issues informado, mas algumas entregas precisam ser conferidas contra o código-fonte e a documentação versionada.
-- A taxa de sucesso de importação depende de volume real de arquivos enviados por usuários; sem amostra operacional, a medição fica limitada aos cenários automatizados e validações manuais.
-- A eficiência de categorização automática depende de base real de transações importadas e categorizadas automaticamente.
-- O lead time de defeitos só é mensurável se houver issues de bug abertas e fechadas com rótulo ou identificação consistente.
-- O percentual de escopo entregue no MVP é uma estimativa baseada nas funcionalidades essenciais concluídas e validáveis no código.
-- Os valores de cobertura devem ser lidos a partir do último CI verde usado como referência para a Sprint 4.
-- A fonte analisada não contém `docs/DEPLOY.md`; caso a documentação de deploy esteja em outro arquivo ou branch, essa informação deve ser refletida antes do fechamento final da entrega.
+- A taxa de conclusão da Sprint 4 considera o recorte de issues informado e o estado esperado após o merge deste PR de métricas.
 - A issue `#67` não foi concluída no recorte da Sprint 4; por isso, o dashboard mensal/backend de resumo não foi contabilizado como funcionalidade essencial finalizada no percentual do MVP.
+- A issue `#170` foi registrada como bug válido da Sprint 4 e teve correção parcial em PR, mas ainda não foi concluída; por isso, não há lead time final de resolução.
+- A taxa de sucesso da importação não deve ser tratada como plenamente estável na Sprint 4, pois a `#170` indica falha no fluxo de importação e logout indevido em erros que não deveriam encerrar a sessão.
+- A eficiência de categorização automática depende de base real de transações importadas e categorizadas automaticamente.
+- O percentual de escopo entregue no MVP é uma estimativa baseada nas funcionalidades essenciais concluídas e validáveis no código.
+- Os valores de cobertura foram lidos a partir dos relatórios do último CI verde usado como referência para a Sprint 4.
 
 
 
