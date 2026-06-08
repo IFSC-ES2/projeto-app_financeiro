@@ -123,12 +123,13 @@ const NovaConta = () => {
   };
 
   const validar = () => {
-    const novosErros: Partial<Record<keyof CamposConta, string>> = {};
+  const novosErros: Partial<Record<keyof CamposConta, string>> = {};
 
-    if (!campos.nome.trim()) {
-      novosErros.nome = 'Nome da conta é obrigatório.';
-    }
+  if (!campos.nome.trim()) {
+    novosErros.nome = 'Nome da conta é obrigatório.';
+  }
 
+  if (!contaEmEdicao) {
     if (!campos.banco.trim()) {
       novosErros.banco = 'Banco é obrigatório.';
     }
@@ -136,9 +137,10 @@ const NovaConta = () => {
     if (!campos.tipoConta) {
       novosErros.tipoConta = 'Tipo de conta é obrigatório.';
     }
+  }
 
-    setErros(novosErros);
-    return Object.keys(novosErros).length === 0;
+  setErros(novosErros);
+  return Object.keys(novosErros).length === 0;
   };
 
   const enviar = async (evento: FormEvent) => {
