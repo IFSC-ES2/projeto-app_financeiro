@@ -174,6 +174,11 @@ export const registrarConta = async (conta: ContaRequest) => {
   return data;
 };
 
+export const editarConta = async (contaId: string, conta: ContaEdicaoRequest) => {
+  const { data } = await api.put<ContaResponse>(`/contas/${contaId}`, conta);
+  return data;
+};
+
 export const listarCategorias = async () => {
   const { data } = await api.get<CategoriaResponse[]>('/categorias');
   return data;
