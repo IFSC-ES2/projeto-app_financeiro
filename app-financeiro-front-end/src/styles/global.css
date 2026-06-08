@@ -1630,6 +1630,13 @@ button:disabled {
   font-size: 0.82rem;
 }
 
+.account-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
 .account-card-action {
   width: 34px;
   height: 34px;
@@ -1647,6 +1654,20 @@ button:disabled {
 
 .account-card-action:hover {
   background: rgba(45, 191, 155, 0.18);
+}
+
+.account-card-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.account-card-action-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #b91c1c;
+}
+
+.account-card-action-danger:hover {
+  background: rgba(239, 68, 68, 0.18);
 }
 
 @media (max-width: 640px) {
