@@ -89,7 +89,7 @@ public class ContaService {
             throw new IllegalArgumentException("Campo obrigatório não informado: nome");
         }
     }
-    
+
     public ContaResponseDTO toResponse(Conta conta) {
         ContaResponseDTO responseDTO = new ContaResponseDTO();
         responseDTO.setBanco(conta.getBanco());
