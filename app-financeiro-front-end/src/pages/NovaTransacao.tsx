@@ -114,8 +114,8 @@ const NovaTransacao = () => {
   }, []);
 
   const permiteSalvar = useMemo(
-    () => campos.formaPagamento === 'DINHEIRO' || contas.length > 0,
-    [campos.formaPagamento, contas.length]
+  () => campos.formaPagamento === 'DINHEIRO' || contasSelecionaveis.length > 0,
+  [campos.formaPagamento, contasSelecionaveis.length]
   );
 
   const alterarCampo = (evento: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
