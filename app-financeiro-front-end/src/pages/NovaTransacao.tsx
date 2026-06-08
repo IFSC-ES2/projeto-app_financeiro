@@ -272,13 +272,12 @@ const NovaTransacao = () => {
 
               <label>
                 <span>Tipo *</span>
-                <select name="tipoTransacao" value={campos.tipoTransacao} onChange={alterarCampo}>
-                  {tiposTransacao.map((tipo) => (
-                    <option key={tipo.valor} value={tipo.valor}>
-                      {tipo.rotulo}
+                  {contasSelecionaveis.map((conta) => (
+                    <option key={conta.contaId} value={conta.contaId}>
+                      {conta.nome}
+                      {conta.banco ? ` - ${conta.banco}` : ''}
                     </option>
                   ))}
-                </select>
               </label>
 
               <label>
