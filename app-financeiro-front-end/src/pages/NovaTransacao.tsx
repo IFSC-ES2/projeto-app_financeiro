@@ -308,12 +308,12 @@ const NovaTransacao = () => {
                   <option value="">
                     {campos.formaPagamento === 'DINHEIRO' ? 'Conta automática em dinheiro' : 'Selecione uma conta'}
                   </option>
-                  {contas.map((conta) => (
-                    <option key={conta.contaId} value={conta.contaId}>
-                      {conta.nome}
-                      {conta.banco ? ` - ${conta.banco}` : ''}
-                    </option>
-                  ))}
+                    {contasSelecionaveis.map((conta) => (
+                      <option key={conta.contaId} value={conta.contaId}>
+                        {conta.nome}
+                        {conta.banco ? ` - ${conta.banco}` : ''}
+                      </option>
+                    ))}
                 </select>
                 {erros.contaId && <small className="field-error">{erros.contaId}</small>}
               </label>
