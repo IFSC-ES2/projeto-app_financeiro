@@ -48,6 +48,19 @@ const formasPagamento: Array<{ valor: TipoPagamento; rotulo: string }> = [
   { valor: 'TED_DOC', rotulo: 'TED/DOC' },
 ];
 
+const ehCarteiraAutomaticaDinheiro = (conta: ContaResponse) => {
+  const nome = conta.nome.trim().toLowerCase();
+  const banco = (conta.banco || '').trim().toLowerCase();
+  const descricao = (conta.descricao || '').trim().toLowerCase();
+
+  return (
+    conta.tipoConta === 'CARTEIRA' &&
+    banco === 'dinheiro' &&
+    nome.startsWith('dinheiro / carteira') &&
+    descricao.includes('transações em dinheiro')
+  );
+};
+
 const NovaTransacao = () => {
   const navigate = useNavigate();
 
