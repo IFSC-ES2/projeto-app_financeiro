@@ -3,7 +3,7 @@ import type { ChangeEvent, FormEvent } from 'react';
 import LayoutPrivado from '../components/layout/LayoutPrivado';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { listarContas, obterMensagemErroApi, registrarConta } from '../services/api';
+import { editarConta, excluirConta, listarContas, obterMensagemErroApi, registrarConta,} from '../services/api';
 import type { ContaRequest, ContaResponse, TipoConta } from '../services/api';
 
 type CamposConta = {
