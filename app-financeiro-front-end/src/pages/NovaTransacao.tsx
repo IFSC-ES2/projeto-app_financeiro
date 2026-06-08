@@ -326,11 +326,11 @@ const NovaTransacao = () => {
               </label>
             </div>
 
-            {!permiteSalvar && (
-              <p className="helper-text">
-                Cadastre uma conta bancária antes de salvar ou selecione Dinheiro como forma de pagamento.
-              </p>
-            )}
+              {!permiteSalvar && (
+                <p className="helper-text">
+                  Cadastre uma conta bancária para pagamentos digitais ou selecione Dinheiro para usar a carteira automática.
+                </p>
+              )}
 
             <div className="form-actions">
               <Link to="/transacoes" className="sb-button sb-button-secondary">
