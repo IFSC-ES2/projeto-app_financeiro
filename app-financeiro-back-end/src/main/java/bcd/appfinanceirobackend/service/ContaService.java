@@ -1,5 +1,6 @@
 package bcd.appfinanceirobackend.service;
 
+import bcd.appfinanceirobackend.dto.conta.ContaEdicaoRequestDTO;
 import bcd.appfinanceirobackend.dto.conta.ContaRequestDTO;
 import bcd.appfinanceirobackend.dto.conta.ContaResponseDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
@@ -66,6 +67,29 @@ public class ContaService {
          contaRepository.delete(conta);
     }
 
+    public ContaResponseDTO editar(UUID contaId, ContaEdicaoRequestDTO dto, Usuario usuarioAutenticado) {
+        validarCamposObrigatoriosEdicao(dto);
+
+        Conta conta = contaRepository.findById(contaId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada"));
+
+        if (!conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Conta não pertence ao usuário autenticado");
+        }
+
+        conta.setNome(dto.getNome());
+        conta.setDescricao(dto.getDescricao());
+
+        Conta contaAtualizada = contaRepository.save(conta);
+        return toResponse(contaAtualizada);
+    }
+
+    private void validarCamposObrigatoriosEdicao(ContaEdicaoRequestDTO dto) {
+        if (dto.getNome() == null || dto.getNome().isBlank()) {
+            throw new IllegalArgumentException("Campo obrigatório não informado: nome");
+        }
+    }
+    
     public ContaResponseDTO toResponse(Conta conta) {
         ContaResponseDTO responseDTO = new ContaResponseDTO();
         responseDTO.setBanco(conta.getBanco());
