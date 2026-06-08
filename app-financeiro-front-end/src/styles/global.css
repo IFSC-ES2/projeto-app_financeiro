@@ -1395,53 +1395,6 @@ button:disabled {
   color: var(--sb-muted);
 }
 
-.modal-backdrop-custom {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  background: rgba(15, 23, 42, 0.35);
-}
-
-.modal-card {
-  width: min(760px, 100%);
-  max-height: 90vh;
-  overflow: auto;
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.22);
-  padding: 1.5rem;
-}
-
-.modal-card-header {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.modal-card-header h2 {
-  margin: 0;
-}
-
-.modal-card-header p {
-  margin: 0.25rem 0 0;
-  color: var(--sb-muted);
-}
-
-.modal-close-button {
-  width: 36px;
-  height: 36px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--sb-surface);
-  color: var(--sb-text);
-  font-size: 1.5rem;
-  line-height: 1;
-}
-
 .accounts-list {
   display: grid;
   gap: 1rem;
@@ -1500,11 +1453,16 @@ button:disabled {
   border-radius: 20px;
   background: #fff;
   box-shadow: 0 24px 80px rgba(15, 23, 42, 0.22);
-  padding: 1.5rem;
+  padding: 1.75rem;
+}
+
+.modal-card .sb-form {
+  padding: 0;
 }
 
 .modal-card-header {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1.5rem;
@@ -1513,11 +1471,13 @@ button:disabled {
 .modal-card-header h2 {
   margin: 0;
   color: var(--sb-text);
+  line-height: 1.2;
 }
 
 .modal-card-header p {
-  margin: 0.25rem 0 0;
-  color: var(--sb-muted);
+  margin: 0.35rem 0 0;
+  color: var(--sb-text-muted);
+  line-height: 1.4;
 }
 
 .modal-close-button {
@@ -1630,23 +1590,53 @@ button:disabled {
   font-size: 0.82rem;
 }
 
+.account-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
 .account-card-action {
-  width: 34px;
-  height: 34px;
-  flex: 0 0 34px;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
   border: 0;
   border-radius: 999px;
   display: inline-grid;
   place-items: center;
   background: rgba(45, 191, 155, 0.1);
   color: var(--sb-primary-dark);
-  font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
 }
 
+.account-action-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .account-card-action:hover {
   background: rgba(45, 191, 155, 0.18);
+}
+
+.account-card-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.account-card-action-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #b91c1c;
+}
+
+.account-card-action-danger:hover {
+  background: rgba(239, 68, 68, 0.18);
 }
 
 @media (max-width: 640px) {
@@ -1662,6 +1652,11 @@ button:disabled {
   .account-card {
     align-items: flex-start;
   }
+}
+
+.account-card-note {
+  color: var(--sb-primary-dark);
+  font-weight: 700;
 }
 
 @media (max-width: 991px) {
