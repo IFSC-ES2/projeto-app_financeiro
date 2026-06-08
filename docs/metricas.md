@@ -400,7 +400,7 @@ Leitura adotada:
 | Taxa de erros reportados por usuários | **0 bugs válidos reportados/fechados como bug no recorte consultado** | **1 bug válido registrado (`#170`), com correção parcial em PR e ainda não concluído** | **Regressão** | A `#170` registra falha no fluxo de importação de extrato, incluindo redirecionamento indevido para login e tratamento incorreto de erros que não deveriam encerrar a sessão. |
 | Velocidade do time (Velocity) | **Não medida em story points; 14 itens relevantes considerados na Sprint 3** | **Não medida em story points; 30 issues únicas consideradas na Sprint 4** | **Melhoria operacional, sem comparação formal em SP** | O volume de issues trabalhadas aumentou, mas a ausência de story points impede comparação formal de velocity Scrum. A contagem de issues serve apenas como aproximação operacional. |
 | Taxa de conclusão de itens planejados | **92,9%** em critério estrito na Sprint 3 | **93,3%** em critério estrito na Sprint 4 (**28/30 issues concluídas após merge deste PR**) | **Estável, com leve melhoria** | A Sprint 4 conclui 28 das 30 issues únicas consideradas se este PR fechar a `#127`. As issues `#67` e `#170` permaneceram não concluídas; a `#170` teve correção parcial, mas ainda não deve contar como entrega finalizada. |
-| Cobertura de testes automatizados | **Backend: 75,5%** geral (**694/919** linhas); **68,6%** no pacote `service` (**188/274**). Frontend: **70,3%** linhas, **67,6%** statements, **58,7%** funções, **61,2%** branches | **Backend: 87,4%** geral (**936/1071** linhas); **91,5%** no pacote `service` (**343/375**). Frontend: **81,0%** linhas (**658/812**), **78,0%** statements (**726/931**), **74,2%** funções (**158/213**) e **72,8%** branches (**402/552**) | **Melhoria** | A Sprint 4 apresentou avanço expressivo na cobertura backend e frontend. No backend, a cobertura geral subiu de 75,5% para 87,4%, e o pacote `service` subiu de 68,6% para 91,5%. No frontend, a cobertura de linhas subiu de 70,3% para 81,0%, com melhoria também em funções, branches e statements. |
+| Cobertura de testes automatizados | **Backend: 75,5%** geral (**694/919** linhas); **68,6%** no pacote `service` (**188/274**). Frontend: **70,3%** linhas, **67,6%** statements, **58,7%** funções, **61,2%** branches | **Backend: 86,0%** geral (**936/1088** linhas); **88,6%** no pacote `service` (**343/387**). Frontend: **72,1%** linhas (**710/985**), **69,3%** statements (**783/1129**), **66,1%** funções (**170/257**) e **61,4%** branches (**437/712**) | **Melhoria em relação à Sprint 3, com queda em relação à medição intermediária da Sprint 4** | A Sprint 4 segue melhor que a Sprint 3 em todas as métricas de cobertura acompanhadas. Porém, após a implementação das novas issues, a cobertura caiu em relação à medição intermediária anterior da própria Sprint 4, pois houve aumento do volume de código coberto pelo denominador. |
 | Lead time de resolução de defeitos | **Não aplicável / amostra vazia** | **Ainda não calculável: 1 bug válido aberto/parcial (`#170`)** | **Pendente de fechamento** | Como a issue `#170` ainda não foi concluída, não há lead time final de resolução. A métrica deve ser atualizada quando o bug for fechado. |
 | Percentual de escopo entregue no MVP | **50,0%** (4 de 8 funcionalidades principais) | **75,0%** (6 de 8 funcionalidades principais, considerando funcionalidades prontas + com ressalva) | **Melhoria** | A Sprint 4 consolidou categorização pela interface, filtros/listagem, resumo por forma de pagamento, edição/exclusão de transações, edição/exclusão de contas, CI, cobertura e documentação. A importação de extratos/NF-e é contabilizada como concluída com ressalva, pois há implementação, mas o bug `#170` ainda impacta o fluxo em determinados cenários. O dashboard mensal (`#67`) e o extrato futuro permanecem pendentes. |
 | Índice de participação e presença da equipe | **100%** | **100%** | **Estável** | A sprint apresentou contribuição distribuída em funcionalidades, testes, documentação, CI, refatoração, correções e reviews. |
@@ -461,8 +461,8 @@ Leitura adotada:
 | Bugs válidos totalmente resolvidos na sprint | **0** |
 | Bugs com correção parcial em PR | **1** |
 | Participação da equipe | **100%** |
-| Cobertura backend | **87,4%** geral (**936/1071** linhas); **91,5%** no pacote `service` (**343/375**) |
-| Cobertura frontend | **81,0%** linhas (**658/812**); **78,0%** statements (**726/931**); **74,2%** funções (**158/213**); **72,8%** branches (**402/552**) |
+| Cobertura backend | **86,0%** geral (**936/1088** linhas); **88,6%** no pacote `service` (**343/387**) |
+| Cobertura frontend | **72,1%** linhas (**710/985**); **69,3%** statements (**783/1129**); **66,1%** funções (**170/257**); **61,4%** branches (**437/712**) |
 
 ### Análise qualitativa (Sprint 4)
 
@@ -470,29 +470,35 @@ Leitura adotada:
 
 **O que foi executado:** Foram consideradas 30 issues únicas no recorte da Sprint 4. Após o merge deste PR de métricas, 28 delas podem ser consideradas concluídas. A sprint evidenciou avanços em categorização pela interface, filtros e listagem de transações, resumo por forma de pagamento, edição/exclusão de transações, edição/exclusão de contas no backend e no frontend, gestão de contas, testes frontend, testes backend, CI com Gradle Wrapper, lint, cobertura com Vitest, documentação de deploy e refatoração do `TransacaoService`. Também foi identificado o bug `#170` no fluxo de importação, com PR aberto e correção parcial aplicada.
 
-**Melhorias observadas:** A cobertura backend apresentou melhoria significativa, saindo de **75,5%** para **87,4%** no projeto como um todo e de **68,6%** para **91,5%** no pacote `service`. No frontend, a cobertura de linhas subiu de **70,3%** para **81,0%**, com avanço também em statements, funções e branches. Além disso, a refatoração do `TransacaoService` reduziu concentração de responsabilidades, melhorando a manutenibilidade do backend. A conclusão das issues `#135`, `#194` e `#195` fortaleceu os fluxos de manutenção de transações e contas.
+**Melhorias observadas:** A cobertura backend permanece significativamente superior à Sprint 3, saindo de **75,5%** para **86,0%** no projeto como um todo e de **68,6%** para **88,6%** no pacote `service`. No frontend, a cobertura também evoluiu em relação à Sprint 3: linhas passaram de **70,3%** para **72,1%**, statements de **67,6%** para **69,3%**, funções de **58,7%** para **66,1%** e branches de **61,2%** para **61,4%**. Além disso, a refatoração do `TransacaoService` reduziu concentração de responsabilidades, melhorando a manutenibilidade do backend. A conclusão das issues `#135`, `#194` e `#195` fortaleceu os fluxos de manutenção de transações e contas.
 
-**Regressões ou pontos de atenção:** A métrica de MVP foi recalculada com base nas **8 funcionalidades principais** registradas no `README.md` e em `docs/baseline.md`. Considerando funcionalidades prontas + com ressalva, o MVP está em **75,0%**. A importação de extratos/NF-e entra como funcionalidade concluída com ressalva por causa do bug `#170`, que ainda afeta o fluxo em determinados cenários. A issue `#67`, relacionada ao resumo mensal/backend do dashboard, não foi concluída, e a visualização do extrato dos próximos meses permanece pendente.
+**Regressões ou pontos de atenção:** A métrica de MVP foi recalculada com base nas **8 funcionalidades principais** registradas no `README.md` e em `docs/baseline.md`. Considerando funcionalidades prontas + com ressalva, o MVP está em **75,0%**. A importação de extratos/NF-e entra como funcionalidade concluída com ressalva por causa do bug `#170`, que ainda afeta o fluxo em determinados cenários. A issue `#67`, relacionada ao resumo mensal/backend do dashboard, não foi concluída, e a visualização do extrato dos próximos meses permanece pendente. Também houve queda em algumas métricas de cobertura quando comparadas à medição intermediária anterior da própria Sprint 4. Essa queda não representa necessariamente perda de testes existentes, mas sim aumento do denominador de linhas, funções, branches e statements após a implementação das novas issues do marco `v0.4.0`. Ainda assim, a cobertura final permanece superior à Sprint 3.
 
 **Fatores que influenciaram o resultado:** A Sprint 4 combinou atividades funcionais, técnicas, documentais, correções de bug e qualidade. A entrada das issues `#135`, `#194` e `#195` ampliou o escopo do marco `v0.4.0`, especialmente nos fluxos de manutenção de transações e contas. Apesar do avanço relevante e da alta taxa de conclusão de issues, as pendências da `#67` e da `#170` indicam que ainda existem pontos importantes para consolidar o dashboard mensal e estabilizar totalmente o fluxo de importação.
 
 ### Referência de cobertura da Sprint 4
 
-A cobertura da Sprint 4 foi obtida a partir do último pipeline verde da sprint.
+A cobertura da Sprint 4 foi obtida a partir do último pipeline verde após a implementação das novas issues incluídas no marco `v0.4.0`.
 
 No backend, o CI executa `./gradlew test --no-daemon` e imprime o resumo do JaCoCo no step **Resumo de cobertura (JaCoCo)**.
 
 ```text
 Backend:
-Cobertura de linhas (projeto backend): 87,4% (936/1071 linhas cobertas)
-Cobertura de linhas (pacote service): 91,5% (343/375)
-
-Frontend:
-Cobertura de linhas (frontend): 81,0% (658/812)
-Cobertura de statements (frontend): 78,0% (726/931)
-Cobertura de funções (frontend): 74,2% (158/213)
-Cobertura de branches (frontend): 72,8% (402/552)
+Cobertura de linhas (projeto backend): 86,0% (936/1088 linhas cobertas)
+Cobertura de linhas (pacote service): 88,6% (343/387)
 ```
+
+No frontend, o CI executa `npm run test:coverage` no step **Tests e cobertura (Vitest)**.
+
+```text
+Frontend:
+Cobertura de linhas (frontend): 72,1% (710/985)
+Cobertura de statements (frontend): 69,3% (783/1129)
+Cobertura de funções (frontend): 66,1% (170/257)
+Cobertura de branches (frontend): 61,4% (437/712)
+```
+
+A medição atual substitui a medição intermediária anterior da Sprint 4. A queda percentual em algumas métricas é explicada pelo aumento do volume de código testável após a entrada de novas issues no escopo do marco `v0.4.0`.
 
 ### Limitações da medição
 
@@ -507,6 +513,7 @@ Cobertura de branches (frontend): 72,8% (402/552)
 - A eficiência de categorização automática depende de base real de transações importadas e categorizadas automaticamente.
 - Os valores de cobertura foram lidos a partir dos relatórios do último CI verde usado como referência para a Sprint 4.
 - As issues `#135`, `#194` e `#195` foram adicionadas posteriormente ao recorte do marco `v0.4.0`, aumentando o escopo considerado na Sprint 4, mas todas foram concluídas e contabilizadas como avanço nos fluxos de manutenção de transações e contas.
+- Os valores finais de cobertura da Sprint 4 substituem a medição intermediária anterior. A inclusão de novas issues aumentou o volume de código testável, o que reduziu percentuais de cobertura em algumas categorias mesmo com aumento absoluto de linhas/funções/statements cobertos.
 
 
 
