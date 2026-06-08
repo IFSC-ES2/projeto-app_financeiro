@@ -34,6 +34,22 @@ const rotulosTipoConta: Record<TipoConta, string> = {
   CARTEIRA: 'Carteira',
 };
 
+const IconeEditar = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" className="account-action-icon">
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" />
+  </svg>
+);
+
+const IconeExcluir = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" className="account-action-icon">
+    <path d="M3 6h18" />
+    <path d="M8 6V4h8v2" />
+    <path d="M19 6l-1 14H6L5 6" />
+    <path d="M10 11v5M14 11v5" />
+  </svg>
+);
+
 const NovaConta = () => {
   const [contas, setContas] = useState<ContaResponse[]>([]);
   const [campos, setCampos] = useState<CamposConta>(valoresIniciais);
@@ -283,7 +299,7 @@ const NovaConta = () => {
                     aria-label={`Editar conta ${conta.nome}`}
                     title="Editar conta"
                   >
-                    ✏️
+                    <IconeEditar />
                   </button>
 
                   <button
@@ -294,7 +310,7 @@ const NovaConta = () => {
                     title="Excluir conta"
                     disabled={excluindoId === conta.contaId}
                   >
-                    {excluindoId === conta.contaId ? '...' : '🗑️'}
+                    {excluindoId === conta.contaId ? '...' : <IconeExcluir />}
                   </button>
                 </div>
               </article>
