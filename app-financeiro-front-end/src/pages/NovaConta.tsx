@@ -43,6 +43,8 @@ const NovaConta = () => {
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
+  const [contaEmEdicao, setContaEmEdicao] = useState<ContaResponse | null>(null);
+  const [excluindoId, setExcluindoId] = useState<string | null>(null);
 
   useEffect(() => {
     let ativo = true;
