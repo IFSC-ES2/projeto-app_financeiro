@@ -11,6 +11,7 @@ import {
   registrarTransacaoManual,
 } from '../services/api';
 import type { CategoriaResponse, ContaResponse, TipoPagamento, TipoTransacao } from '../services/api';
+import { ehCarteiraAutomaticaDinheiro } from '../utils/contas';
 
 interface CamposTransacao {
   valor: string;
@@ -41,19 +42,6 @@ const formasPagamento: Array<{ valor: TipoPagamento; rotulo: string }> = [
   { valor: 'TED_DOC', rotulo: 'TED/DOC' },
 ];
 
-const ehCarteiraAutomaticaDinheiro = (conta: ContaResponse) => {
-  const nome = conta.nome.trim().toLowerCase();
-  const banco = (conta.banco || '').trim().toLowerCase();
-  const descricao = (conta.descricao || '').trim().toLowerCase();
-
-  return (
-    conta.tipoConta === 'CARTEIRA' &&
-    banco === 'dinheiro' &&
-    nome.startsWith('dinheiro / carteira') &&
-    descricao.includes('transações em dinheiro')
-  );
-};
-
 const NovaTransacao = () => {
   const navigate = useNavigate();
 
@@ -66,9 +54,9 @@ const NovaTransacao = () => {
   const [salvando, setSalvando] = useState(false);
 
   const contasSelecionaveis = useMemo(
-  () => contas.filter((conta) => !ehCarteiraAutomaticaDinheiro(conta)),
-  [contas]
-);
+    () => contas.filter((conta) => !ehCarteiraAutomaticaDinheiro(conta)),
+    [contas]
+  );
 
   useEffect(() => {
     let ativo = true;
@@ -84,7 +72,7 @@ const NovaTransacao = () => {
         setContas(contasCarregadas);
         setCategorias(categoriasCarregadas);
         const contasDisponiveis = contasCarregadas.filter(
-        (conta) => !ehCarteiraAutomaticaDinheiro(conta)
+          (conta) => !ehCarteiraAutomaticaDinheiro(conta)
         );
 
         setCampos((atual) => ({
@@ -107,8 +95,8 @@ const NovaTransacao = () => {
   }, []);
 
   const permiteSalvar = useMemo(
-  () => campos.formaPagamento === 'DINHEIRO' || contasSelecionaveis.length > 0,
-  [campos.formaPagamento, contasSelecionaveis.length]
+    () => campos.formaPagamento === 'DINHEIRO' || contasSelecionaveis.length > 0,
+    [campos.formaPagamento, contasSelecionaveis.length]
   );
 
   const alterarCampo = (evento: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -263,21 +251,21 @@ const NovaTransacao = () => {
                 />
               </label>
 
-                <label>
-                  <span>Tipo *</span>
-                  <select
-                    name="tipoTransacao"
-                    value={campos.tipoTransacao}
-                    onChange={alterarCampo}
-                    className={erros.tipoTransacao ? 'invalid' : ''}
-                  >
-                    <option value="DEBITO">Saída / despesa</option>
-                    <option value="CREDITO">Entrada / receita</option>
-                    <option value="PARCELAMENTO">Parcelamento</option>
-                    <option value="BOLETO">Boleto</option>
-                  </select>
-                  {erros.tipoTransacao && <small className="field-error">{erros.tipoTransacao}</small>}
-                </label>
+              <label>
+                <span>Tipo *</span>
+                <select
+                  name="tipoTransacao"
+                  value={campos.tipoTransacao}
+                  onChange={alterarCampo}
+                  className={erros.tipoTransacao ? 'invalid' : ''}
+                >
+                  <option value="DEBITO">Saída / despesa</option>
+                  <option value="CREDITO">Entrada / receita</option>
+                  <option value="PARCELAMENTO">Parcelamento</option>
+                  <option value="BOLETO">Boleto</option>
+                </select>
+                {erros.tipoTransacao && <small className="field-error">{erros.tipoTransacao}</small>}
+              </label>
 
               <label>
                 <span>Forma de pagamento</span>
@@ -314,22 +302,22 @@ const NovaTransacao = () => {
                   <option value="">
                     {campos.formaPagamento === 'DINHEIRO' ? 'Conta automática em dinheiro' : 'Selecione uma conta'}
                   </option>
-                    {contasSelecionaveis.map((conta) => (
-                      <option key={conta.contaId} value={conta.contaId}>
-                        {conta.nome}
-                        {conta.banco ? ` - ${conta.banco}` : ''}
-                      </option>
-                    ))}
+                  {contasSelecionaveis.map((conta) => (
+                    <option key={conta.contaId} value={conta.contaId}>
+                      {conta.nome}
+                      {conta.banco ? ` - ${conta.banco}` : ''}
+                    </option>
+                  ))}
                 </select>
                 {erros.contaId && <small className="field-error">{erros.contaId}</small>}
               </label>
             </div>
 
-              {!permiteSalvar && (
-                <p className="helper-text">
-                  Cadastre uma conta bancária para pagamentos digitais ou selecione Dinheiro para usar a carteira automática.
-                </p>
-              )}
+            {!permiteSalvar && (
+              <p className="helper-text">
+                Cadastre uma conta bancária para pagamentos digitais ou selecione Dinheiro para usar a carteira automática.
+              </p>
+            )}
 
             <div className="form-actions">
               <Link to="/transacoes" className="sb-button sb-button-secondary">
