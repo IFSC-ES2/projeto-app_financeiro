@@ -72,7 +72,7 @@ class ListarTransacoesPaginadoIntegrationTests {
         salvarTransacao(contaDono, LocalDate.of(2024, 1, 10), TipoTransacao.DEBITO, alimentacao);
         salvarTransacao(contaDono, LocalDate.of(2024, 2, 15), TipoTransacao.CREDITO, null);
         salvarTransacao(contaDono, LocalDate.of(2024, 3, 20), TipoTransacao.DEBITO, transporte);
-        salvarTransacao(contaDono, LocalDate.of(2024, 3, 25), TipoTransacao.BOLETO, null);
+        salvarTransacao(contaDono, LocalDate.of(2024, 3, 25), TipoTransacao.CREDITO, null);
 
         // Transação de outro usuário — não deve aparecer para o dono
         Usuario outro = salvarUsuario("outro106@test.com", "39053344705");

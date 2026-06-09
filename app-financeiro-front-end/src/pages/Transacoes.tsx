@@ -49,8 +49,6 @@ const obterRotuloTipo = (tipo: TipoTransacao) => {
   const rotulos: Record<TipoTransacao, string> = {
     CREDITO: 'Receita',
     DEBITO: 'Despesa',
-    PARCELAMENTO: 'Parcelamento',
-    BOLETO: 'Boleto',
   };
 
   return rotulos[tipo];
@@ -292,8 +290,6 @@ const Transacoes = () => {
             <option value="">Todos os tipos</option>
             <option value="CREDITO">Receita</option>
             <option value="DEBITO">Despesa</option>
-            <option value="PARCELAMENTO">Parcelamento</option>
-            <option value="BOLETO">Boleto</option>
           </select>
         </label>
 

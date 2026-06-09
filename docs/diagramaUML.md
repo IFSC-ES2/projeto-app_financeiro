@@ -87,8 +87,6 @@ classDiagram
     <<enumeration>>
     DEBITO
     CREDITO
-    PARCELAMENTO
-    BOLETO
   }
  
   class TipoPagamento {
