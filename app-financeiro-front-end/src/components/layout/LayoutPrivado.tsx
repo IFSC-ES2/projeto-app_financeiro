@@ -15,6 +15,7 @@ const itensNavegacao = [
   { para: "/transacoes", rotulo: "Transações", icone: "transacoes" },
   { para: "/categorias", rotulo: "Categorias", icone: "categorias" },
   { para: "/parcelamentos", rotulo: "Parcelamentos", icone: "parcelamentos" },
+  { para: "/contas", rotulo: "Contas", icone: "contas" },
 ];
 
 const IconeNavegacao = ({ nome }: { nome: string }) => {
@@ -41,6 +42,16 @@ const IconeNavegacao = ({ nome }: { nome: string }) => {
       </svg>
     );
   }
+
+  if (nome === "contas") {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 7h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <path d="M3 7l9-4 9 4" />
+      <path d="M7 10v6M12 10v6M17 10v6" />
+    </svg>
+  );
+}
 
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">

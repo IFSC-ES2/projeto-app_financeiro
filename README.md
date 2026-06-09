@@ -283,6 +283,7 @@ A proteção da branch `main` no GitHub já exige os quatro jobs (`Backend (buil
 - [ADR-0005 — Padrões de Projeto](docs/adrs/ADR-0005-padroes-de-projeto.md)
 - [ADR-0006 — Versionamento de Banco de Dados com Flyway](docs/adrs/ADR-0006-migracoes-de-banco-de-dados-com-flyway.md)
 - [ADR-0007 — Bibliotecas de Leitura de Extratos](docs/adrs/ADR-0007-bibliotecas-leitura-extratos.md)
+- [ADR-0008 — Decomposição do TransacaoService](docs/adrs/ADR-0008-decomposicao-transacao-service.md)
 - [Board](https://github.com/orgs/IFSC-ES2/projects/20)
 - [Backlog](https://github.com/IFSC-ES2/projeto-app_financeiro/issues)
 - [Estimativas](docs/estimativas.md)

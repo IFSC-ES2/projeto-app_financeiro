@@ -6,7 +6,6 @@ import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.repository.CategoriaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,7 +20,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CategoriaService")
+@DisplayName("CategoriaService - listarParaUsuario")
 class CategoriaServiceTest {
 
     @Mock
@@ -30,117 +29,93 @@ class CategoriaServiceTest {
     @InjectMocks
     private CategoriaService categoriaService;
 
-    private Usuario usuarioAutenticado;
+    private Usuario usuario;
 
     @BeforeEach
     void setUp() {
-        usuarioAutenticado = new Usuario();
-        usuarioAutenticado.setId(UUID.randomUUID());
-        usuarioAutenticado.setNome("João Silva");
-        usuarioAutenticado.setEmail("joao@email.com");
-        usuarioAutenticado.setSenha("hash");
-        usuarioAutenticado.setCpf("12345678900");
+        usuario = new Usuario();
+        usuario.setId(UUID.randomUUID());
+        usuario.setNome("João Silva");
+        usuario.setEmail("joao@email.com");
     }
 
-    @Nested
-    @DisplayName("Listagem de categorias")
-    class ListagemCategorias {
-
-        @Test
-        @DisplayName("Retorna categorias padrão e categorias do usuário autenticado")
-        void deveRetornarCategoriasPadraoECategoriasDoUsuario() {
-            Categoria categoriaPadrao = criarCategoriaPadrao(
-                    "Alimentação",
-                    "icone-alimentacao",
-                    "#FFAA00"
-            );
-            Categoria categoriaUsuario = criarCategoriaDoUsuario(
-                    "Academia",
-                    "icone-academia",
-                    "#00AAFF",
-                    usuarioAutenticado
-            );
-
-            when(categoriaRepository.findByPadraoTrueOrUsuarioId(usuarioAutenticado.getId()))
-                    .thenReturn(List.of(categoriaPadrao, categoriaUsuario));
-
-            List<CategoriaTransacaoDTO> response = categoriaService.listarParaUsuario(usuarioAutenticado);
-
-            assertThat(response).hasSize(2);
-
-            assertThat(response.get(0).getCategoriaId()).isEqualTo(categoriaPadrao.getId());
-            assertThat(response.get(0).getNome()).isEqualTo("Alimentação");
-            assertThat(response.get(0).isPadrao()).isTrue();
-
-            assertThat(response.get(1).getCategoriaId()).isEqualTo(categoriaUsuario.getId());
-            assertThat(response.get(1).getNome()).isEqualTo("Academia");
-            assertThat(response.get(1).isPadrao()).isFalse();
-        }
-
-        @Test
-        @DisplayName("Busca categorias usando filtro de padrão ou usuário autenticado")
-        void deveBuscarCategoriasComFiltroDeUsuarioOuPadrao() {
-            when(categoriaRepository.findByPadraoTrueOrUsuarioId(usuarioAutenticado.getId()))
-                    .thenReturn(List.of());
-
-            categoriaService.listarParaUsuario(usuarioAutenticado);
-
-            verify(categoriaRepository).findByPadraoTrueOrUsuarioId(usuarioAutenticado.getId());
-        }
-
-        @Test
-        @DisplayName("Mapeia categoria para DTO")
-        void deveMapearCategoriaParaDTO() {
-            Categoria categoria = criarCategoriaPadrao(
-                    "Saúde",
-                    "icone-saude",
-                    "#00FF00"
-            );
-
-            when(categoriaRepository.findByPadraoTrueOrUsuarioId(usuarioAutenticado.getId()))
-                    .thenReturn(List.of(categoria));
-
-            List<CategoriaTransacaoDTO> response = categoriaService.listarParaUsuario(usuarioAutenticado);
-
-            assertThat(response).hasSize(1);
-            assertThat(response.get(0).getCategoriaId()).isEqualTo(categoria.getId());
-            assertThat(response.get(0).getNome()).isEqualTo(categoria.getNome());
-            assertThat(response.get(0).getIcone()).isEqualTo(categoria.getIcone());
-            assertThat(response.get(0).getCor()).isEqualTo(categoria.getCor());
-            assertThat(response.get(0).isPadrao()).isEqualTo(categoria.isPadrao());
-        }
-
-        @Test
-        @DisplayName("Retorna lista vazia quando não existem categorias")
-        void deveRetornarListaVaziaQuandoNaoExistemCategorias() {
-            when(categoriaRepository.findByPadraoTrueOrUsuarioId(usuarioAutenticado.getId()))
-                    .thenReturn(List.of());
-
-            List<CategoriaTransacaoDTO> response = categoriaService.listarParaUsuario(usuarioAutenticado);
-
-            assertThat(response).isEmpty();
-        }
+    private Categoria categoria(String nome, String icone, String cor, boolean padrao, Usuario dono) {
+        Categoria c = new Categoria();
+        c.setId(UUID.randomUUID());
+        c.setNome(nome);
+        c.setIcone(icone);
+        c.setCor(cor);
+        c.setPadrao(padrao);
+        c.setUsuario(dono);
+        return c;
     }
 
-    private Categoria criarCategoriaPadrao(String nome, String icone, String cor) {
-        Categoria categoria = new Categoria();
-        categoria.setId(UUID.randomUUID());
-        categoria.setNome(nome);
-        categoria.setIcone(icone);
-        categoria.setCor(cor);
-        categoria.setPadrao(true);
-        categoria.setUsuario(null);
-        return categoria;
+    @Test
+    @DisplayName("Retorna as categorias padrão do sistema")
+    void deveRetornarCategoriasPadrao() {
+        Categoria alimentacao = categoria("Alimentação", "🍔", "#FF6B6B", true, null);
+        Categoria transporte = categoria("Transporte", "🚗", "#4ECDC4", true, null);
+        when(categoriaRepository.findByPadraoTrueOrUsuarioId(usuario.getId()))
+                .thenReturn(List.of(alimentacao, transporte));
+
+        List<CategoriaTransacaoDTO> resultado = categoriaService.listarParaUsuario(usuario);
+
+        assertThat(resultado).hasSize(2);
+        assertThat(resultado).extracting(CategoriaTransacaoDTO::getNome)
+                .containsExactly("Alimentação", "Transporte");
+        assertThat(resultado).allMatch(CategoriaTransacaoDTO::isPadrao);
     }
 
-    private Categoria criarCategoriaDoUsuario(String nome, String icone, String cor, Usuario usuario) {
-        Categoria categoria = new Categoria();
-        categoria.setId(UUID.randomUUID());
-        categoria.setNome(nome);
-        categoria.setIcone(icone);
-        categoria.setCor(cor);
-        categoria.setPadrao(false);
-        categoria.setUsuario(usuario);
-        return categoria;
+    @Test
+    @DisplayName("Retorna também as categorias personalizadas do usuário autenticado")
+    void deveRetornarCategoriasPersonalizadasDoUsuario() {
+        Categoria padrao = categoria("Saúde", "💊", "#45B7D1", true, null);
+        Categoria personalizada = categoria("Pets", "🐶", "#000000", false, usuario);
+        when(categoriaRepository.findByPadraoTrueOrUsuarioId(usuario.getId()))
+                .thenReturn(List.of(padrao, personalizada));
+
+        List<CategoriaTransacaoDTO> resultado = categoriaService.listarParaUsuario(usuario);
+
+        assertThat(resultado).extracting(CategoriaTransacaoDTO::getNome).contains("Pets");
+
+        CategoriaTransacaoDTO pets = resultado.stream()
+                .filter(c -> "Pets".equals(c.getNome()))
+                .findFirst()
+                .orElseThrow();
+        assertThat(pets.isPadrao()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Mapeia corretamente todos os campos da categoria para o DTO")
+    void deveMapearTodosOsCamposParaDTO() {
+        Categoria categoria = categoria("Lazer", "🎬", "#96CEB4", true, null);
+        when(categoriaRepository.findByPadraoTrueOrUsuarioId(usuario.getId()))
+                .thenReturn(List.of(categoria));
+
+        CategoriaTransacaoDTO dto = categoriaService.listarParaUsuario(usuario).getFirst();
+
+        assertThat(dto.getCategoriaId()).isEqualTo(categoria.getId());
+        assertThat(dto.getNome()).isEqualTo("Lazer");
+        assertThat(dto.getIcone()).isEqualTo("🎬");
+        assertThat(dto.getCor()).isEqualTo("#96CEB4");
+        assertThat(dto.isPadrao()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Consulta o repositório usando o id do usuário autenticado")
+    void deveConsultarRepositorioComIdDoUsuario() {
+        when(categoriaRepository.findByPadraoTrueOrUsuarioId(usuario.getId())).thenReturn(List.of());
+
+        categoriaService.listarParaUsuario(usuario);
+
+        verify(categoriaRepository).findByPadraoTrueOrUsuarioId(usuario.getId());
+    }
+
+    @Test
+    @DisplayName("Retorna lista vazia quando não há categorias")
+    void deveRetornarListaVaziaQuandoNaoHaCategorias() {
+        when(categoriaRepository.findByPadraoTrueOrUsuarioId(usuario.getId())).thenReturn(List.of());
+
+        assertThat(categoriaService.listarParaUsuario(usuario)).isEmpty();
     }
 }

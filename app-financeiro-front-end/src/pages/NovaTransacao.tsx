@@ -11,6 +11,7 @@ import {
   registrarTransacaoManual,
 } from '../services/api';
 import type { CategoriaResponse, ContaResponse, TipoPagamento, TipoTransacao } from '../services/api';
+import { ehCarteiraAutomaticaDinheiro } from '../utils/contas';
 
 interface CamposTransacao {
   valor: string;
@@ -32,13 +33,6 @@ const valoresIniciais: CamposTransacao = {
   contaId: '',
 };
 
-const tiposTransacao: Array<{ valor: TipoTransacao; rotulo: string }> = [
-  { valor: 'DEBITO', rotulo: 'Saída / despesa' },
-  { valor: 'CREDITO', rotulo: 'Entrada / receita' },
-  { valor: 'PARCELAMENTO', rotulo: 'Parcelamento' },
-  { valor: 'BOLETO', rotulo: 'Boleto' },
-];
-
 const formasPagamento: Array<{ valor: TipoPagamento; rotulo: string }> = [
   { valor: 'PIX', rotulo: 'Pix' },
   { valor: 'CARTAO_DEBITO', rotulo: 'Cartão de débito' },
@@ -59,6 +53,11 @@ const NovaTransacao = () => {
   const [carregandoDados, setCarregandoDados] = useState(true);
   const [salvando, setSalvando] = useState(false);
 
+  const contasSelecionaveis = useMemo(
+    () => contas.filter((conta) => !ehCarteiraAutomaticaDinheiro(conta)),
+    [contas]
+  );
+
   useEffect(() => {
     let ativo = true;
 
@@ -72,9 +71,13 @@ const NovaTransacao = () => {
         if (!ativo) return;
         setContas(contasCarregadas);
         setCategorias(categoriasCarregadas);
+        const contasDisponiveis = contasCarregadas.filter(
+          (conta) => !ehCarteiraAutomaticaDinheiro(conta)
+        );
+
         setCampos((atual) => ({
           ...atual,
-          contaId: atual.contaId || contasCarregadas[0]?.contaId || '',
+          contaId: atual.contaId || contasDisponiveis[0]?.contaId || '',
         }));
       } catch (err) {
         if (!ativo) return;
@@ -92,8 +95,8 @@ const NovaTransacao = () => {
   }, []);
 
   const permiteSalvar = useMemo(
-    () => campos.formaPagamento === 'DINHEIRO' || contas.length > 0,
-    [campos.formaPagamento, contas.length]
+    () => campos.formaPagamento === 'DINHEIRO' || contasSelecionaveis.length > 0,
+    [campos.formaPagamento, contasSelecionaveis.length]
   );
 
   const alterarCampo = (evento: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -102,10 +105,14 @@ const NovaTransacao = () => {
     setCampos((atual) => {
       if (name === 'formaPagamento') {
         const formaPagamento = value as TipoPagamento;
+
         return {
           ...atual,
           formaPagamento,
-          contaId: formaPagamento === 'DINHEIRO' ? '' : atual.contaId || contas[0]?.contaId || '',
+          contaId:
+            formaPagamento === 'DINHEIRO'
+              ? ''
+              : atual.contaId || contasSelecionaveis[0]?.contaId || '',
         };
       }
 
@@ -131,6 +138,16 @@ const NovaTransacao = () => {
 
     if (campos.formaPagamento !== 'DINHEIRO' && !campos.contaId) {
       novosErros.contaId = 'Conta é obrigatória para esta forma de pagamento.';
+    }
+
+    const contaSelecionada = contas.find((conta) => conta.contaId === campos.contaId);
+
+    if (
+      campos.formaPagamento !== 'DINHEIRO' &&
+      contaSelecionada &&
+      ehCarteiraAutomaticaDinheiro(contaSelecionada)
+    ) {
+      novosErros.contaId = 'A carteira automática só pode ser usada para transações em dinheiro.';
     }
 
     setErros(novosErros);
@@ -236,13 +253,18 @@ const NovaTransacao = () => {
 
               <label>
                 <span>Tipo *</span>
-                <select name="tipoTransacao" value={campos.tipoTransacao} onChange={alterarCampo}>
-                  {tiposTransacao.map((tipo) => (
-                    <option key={tipo.valor} value={tipo.valor}>
-                      {tipo.rotulo}
-                    </option>
-                  ))}
+                <select
+                  name="tipoTransacao"
+                  value={campos.tipoTransacao}
+                  onChange={alterarCampo}
+                  className={erros.tipoTransacao ? 'invalid' : ''}
+                >
+                  <option value="DEBITO">Saída / despesa</option>
+                  <option value="CREDITO">Entrada / receita</option>
+                  <option value="PARCELAMENTO">Parcelamento</option>
+                  <option value="BOLETO">Boleto</option>
                 </select>
+                {erros.tipoTransacao && <small className="field-error">{erros.tipoTransacao}</small>}
               </label>
 
               <label>
@@ -280,7 +302,7 @@ const NovaTransacao = () => {
                   <option value="">
                     {campos.formaPagamento === 'DINHEIRO' ? 'Conta automática em dinheiro' : 'Selecione uma conta'}
                   </option>
-                  {contas.map((conta) => (
+                  {contasSelecionaveis.map((conta) => (
                     <option key={conta.contaId} value={conta.contaId}>
                       {conta.nome}
                       {conta.banco ? ` - ${conta.banco}` : ''}
@@ -293,7 +315,7 @@ const NovaTransacao = () => {
 
             {!permiteSalvar && (
               <p className="helper-text">
-                Cadastre uma conta bancária antes de salvar ou selecione Dinheiro como forma de pagamento.
+                Cadastre uma conta bancária para pagamentos digitais ou selecione Dinheiro para usar a carteira automática.
               </p>
             )}
 

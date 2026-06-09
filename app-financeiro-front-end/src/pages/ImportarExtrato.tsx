@@ -75,11 +75,13 @@ const ImportarExtrato: React.FC = () => {
         if (data.length === 1) setContaId(data[0].contaId);
       } catch (err) {
         const status = obterStatusHttp(err);
-        if (status === 401 || status === 403) {
+        if (status === 401) {
           sair();
           return;
         }
-        setErroGeral('Não foi possível carregar suas contas. Tente novamente.');
+        setErroGeral(
+          obterMensagemErroApi(err, 'Não foi possível carregar suas contas. Tente novamente.'),
+        );
       } finally {
         setCarregandoContas(false);
       }
@@ -106,8 +108,13 @@ const ImportarExtrato: React.FC = () => {
       } catch (err) {
         if (cancelado) return;
         const status = obterStatusHttp(err);
-        if (status === 401 || status === 403) {
+        if (status === 401) {
           sair();
+          return;
+        }
+        if (status === 403) {
+          setErroGeral(obterMensagemErroApi(err, 'Acesso negado ao acompanhar a importação.'));
+          setStatusAtual('ERRO');
           return;
         }
         // erro pontual no polling não interrompe — segue tentando até timeout
@@ -197,7 +204,7 @@ const ImportarExtrato: React.FC = () => {
       setStatusAtual(resultado.status);
     } catch (err) {
       const status = obterStatusHttp(err);
-      if (status === 401 || status === 403) {
+      if (status === 401) {
         sair();
         return;
       }
@@ -271,7 +278,9 @@ const ImportarExtrato: React.FC = () => {
                   {semContas && (
                     <p className="text-muted small mt-2 mb-0">
                       Você precisa{' '}
-                      <Link to="/contas/nova" className="text-decoration-none">cadastrar uma conta</Link>{' '}
+                      <Link to="/contas" className="sb-button sb-button-primary">
+                        Cadastrar conta
+                      </Link>{' '}
                       antes de importar transações.
                     </p>
                   )}

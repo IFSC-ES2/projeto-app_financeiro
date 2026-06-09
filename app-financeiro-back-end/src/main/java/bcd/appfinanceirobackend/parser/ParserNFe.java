@@ -26,13 +26,13 @@ import java.util.List;
  * do conteúdo. Suporta NF-e com ou sem o envelope <nfeProc>.
  *
  * Estratégia de extração:
- * - Uma NF-e representa uma única compra, gerada como uma transação do tipo DEBITO
- *   cujo valor total é o campo <vNF> (valor total da nota)
+ * - Cada item da NF-e, representado por <det>, é convertido em uma transação
+ *   do tipo DEBITO, usando o valor do produto em <vProd>.
  * - A descrição é composta pelo CNPJ do emitente + razão social (xNome)
  * - A data é extraída do campo <dhEmi> (data de emissão)
- * - Os itens individuais (<det>) são ignorados por padrão para não inflar o extrato;
- *   se o projeto evoluir para categorização por item, esse comportamento pode ser
- *   alterado via configuração
+ * - Os itens individuais (<det>) são considerados registros processáveis.
+ *   Itens com valor ausente, inválido ou menor/igual a zero são ignorados e
+ *   contabilizados como linhas inválidas.
  *
  * Tags SEFAZ utilizadas:
  *   <ide>/<dhEmi>     → data de emissão

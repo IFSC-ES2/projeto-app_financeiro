@@ -3,12 +3,13 @@ package bcd.appfinanceirobackend.service;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.TransacaoResponseDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
+import bcd.appfinanceirobackend.mapper.TransacaoMapper;
+import bcd.appfinanceirobackend.model.Categoria;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.model.enums.TipoPagamento;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
-import bcd.appfinanceirobackend.repository.ContaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,14 +19,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
@@ -40,9 +40,13 @@ class RegistrarManualTransacaoTests {
     private TransacaoRepository transacaoRepository;
 
     @Mock
-    private ContaRepository contaRepository;
+    private ContaUsuarioService contaUsuarioService;
 
-    @InjectMocks
+    @Mock
+    private CategoriaService categoriaService;
+
+    private TransacaoMapper transacaoMapper;
+
     private TransacaoService transacaoService;
 
     private Usuario usuarioDono;
@@ -52,6 +56,14 @@ class RegistrarManualTransacaoTests {
 
     @BeforeEach
     void setUp() {
+        transacaoMapper = new TransacaoMapper();
+
+        transacaoService = new TransacaoService(
+                transacaoRepository,
+                contaUsuarioService,
+                transacaoMapper,
+                categoriaService
+        );
         usuarioDono = new Usuario();
         usuarioDono.setId(UUID.randomUUID());
         usuarioDono.setNome("João Silva");
@@ -154,7 +166,19 @@ class RegistrarManualTransacaoTests {
             assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
                     .isInstanceOf(IllegalArgumentException.class);
 
-            verifyNoInteractions(contaRepository, transacaoRepository);
+            verifyNoInteractions(contaUsuarioService, transacaoRepository, categoriaService);;
+        }
+
+        @Test
+        @DisplayName("Lança exceção quando forma de pagamento é nula")
+        void deveLancarExcecaoQuandoFormaPagamentoNula() {
+            dtoValido.setFormaPagamento(null);
+
+            assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Campos obrigatórios não informados");
+
+            verifyNoInteractions(contaUsuarioService, transacaoRepository, categoriaService);
         }
     }
 
@@ -167,24 +191,30 @@ class RegistrarManualTransacaoTests {
         @Test
         @DisplayName("Lança ResourceNotFoundException quando conta não existe")
         void deveLancarExcecaoQuandoContaNaoEncontrada() {
-            when(contaRepository.findById(dtoValido.getContaId())).thenReturn(Optional.empty());
+            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono))
+                    .thenThrow(new ResourceNotFoundException("Conta não encontrada"));
 
             assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Conta não encontrada");
+
+            verifyNoInteractions(transacaoRepository, categoriaService);
         }
 
         @Test
         @DisplayName("Lança ResponseStatusException 403 quando a conta pertence a outro usuário")
         void deveLancarForbiddenQuandoContaNaoPertenceAoUsuario() {
-            conta.setUsuario(outroUsuario);
-            when(contaRepository.findById(dtoValido.getContaId())).thenReturn(Optional.of(conta));
+            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono))
+                    .thenThrow(new ResponseStatusException(
+                            HttpStatus.FORBIDDEN,
+                            "Acesso negado a esta conta"
+                    ));
 
             assertThatThrownBy(() -> transacaoService.registrarManual(dtoValido, usuarioDono))
                     .isInstanceOf(ResponseStatusException.class)
                     .hasMessageContaining("Acesso negado a esta conta");
 
-            verifyNoInteractions(transacaoRepository);
+            verifyNoInteractions(transacaoRepository, categoriaService);
         }
     }
 
@@ -196,7 +226,7 @@ class RegistrarManualTransacaoTests {
 
         @BeforeEach
         void mockRepositorios() {
-            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
+            when(contaUsuarioService.resolverConta(dtoValido, usuarioDono)).thenReturn(conta);
             when(transacaoRepository.save(any(Transacao.class))).thenAnswer(inv -> {
                 Transacao t = inv.getArgument(0);
                 t.setId(UUID.randomUUID());
@@ -218,16 +248,6 @@ class RegistrarManualTransacaoTests {
             assertThat(response.getContaId()).isEqualTo(conta.getId());
         }
 
-        @Test
-        @DisplayName("Persiste a transação com o campo categorizada igual a true")
-        void deveSalvarTransacaoComCategorizadaTrue() {
-            ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
-
-            transacaoService.registrarManual(dtoValido, usuarioDono);
-
-            verify(transacaoRepository).save(captor.capture());
-            assertThat(captor.getValue().getCategorizada()).isTrue();
-        }
 
         @Test
         @DisplayName("Persiste a transação com futura = false para data atual")
@@ -239,6 +259,31 @@ class RegistrarManualTransacaoTests {
 
             verify(transacaoRepository).save(captor.capture());
             assertThat(captor.getValue().getFutura()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Persiste a transação com categoria quando categoriaId é informado")
+        void deveSalvarTransacaoComCategoriaQuandoCategoriaIdInformado() {
+            Categoria categoria = new Categoria();
+            categoria.setId(UUID.randomUUID());
+            categoria.setNome("Alimentação");
+            categoria.setPadrao(true);
+
+            dtoValido.setCategoriaId(categoria.getId());
+
+            when(categoriaService.buscarCategoriaPermitida(categoria.getId(), usuarioDono))
+                    .thenReturn(categoria);
+
+            ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
+
+            TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
+
+            verify(transacaoRepository).save(captor.capture());
+
+            assertThat(captor.getValue().getCategoria()).isEqualTo(categoria);
+            assertThat(captor.getValue().getCategorizada()).isTrue();
+            assertThat(response.getCategoriaId()).isEqualTo(categoria.getId());
+            assertThat(response.isCategorizada()).isTrue();
         }
 
         @Test
@@ -286,32 +331,24 @@ class RegistrarManualTransacaoTests {
             assertThat(captor.getValue().getConta()).isEqualTo(conta);
         }
 
+
+
+
         @Test
-        @DisplayName("Registra transação sem descrição (campo opcional)")
-        void deveRegistrarTransacaoSemDescricao() {
-            dtoValido.setDescricao(null);
+        @DisplayName("Persiste e retorna transação não categorizada quando categoriaId não é informado")
+        void deveSalvarERetornarTransacaoNaoCategorizadaQuandoCategoriaIdNaoInformado() {
+            dtoValido.setCategoriaId(null);
+
+            ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
 
             TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
 
-            assertThat(response.getDescricao()).isNull();
-        }
+            verify(transacaoRepository).save(captor.capture());
 
-        @Test
-        @DisplayName("Registra transação sem forma de pagamento (campo opcional)")
-        void deveRegistrarTransacaoSemFormaPagamento() {
-            dtoValido.setFormaPagamento(null);
-
-            TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
-
-            assertThat(response.getFormaPagamento()).isNull();
-        }
-
-        @Test
-        @DisplayName("Retorna categoriaId nulo quando a transação não possui categoria")
-        void deveRetornarCategoriaIdNuloQuandoSemCategoria() {
-            TransacaoResponseDTO response = transacaoService.registrarManual(dtoValido, usuarioDono);
-
+            assertThat(captor.getValue().getCategoria()).isNull();
+            assertThat(captor.getValue().getCategorizada()).isFalse();
             assertThat(response.getCategoriaId()).isNull();
+            assertThat(response.isCategorizada()).isFalse();
         }
 
         @Test
