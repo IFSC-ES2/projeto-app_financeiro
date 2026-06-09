@@ -27,9 +27,7 @@ public class ResumoService {
     }
 
     public List<GrupoPagamentoDTO> agruparFormaPagamento(Usuario usuarioAutenticado) {
-        if (usuarioAutenticado == null || usuarioAutenticado.getId() == null) {
-            throw new AccessDeniedException("Usuário autenticado não encontrado.");
-        }
+        validarUsuarioAutenticado(usuarioAutenticado);
 
         List<Transacao> transacoes = transacaoRepository.findAllByContaUsuarioId(usuarioAutenticado.getId());
 
@@ -118,5 +116,11 @@ public class ResumoService {
             case BOLETO -> "Boleto";
             case TED_DOC -> "TED/DOC";
         };
+    }
+
+    private void validarUsuarioAutenticado(Usuario usuario){
+        if (usuario == null || usuario.getId() == null) {
+            throw new AccessDeniedException("Usuário autenticado não encontrado.");
+        }
     }
 }
