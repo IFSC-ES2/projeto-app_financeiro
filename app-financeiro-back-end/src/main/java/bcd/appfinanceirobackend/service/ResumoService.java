@@ -3,10 +3,13 @@ package bcd.appfinanceirobackend.service;
 import bcd.appfinanceirobackend.dto.resumo.GrupoCategoriaDTO;
 import bcd.appfinanceirobackend.dto.resumo.GrupoPagamentoDTO;
 import bcd.appfinanceirobackend.dto.resumo.ResumoMensalDTO;
+import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
+import bcd.appfinanceirobackend.model.Categoria;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.model.enums.TipoPagamento;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
+import bcd.appfinanceirobackend.repository.CategoriaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -15,10 +18,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ResumoService {
@@ -27,9 +27,14 @@ public class ResumoService {
 
     public record PeriodoResumo(Integer ano, Integer mes, LocalDate dataInicio, LocalDate dataFim){ }
     private final TransacaoRepository transacaoRepository;
+    private final CategoriaRepository categoriaRepository;
 
-    public ResumoService(TransacaoRepository transacaoRepository) {
+    public ResumoService(
+            TransacaoRepository transacaoRepository,
+            CategoriaRepository categoriaRepository
+    ) {
         this.transacaoRepository = transacaoRepository;
+        this.categoriaRepository = categoriaRepository;
     }
 
     public ResumoMensalDTO gerarResumoMensal(Usuario usuario, Integer ano, Integer mes){
@@ -109,6 +114,54 @@ public class ResumoService {
         }
         if(gastos.isEmpty()) return new ArrayList<>();
         BigDecimal totalGastoGeral = somarGastos(gastos);
+        Map<String, List<Transacao>> agrupamentoCategorias = new HashMap<>();
+        String chave = "";
+        for (Transacao transacao: gastos) {
+            if(transacao.getCategoria()!= null){
+                chave = String.valueOf(transacao.getCategoria().getId());
+            } else {
+                chave = CHAVE_NAO_INFORMADO;
+            }
+            agrupamentoCategorias.
+                    computeIfAbsent(chave, key -> new ArrayList<>())
+                    .add(transacao);
+        }
+        List<GrupoCategoriaDTO> grupoCategorias = new ArrayList<>();
+
+        for (Map.Entry<String, List<Transacao>> entry : agrupamentoCategorias.entrySet()) {
+            grupoCategorias.add(criarGrupoCategoriaDTO(entry, totalGastoGeral));
+        }
+        return grupoCategorias;
+    }
+
+    private GrupoCategoriaDTO criarGrupoCategoriaDTO(Map.Entry<String, List<Transacao>> entry, BigDecimal totalGeral){
+        String chaveAgrupamento = entry.getKey();
+        List<Transacao> transacoesDoGrupo = entry.getValue();
+        BigDecimal totalGrupo = BigDecimal.ZERO;
+        for (Transacao transacao : transacoesDoGrupo) {
+            totalGrupo = totalGrupo.add(transacao.getValor());
+        }
+
+        BigDecimal percentualGrupo = totalGrupo
+                .multiply(BigDecimal.valueOf(100))
+                .divide(totalGeral, 2, RoundingMode.HALF_UP);
+
+        GrupoCategoriaDTO grupoCategoriaDTO = new GrupoCategoriaDTO();
+        if(obterCategoriaId(chaveAgrupamento)!= null){
+            Categoria categoria = categoriaRepository.findById(
+                    Objects.requireNonNull(obterCategoriaId(chaveAgrupamento)))
+                    .orElseThrow(() -> new ResourceNotFoundException("Categoria Inexistente"));
+            grupoCategoriaDTO.setCategoriaID(categoria.getId());
+            grupoCategoriaDTO.setNome(categoria.getNome());
+            grupoCategoriaDTO.setIcone(categoria.getIcone());
+            grupoCategoriaDTO.setCor(categoria.getCor());
+        }
+        grupoCategoriaDTO.setNome(chaveAgrupamento);
+        grupoCategoriaDTO.setTotal(totalGrupo);
+        grupoCategoriaDTO.setQuantidade(transacoesDoGrupo.size());
+        grupoCategoriaDTO.setPercentual(percentualGrupo);
+
+        return grupoCategoriaDTO;
     }
 
     private GrupoPagamentoDTO criarGrupoPagamentoDTO(Map.Entry<String, List<Transacao>> entry, BigDecimal totalGeral) {
@@ -169,6 +222,13 @@ public class ResumoService {
             case BOLETO -> "Boleto";
             case TED_DOC -> "TED/DOC";
         };
+    }
+
+    private UUID obterCategoriaId(String chaveAgrupamento){
+        if(CHAVE_NAO_INFORMADO.equals(chaveAgrupamento)){
+            return null;
+        }
+        return UUID.fromString(chaveAgrupamento);
     }
 
     private void validarUsuarioAutenticado(Usuario usuario){
