@@ -67,7 +67,18 @@ public class ResumoService {
 
     public ResumoMensalDTO gerarResumoMensal(Usuario usuario, Integer ano, Integer mes){
         validarUsuarioAutenticado(usuario);
-        PeriodoResumo periodoResumo = resolverPeriodo(ano, mes);
+        PeriodoResumo periodoResumoAtual = resolverPeriodo(ano, mes);
+        PeriodoResumo periodoResumoAnterior = calcularPeriodoAnterior(periodoResumoAtual);
+        List<Transacao> transacoesMesAtual = transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
+                usuario.getId(),
+                periodoResumoAtual.dataInicio(),
+                periodoResumoAtual.dataFim()
+                );
+        List<Transacao> transacoesMesAnterior = transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
+                usuario.getId(),
+                periodoResumoAnterior.dataInicio(),
+                periodoResumoAnterior.dataFim()
+        );
     }
 
     private String obterChaveAgrupamento(TipoPagamento formaPagamento) {
@@ -149,6 +160,17 @@ public class ResumoService {
         LocalDate dataInicio = LocalDate.of(ano, mes, 1);
         LocalDate dataFim = YearMonth.of(ano, mes).atEndOfMonth();
         return new PeriodoResumo(ano, mes, dataInicio, dataFim);
+    }
+
+    private PeriodoResumo calcularPeriodoAnterior(PeriodoResumo periodoAtual){
+        YearMonth dataReferenciaAnterior =
+                YearMonth.of(periodoAtual.ano(), periodoAtual.mes()).minusMonths(1);
+        LocalDate dataInicioAnterior = LocalDate.of(dataReferenciaAnterior.getYear(),
+                dataReferenciaAnterior.getMonth(), 1);
+        LocalDate dataFimAnterior = dataReferenciaAnterior.atEndOfMonth();
+        return new PeriodoResumo(dataReferenciaAnterior.getYear(),
+                dataReferenciaAnterior.getMonth().getValue(),
+                dataInicioAnterior, dataFimAnterior);
     }
 
 }
