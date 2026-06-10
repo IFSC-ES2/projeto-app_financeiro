@@ -1,5 +1,6 @@
 package bcd.appfinanceirobackend.service;
 
+import bcd.appfinanceirobackend.dto.resumo.GrupoCategoriaDTO;
 import bcd.appfinanceirobackend.dto.resumo.GrupoPagamentoDTO;
 import bcd.appfinanceirobackend.dto.resumo.ResumoMensalDTO;
 import bcd.appfinanceirobackend.model.Transacao;
@@ -29,6 +30,29 @@ public class ResumoService {
 
     public ResumoService(TransacaoRepository transacaoRepository) {
         this.transacaoRepository = transacaoRepository;
+    }
+
+    public ResumoMensalDTO gerarResumoMensal(Usuario usuario, Integer ano, Integer mes){
+        validarUsuarioAutenticado(usuario);
+        PeriodoResumo periodoResumoAtual = resolverPeriodo(ano, mes);
+        PeriodoResumo periodoResumoAnterior = calcularPeriodoAnterior(periodoResumoAtual);
+        List<Transacao> transacoesMesAtual = transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
+                usuario.getId(),
+                periodoResumoAtual.dataInicio(),
+                periodoResumoAtual.dataFim()
+        );
+        List<Transacao> transacoesMesAnterior = transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
+                usuario.getId(),
+                periodoResumoAnterior.dataInicio(),
+                periodoResumoAnterior.dataFim()
+        );
+        BigDecimal totalRecebidoMesAtual = somarReceitas(transacoesMesAtual);
+        BigDecimal totalGastoMesAtual = somarGastos(transacoesMesAtual);
+        BigDecimal saldoMesAtual = totalRecebidoMesAtual.subtract(totalGastoMesAtual);
+        BigDecimal totalGastoMesAnterior = somarGastos(transacoesMesAnterior);
+        BigDecimal variacaoPercentualGastos =
+                calcularVariacaoPercentualGastos(totalRecebidoMesAtual, totalGastoMesAnterior);
+
     }
 
     public List<GrupoPagamentoDTO> agruparFormaPagamento(Usuario usuarioAutenticado) {
@@ -66,6 +90,27 @@ public class ResumoService {
         return gruposPagamento;
     }
 
+    public List<GrupoCategoriaDTO> agruparPorCategoria(Usuario usuarioAutenticado, Integer mes, Integer ano){
+            validarUsuarioAutenticado(usuarioAutenticado);
+            PeriodoResumo periodoSolicitado = resolverPeriodo(ano, mes);
+            List<Transacao> transacoes = transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
+                    usuarioAutenticado.getId(),
+                    periodoSolicitado.dataInicio(),
+                    periodoSolicitado.dataFim()
+            );
+    }
+
+    private List<GrupoCategoriaDTO> montarGruposCategoria(List<Transacao> transacoes) {
+        List<Transacao> gastos = new ArrayList<>();
+        for (Transacao transacao : transacoes){
+            if(transacao.getTipo() == TipoTransacao.DEBITO) {
+                gastos.add(transacao);
+            }
+        }
+        if(gastos.isEmpty()) return new ArrayList<>();
+        BigDecimal totalGastoGeral = somarGastos(gastos);
+    }
+
     private GrupoPagamentoDTO criarGrupoPagamentoDTO(Map.Entry<String, List<Transacao>> entry, BigDecimal totalGeral) {
         String chaveAgrupamento = entry.getKey();
         List<Transacao> transacoesDoGrupo = entry.getValue();
@@ -90,28 +135,6 @@ public class ResumoService {
         return grupoPagamentoDTO;
     }
 
-    public ResumoMensalDTO gerarResumoMensal(Usuario usuario, Integer ano, Integer mes){
-        validarUsuarioAutenticado(usuario);
-        PeriodoResumo periodoResumoAtual = resolverPeriodo(ano, mes);
-        PeriodoResumo periodoResumoAnterior = calcularPeriodoAnterior(periodoResumoAtual);
-        List<Transacao> transacoesMesAtual = transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
-                usuario.getId(),
-                periodoResumoAtual.dataInicio(),
-                periodoResumoAtual.dataFim()
-                );
-        List<Transacao> transacoesMesAnterior = transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
-                usuario.getId(),
-                periodoResumoAnterior.dataInicio(),
-                periodoResumoAnterior.dataFim()
-        );
-        BigDecimal totalRecebidoMesAtual = somarReceitas(transacoesMesAtual);
-        BigDecimal totalGastoMesAtual = somarGastos(transacoesMesAtual);
-        BigDecimal saldoMesAtual = totalRecebidoMesAtual.subtract(totalGastoMesAtual);
-        BigDecimal totalGastoMesAnterior = somarGastos(transacoesMesAnterior);
-        BigDecimal variacaoPercentualGastos =
-                calcularVariacaoPercentualGastos(totalRecebidoMesAtual, totalGastoMesAnterior);
-        
-    }
 
     private String obterChaveAgrupamento(TipoPagamento formaPagamento) {
         if (formaPagamento == null) {
