@@ -57,7 +57,28 @@ public class ResumoService {
         BigDecimal totalGastoMesAnterior = somarGastos(transacoesMesAnterior);
         BigDecimal variacaoPercentualGastos =
                 calcularVariacaoPercentualGastos(totalRecebidoMesAtual, totalGastoMesAnterior);
-
+        List<GrupoCategoriaDTO> gruposCategoria = montarGruposCategoria(transacoesMesAtual);
+        ResumoMensalDTO resumoMensalDTO = new ResumoMensalDTO();
+        if(gruposCategoria.isEmpty()){
+            resumoMensalDTO.setCategoriaMaiorGastoTotal(BigDecimal.ZERO);
+            resumoMensalDTO.setPossuiTransacoes(false);
+        }
+        else {
+            GrupoCategoriaDTO maiorLista = gruposCategoria.getFirst();
+            resumoMensalDTO.setCategoriaMaiorGastoId(maiorLista.getCategoriaID());
+            resumoMensalDTO.setCategoriaMaiorGastoNome(maiorLista.getNome());
+            resumoMensalDTO.setCategoriaMaiorGastoTotal(maiorLista.getTotal());
+            resumoMensalDTO.setPossuiTransacoes(true);
+        }
+        resumoMensalDTO.setAno(ano);
+        resumoMensalDTO.setMes(mes);
+        resumoMensalDTO.setDataInicio(periodoResumoAtual.dataInicio());
+        resumoMensalDTO.setDataFim(periodoResumoAtual.dataFim());
+        resumoMensalDTO.setTotalRecebido(totalRecebidoMesAtual);
+        resumoMensalDTO.setTotalGasto(totalGastoMesAtual);
+        resumoMensalDTO.setSaldo(saldoMesAtual);
+        resumoMensalDTO.setVariacaoPercentualGastos(variacaoPercentualGastos);
+        return resumoMensalDTO;
     }
 
     public List<GrupoPagamentoDTO> agruparFormaPagamento(Usuario usuarioAutenticado) {
@@ -103,9 +124,13 @@ public class ResumoService {
                     periodoSolicitado.dataInicio(),
                     periodoSolicitado.dataFim()
             );
+            return montarGruposCategoria(transacoes);
     }
 
     private List<GrupoCategoriaDTO> montarGruposCategoria(List<Transacao> transacoes) {
+        if(transacoes.isEmpty()){
+            return new ArrayList<>();
+        }
         List<Transacao> gastos = new ArrayList<>();
         for (Transacao transacao : transacoes){
             if(transacao.getTipo() == TipoTransacao.DEBITO) {
@@ -131,6 +156,11 @@ public class ResumoService {
         for (Map.Entry<String, List<Transacao>> entry : agrupamentoCategorias.entrySet()) {
             grupoCategorias.add(criarGrupoCategoriaDTO(entry, totalGastoGeral));
         }
+        grupoCategorias.sort(
+                //Comparing ordena lista do menor para o maior sempre, nessa linha ele faz isso baseado no getTotal
+                //o reversed está presente para inverter essa ordenação!
+                Comparator.comparing(GrupoCategoriaDTO::getTotal).reversed()
+        );
         return grupoCategorias;
     }
 
