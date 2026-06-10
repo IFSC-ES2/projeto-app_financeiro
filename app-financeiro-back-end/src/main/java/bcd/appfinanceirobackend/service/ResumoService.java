@@ -70,8 +70,8 @@ public class ResumoService {
             resumoMensalDTO.setCategoriaMaiorGastoTotal(maiorLista.getTotal());
             resumoMensalDTO.setPossuiTransacoes(true);
         }
-        resumoMensalDTO.setAno(ano);
-        resumoMensalDTO.setMes(mes);
+        resumoMensalDTO.setAno(periodoResumoAtual.ano());
+        resumoMensalDTO.setMes(periodoResumoAtual.mes());
         resumoMensalDTO.setDataInicio(periodoResumoAtual.dataInicio());
         resumoMensalDTO.setDataFim(periodoResumoAtual.dataFim());
         resumoMensalDTO.setTotalRecebido(totalRecebidoMesAtual);
