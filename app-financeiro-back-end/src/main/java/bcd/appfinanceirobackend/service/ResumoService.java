@@ -108,6 +108,9 @@ public class ResumoService {
         BigDecimal totalGastoMesAtual = somarGastos(transacoesMesAtual);
         BigDecimal saldoMesAtual = totalRecebidoMesAtual.subtract(totalGastoMesAtual);
         BigDecimal totalGastoMesAnterior = somarGastos(transacoesMesAnterior);
+        BigDecimal variacaoPercentualGastos =
+                calcularVariacaoPercentualGastos(totalRecebidoMesAtual, totalGastoMesAnterior);
+        
     }
 
     private String obterChaveAgrupamento(TipoPagamento formaPagamento) {
@@ -198,6 +201,20 @@ public class ResumoService {
             }
         }
         return total;
+    }
+
+    private BigDecimal calcularVariacaoPercentualGastos(BigDecimal gastoAtual, BigDecimal gastoAnterior){
+        if(gastoAnterior.equals(BigDecimal.ZERO) && gastoAtual.equals(BigDecimal.ZERO)){
+            return BigDecimal.ZERO;
+        }
+        else if (gastoAnterior.equals(BigDecimal.ZERO) && gastoAtual.compareTo(BigDecimal.ZERO) > 0) {
+            return BigDecimal.valueOf(100);
+        }
+
+        BigDecimal diferenca = gastoAtual.subtract(gastoAnterior);
+        return diferenca.
+                divide(gastoAnterior, 2, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100));
     }
 
 }
