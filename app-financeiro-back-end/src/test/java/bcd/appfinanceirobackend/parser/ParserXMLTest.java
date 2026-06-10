@@ -449,4 +449,58 @@ class ParserXMLTest {
             assertTrue(ex.getMessage().contains("Erro ao processar arquivo XML"));
         }
     }
+
+    @Nested
+    @DisplayName("parsear() - Tipo textual legado (regressão #176)")
+    class TipoTextualLegado {
+
+        private String xmlComTipo(String valor, String tipo) {
+            return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                    + "<extrato><transacao>"
+                    + "<data>2024-01-10</data>"
+                    + "<descricao>Lancamento legado</descricao>"
+                    + "<valor>" + valor + "</valor>"
+                    + "<tipo>" + tipo + "</tipo>"
+                    + "</transacao></extrato>";
+        }
+
+        @Test
+        @DisplayName("tipo BOLETO legado com valor positivo não quebra e faz fallback para CREDITO")
+        void tipoBoletoPositivo_naoQuebra_viraCredito() {
+            ResultadoParser resultado = parser.parsear(fromString("extrato.xml", xmlComTipo("300.00", "BOLETO")), conta);
+            Transacao transacao = resultado.getTransacoes().get(0);
+
+            assertAll(
+                    () -> assertEquals(1, resultado.getTransacoes().size()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+                    () -> assertEquals(TipoTransacao.CREDITO, transacao.getTipo()),
+                    // o parser deriva apenas o sentido financeiro; não infere forma de pagamento do extrato
+                    () -> assertNull(transacao.getFormaPagamento())
+            );
+        }
+
+        @Test
+        @DisplayName("tipo BOLETO legado com valor negativo vira DEBITO pela regra do sinal")
+        void tipoBoletoNegativo_viraDebito() {
+            ResultadoParser resultado = parser.parsear(fromString("extrato.xml", xmlComTipo("-300.00", "BOLETO")), conta);
+
+            assertAll(
+                    () -> assertEquals(1, resultado.getTransacoes().size()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(0).getTipo())
+            );
+        }
+
+        @Test
+        @DisplayName("tipo PARCELAMENTO legado com valor negativo vira DEBITO")
+        void tipoParcelamentoNegativo_viraDebito() {
+            ResultadoParser resultado = parser.parsear(fromString("extrato.xml", xmlComTipo("-150.00", "PARCELAMENTO")), conta);
+
+            assertAll(
+                    () -> assertEquals(1, resultado.getTransacoes().size()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(0).getTipo())
+            );
+        }
+    }
 }
