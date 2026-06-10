@@ -10,8 +10,8 @@ import java.util.UUID;
 @Getter
 @Setter
 public class ResumoMensalDTO {
-    private int ano;
-    private int mes;
+    private Integer ano;
+    private Integer mes;
     private LocalDate dataInicio;
     private LocalDate dataFim;
     private BigDecimal totalRecebido;

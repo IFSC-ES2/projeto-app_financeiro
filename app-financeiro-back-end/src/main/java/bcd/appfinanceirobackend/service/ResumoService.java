@@ -1,6 +1,7 @@
 package bcd.appfinanceirobackend.service;
 
 import bcd.appfinanceirobackend.dto.resumo.GrupoPagamentoDTO;
+import bcd.appfinanceirobackend.dto.resumo.ResumoMensalDTO;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.model.enums.TipoPagamento;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +23,7 @@ public class ResumoService {
 
     private static final String CHAVE_NAO_INFORMADO = "NAO_INFORMADO";
 
+    public record PeriodoResumo(Integer ano, Integer mes, LocalDate dataInicio, LocalDate dataFim){ }
     private final TransacaoRepository transacaoRepository;
 
     public ResumoService(TransacaoRepository transacaoRepository) {
@@ -59,6 +63,11 @@ public class ResumoService {
         }
 
         return gruposPagamento;
+    }
+
+    public ResumoMensalDTO gerarResumoMensal(Usuario usuario, Integer ano, Integer mes){
+        validarUsuarioAutenticado(usuario);
+        PeriodoResumo periodoResumo = resolverPeriodo(ano, mes);
     }
 
     private String obterChaveAgrupamento(TipoPagamento formaPagamento) {
@@ -123,4 +132,23 @@ public class ResumoService {
             throw new AccessDeniedException("Usuário autenticado não encontrado.");
         }
     }
+    private PeriodoResumo resolverPeriodo(Integer ano, Integer mes){
+        if(ano == null && mes == null){
+            ano = LocalDate.now().getYear();
+            mes = LocalDate.now().getMonth().getValue();
+        }
+        else if (ano != null && mes == null){
+            throw new IllegalArgumentException("Apenas o ano foi informado, informe o mês e o ano");
+        }
+        else if (ano == null) {
+            throw new IllegalArgumentException("Apenas o mês foi informado, informe o ano e o mês");
+        }
+        if(mes < 1 || mes > 12){
+            throw new IllegalArgumentException("Mês informado inválido");
+        }
+        LocalDate dataInicio = LocalDate.of(ano, mes, 1);
+        LocalDate dataFim = YearMonth.of(ano, mes).atEndOfMonth();
+        return new PeriodoResumo(ano, mes, dataInicio, dataFim);
+    }
+
 }
