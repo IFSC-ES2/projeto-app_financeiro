@@ -185,8 +185,9 @@ public class ResumoService {
             grupoCategoriaDTO.setNome(categoria.getNome());
             grupoCategoriaDTO.setIcone(categoria.getIcone());
             grupoCategoriaDTO.setCor(categoria.getCor());
+        } else {
+            grupoCategoriaDTO.setNome(chaveAgrupamento);
         }
-        grupoCategoriaDTO.setNome(chaveAgrupamento);
         grupoCategoriaDTO.setTotal(totalGrupo);
         grupoCategoriaDTO.setQuantidade(transacoesDoGrupo.size());
         grupoCategoriaDTO.setPercentual(percentualGrupo);
