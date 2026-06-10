@@ -5,6 +5,7 @@ import bcd.appfinanceirobackend.dto.resumo.ResumoMensalDTO;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.model.enums.TipoPagamento;
+import bcd.appfinanceirobackend.model.enums.TipoTransacao;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -65,30 +66,6 @@ public class ResumoService {
         return gruposPagamento;
     }
 
-    public ResumoMensalDTO gerarResumoMensal(Usuario usuario, Integer ano, Integer mes){
-        validarUsuarioAutenticado(usuario);
-        PeriodoResumo periodoResumoAtual = resolverPeriodo(ano, mes);
-        PeriodoResumo periodoResumoAnterior = calcularPeriodoAnterior(periodoResumoAtual);
-        List<Transacao> transacoesMesAtual = transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
-                usuario.getId(),
-                periodoResumoAtual.dataInicio(),
-                periodoResumoAtual.dataFim()
-                );
-        List<Transacao> transacoesMesAnterior = transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
-                usuario.getId(),
-                periodoResumoAnterior.dataInicio(),
-                periodoResumoAnterior.dataFim()
-        );
-    }
-
-    private String obterChaveAgrupamento(TipoPagamento formaPagamento) {
-        if (formaPagamento == null) {
-            return CHAVE_NAO_INFORMADO;
-        }
-
-        return formaPagamento.name();
-    }
-
     private GrupoPagamentoDTO criarGrupoPagamentoDTO(Map.Entry<String, List<Transacao>> entry, BigDecimal totalGeral) {
         String chaveAgrupamento = entry.getKey();
         List<Transacao> transacoesDoGrupo = entry.getValue();
@@ -112,6 +89,36 @@ public class ResumoService {
 
         return grupoPagamentoDTO;
     }
+
+    public ResumoMensalDTO gerarResumoMensal(Usuario usuario, Integer ano, Integer mes){
+        validarUsuarioAutenticado(usuario);
+        PeriodoResumo periodoResumoAtual = resolverPeriodo(ano, mes);
+        PeriodoResumo periodoResumoAnterior = calcularPeriodoAnterior(periodoResumoAtual);
+        List<Transacao> transacoesMesAtual = transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
+                usuario.getId(),
+                periodoResumoAtual.dataInicio(),
+                periodoResumoAtual.dataFim()
+                );
+        List<Transacao> transacoesMesAnterior = transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
+                usuario.getId(),
+                periodoResumoAnterior.dataInicio(),
+                periodoResumoAnterior.dataFim()
+        );
+        BigDecimal totalRecebidoMesAtual = somarReceitas(transacoesMesAtual);
+        BigDecimal totalGastoMesAtual = somarGastos(transacoesMesAtual);
+        BigDecimal saldoMesAtual = totalRecebidoMesAtual.subtract(totalGastoMesAtual);
+        BigDecimal totalGastoMesAnterior = somarGastos(transacoesMesAnterior);
+    }
+
+    private String obterChaveAgrupamento(TipoPagamento formaPagamento) {
+        if (formaPagamento == null) {
+            return CHAVE_NAO_INFORMADO;
+        }
+
+        return formaPagamento.name();
+    }
+
+
 
     private TipoPagamento obterFormaPagamento(String chaveAgrupamento) {
         if (CHAVE_NAO_INFORMADO.equals(chaveAgrupamento)) {
@@ -171,6 +178,26 @@ public class ResumoService {
         return new PeriodoResumo(dataReferenciaAnterior.getYear(),
                 dataReferenciaAnterior.getMonth().getValue(),
                 dataInicioAnterior, dataFimAnterior);
+    }
+
+    private BigDecimal somarReceitas(List<Transacao> transacoes){
+        BigDecimal total = BigDecimal.ZERO;
+        for (Transacao transacao: transacoes) {
+            if(transacao.getTipo() == TipoTransacao.CREDITO){
+                total = total.add(transacao.getValor());
+            }
+        }
+        return total;
+    }
+
+    private BigDecimal somarGastos(List<Transacao> transacoes){
+        BigDecimal total = BigDecimal.ZERO;
+        for (Transacao transacao: transacoes) {
+            if(transacao.getTipo() == TipoTransacao.DEBITO){
+                total = total.add(transacao.getValor());
+            }
+        }
+        return total;
     }
 
 }
