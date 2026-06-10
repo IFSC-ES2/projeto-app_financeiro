@@ -56,7 +56,7 @@ public class ResumoService {
         BigDecimal saldoMesAtual = totalRecebidoMesAtual.subtract(totalGastoMesAtual);
         BigDecimal totalGastoMesAnterior = somarGastos(transacoesMesAnterior);
         BigDecimal variacaoPercentualGastos =
-                calcularVariacaoPercentualGastos(totalRecebidoMesAtual, totalGastoMesAnterior);
+                calcularVariacaoPercentualGastos(totalGastoMesAtual, totalGastoMesAnterior);
         List<GrupoCategoriaDTO> gruposCategoria = montarGruposCategoria(transacoesMesAtual);
         ResumoMensalDTO resumoMensalDTO = new ResumoMensalDTO();
         if(gruposCategoria.isEmpty()){
