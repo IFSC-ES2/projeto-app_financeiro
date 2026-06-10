@@ -5,7 +5,7 @@ import EstadoVazio from '../components/ui/EstadoVazio';
 const Dashboard = () => (
   <LayoutPrivado
     titulo="Dashboard"
-    subtitulo="Resumo financeiro inicial exibido após autenticação."
+    subtitulo="Veja aqui o seu resumo financeiro."
   >
     <ResumoFormaPagamentoPizza />
 

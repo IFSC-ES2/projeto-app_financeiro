@@ -211,11 +211,11 @@ const Transacoes = () => {
       setPagina((atual) =>
         atual
           ? {
-              ...atual,
-              conteudo: atual.conteudo.map((transacao) =>
-                transacao.transacaoId === transacaoId ? transacaoAtualizada : transacao
-              ),
-            }
+            ...atual,
+            conteudo: atual.conteudo.map((transacao) =>
+              transacao.transacaoId === transacaoId ? transacaoAtualizada : transacao
+            ),
+          }
           : atual
       );
 
@@ -346,10 +346,16 @@ const Transacoes = () => {
             <p>Filtros e paginação aplicados no servidor. Receitas, despesas e saldo referem-se à página atual.</p>
           </div>
 
-          <Link to="/transacoes/nova" className="sb-button sb-button-primary sb-button-sm">
-            <span aria-hidden="true">+</span>
-            Nova transação
-          </Link>
+          <div className="transactions-actions">
+            <Link to="/importacoes/nova" className="sb-button sb-button-secondary sb-button-sm">
+              Importar extrato
+            </Link>
+
+            <Link to="/transacoes/nova" className="sb-button sb-button-primary sb-button-sm">
+              <span aria-hidden="true">+</span>
+              Nova transação
+            </Link>
+          </div>
         </div>
 
         {carregando ? (

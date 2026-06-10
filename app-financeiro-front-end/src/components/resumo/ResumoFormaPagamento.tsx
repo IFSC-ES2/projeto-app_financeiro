@@ -104,7 +104,7 @@ const ResumoFormaPagamento = ({
                   <div>
                     <strong>{item.rotulo ?? 'Não informado'}</strong>
                     <span>
-                      {item.quantidade} transação{item.quantidade === 1 ? '' : 'ões'}
+                      {item.quantidade} transaç{item.quantidade === 1 ? 'ão' : 'ões'}
                     </span>
                   </div>
 
