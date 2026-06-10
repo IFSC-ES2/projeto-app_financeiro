@@ -116,7 +116,7 @@ public class ResumoService {
         return gruposPagamento;
     }
 
-    public List<GrupoCategoriaDTO> agruparPorCategoria(Usuario usuarioAutenticado, Integer mes, Integer ano){
+    public List<GrupoCategoriaDTO> agruparPorCategoria(Usuario usuarioAutenticado, Integer ano, Integer mes){
             validarUsuarioAutenticado(usuarioAutenticado);
             PeriodoResumo periodoSolicitado = resolverPeriodo(ano, mes);
             List<Transacao> transacoes = transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
