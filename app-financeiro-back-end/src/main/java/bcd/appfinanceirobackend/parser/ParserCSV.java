@@ -54,7 +54,7 @@ public class ParserCSV implements ParserExtrato {
                 return new ResultadoParser();
             }
 
-            char delimitador = detectarDelimitador(linhas);
+            char delimitador = detectarDelimitador(linhas.getFirst());
 
             List<String[]> registros = lerRegistrosCsv(linhas, delimitador);
 
@@ -64,8 +64,8 @@ public class ParserCSV implements ParserExtrato {
 
             String[] cabecalho = registros.getFirst();
 
-            if (ehCabecalhoNubank(cabecalho)) {
-                return processarCsvNubank(registros, conta);
+            if (ehCabecalhoNubankConta(cabecalho)) {
+                return processarCsvNubankConta(registros, conta);
             }
 
             return processarCsvLegado(registros, conta);
@@ -76,12 +76,13 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Lê os bytes do arquivo tentando UTF-8 primeiro.
-     * Se UTF-8 não funcionar, tenta Windows-1252.
-     * Se também não funcionar, usa ISO-8859-1 como fallback final.
+     * Lê o conteúdo do arquivo tentando UTF-8 primeiro.
      *
-     * Isso ajuda em extratos reais, porque alguns bancos exportam arquivos com
-     * acentos e caracteres especiais fora de UTF-8.
+     * Se UTF-8 não funcionar, tenta Windows-1252.
+     * Se Windows-1252 também não funcionar, usa ISO-8859-1 como fallback final.
+     *
+     * Isso ajuda em extratos reais, porque arquivos exportados por bancos podem
+     * vir com acentos em diferentes encodings.
      */
     private String lerConteudoDoArquivo(MultipartFile arquivo) throws IOException {
         byte[] bytes = arquivo.getBytes();
@@ -104,9 +105,8 @@ public class ParserCSV implements ParserExtrato {
     /**
      * Tenta converter os bytes usando um charset específico.
      *
-     * O uso de CharsetDecoder é importante porque:
-     * new String(bytes, UTF_8) pode mascarar erro de encoding,
-     * enquanto o decoder consegue reportar que a conversão falhou.
+     * O CharsetDecoder é usado para detectar erro real de encoding.
+     * Usar new String(bytes, UTF_8) diretamente pode mascarar caracteres inválidos.
      */
     private String tentarConverter(byte[] bytes, Charset charset) {
         CharsetDecoder decoder = charset.newDecoder()
@@ -121,13 +121,10 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Remove o BOM quando ele aparece no início do arquivo.
+     * Remove o BOM do início do arquivo, quando existir.
      *
-     * Sem isso, a primeira coluna pode ser lida como:
-     * "﻿date"
-     *
-     * em vez de:
-     * "date"
+     * Sem isso, um cabeçalho como "Data" pode ser lido como "﻿Data",
+     * fazendo a comparação de nomes de coluna falhar.
      */
     private String removerBom(String conteudo) {
         if (conteudo == null) {
@@ -142,12 +139,11 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Quebra o conteúdo em linhas úteis.
+     * Quebra o conteúdo do arquivo em linhas úteis.
      *
-     * Linhas em branco são ignoradas para não virarem falhas falsas
-     * na importação.
+     * Linhas em branco são ignoradas para não serem contabilizadas como falhas
+     * falsas no parser.
      */
-
     private List<String> quebrarEmLinhasUteis(String conteudo) {
         List<String> linhasUteis = new ArrayList<>();
 
@@ -166,24 +162,28 @@ public class ParserCSV implements ParserExtrato {
         return linhasUteis;
     }
 
-
     /**
-     * Detecta o delimitador comparando vírgula, ponto e vírgula e tabulação.
+     * Detecta o delimitador mais provável usando a primeira linha útil.
      *
-     * Para o Nubank, a linha:
-     * date,title,amount
+     * Para o extrato bancário Nubank:
+     * Data,Valor,Identificador,Descrição
      *
-     * gera 3 colunas com vírgula, então a vírgula será escolhida.
+     * O delimitador detectado será vírgula.
      */
-    private char detectarDelimitador(List<String> linhas) throws Exception {
+    private char detectarDelimitador(String primeiraLinha) throws Exception {
         char melhorDelimitador = ',';
         int maiorQuantidadeColunas = 1;
 
         char[] candidatos = new char[]{',', ';', '\t'};
 
         for (char candidato : candidatos) {
-            List<String[]> registros = lerRegistrosCsv(List.of(linhas.get(0)), candidato);
-            int quantidadeColunas = registros.get(0).length;
+            List<String[]> registros = lerRegistrosCsv(List.of(primeiraLinha), candidato);
+
+            if (registros.isEmpty()) {
+                continue;
+            }
+
+            int quantidadeColunas = registros.getFirst().length;
 
             if (quantidadeColunas > maiorQuantidadeColunas) {
                 maiorQuantidadeColunas = quantidadeColunas;
@@ -195,16 +195,11 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Lê as linhas com OpenCSV.
+     * Lê as linhas usando OpenCSV.
      *
-     * Isso é importante porque o Nubank usa valores assim:
-     * "7,00"
-     *
-     * Se você usar split(",") simples, esse valor quebra em duas colunas:
-     * "7"
-     * "00"
-     *
-     * Com OpenCSV, o conteúdo entre aspas é preservado corretamente.
+     * Isso evita erro com campos que possuem vírgula dentro de aspas.
+     * Mesmo que o extrato bancário Nubank não dependa muito disso, é mais seguro
+     * manter a leitura robusta para CSV real.
      */
     private List<String[]> lerRegistrosCsv(List<String> linhas, char delimitador) throws Exception {
         String conteudo = String.join("\n", linhas);
@@ -227,29 +222,34 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Verifica se o CSV tem o layout real do Nubank.
+     * Detecta se o CSV possui o cabeçalho do extrato bancário Nubank.
      *
-     * Layout esperado:
-     * date,title,amount
+     * Formato esperado:
+     * Data,Valor,Identificador,Descrição
+     *
+     * O campo Identificador é ignorado na criação da transação, mas pode existir
+     * no arquivo. Para processar, o mínimo necessário é: Data, Valor e Descrição.
      */
-    private boolean ehCabecalhoNubank(String[] cabecalho) {
-        return encontrarIndiceDaColuna(cabecalho, "date") >= 0
-                && encontrarIndiceDaColuna(cabecalho, "title") >= 0
-                && encontrarIndiceDaColuna(cabecalho, "amount") >= 0;
+    private boolean ehCabecalhoNubankConta(String[] cabecalho) {
+        return encontrarIndiceDaColuna(cabecalho, "data") >= 0
+                && encontrarIndiceDaColuna(cabecalho, "valor") >= 0
+                && encontrarIndiceDaColuna(cabecalho, "descricao") >= 0;
     }
 
     /**
-     * Processa o CSV real do Nubank.
+     * Processa o extrato bancário real do Nubank.
      *
-     * Regras:
-     * - date vira data da transação;
-     * - title vira descrição;
-     * - amount vira valor;
-     * - amount positivo vira DEBITO, porque representa compra/gasto;
-     * - amount negativo vira CREDITO, porque representa pagamento recebido;
-     * - valor é salvo sempre positivo na entidade.
+     * Mapeamento:
+     * Data      -> data da transação
+     * Valor     -> valor e tipo da transação
+     * Descrição -> descrição da transação
+     *
+     * Regra:
+     * Valor positivo -> CREDITO
+     * Valor negativo -> DEBITO
+     * Valor salvo    -> sempre positivo
      */
-    private ResultadoParser processarCsvNubank(List<String[]> registros, Conta conta) {
+    private ResultadoParser processarCsvNubankConta(List<String[]> registros, Conta conta) {
         ResultadoParser resultado = new ResultadoParser();
 
         List<Transacao> transacoes = new ArrayList<>();
@@ -258,12 +258,12 @@ public class ParserCSV implements ParserExtrato {
 
         String[] cabecalho = registros.getFirst();
 
-        int indiceData = encontrarIndiceDaColuna(cabecalho, "date");
-        int indiceDescricao = encontrarIndiceDaColuna(cabecalho, "title");
-        int indiceValor = encontrarIndiceDaColuna(cabecalho, "amount");
+        int indiceData = encontrarIndiceDaColuna(cabecalho, "data");
+        int indiceValor = encontrarIndiceDaColuna(cabecalho, "valor");
+        int indiceDescricao = encontrarIndiceDaColuna(cabecalho, "descricao");
 
-        if (indiceData < 0 || indiceDescricao < 0 || indiceValor < 0) {
-            throw new IllegalArgumentException("Cabeçalho Nubank inválido");
+        if (indiceData < 0 || indiceValor < 0 || indiceDescricao < 0) {
+            throw new IllegalArgumentException("Cabeçalho Nubank Conta inválido");
         }
 
         for (int i = 1; i < registros.size(); i++) {
@@ -271,21 +271,21 @@ public class ParserCSV implements ParserExtrato {
 
             totalLinhas++;
 
-            if (!possuiIndicesObrigatorios(linha, indiceData, indiceDescricao, indiceValor)) {
+            if (!possuiIndicesObrigatorios(linha, indiceData, indiceValor, indiceDescricao)) {
                 linhasInvalidas++;
                 continue;
             }
 
             LocalDate data = parsearData(linha[indiceData]);
-            String descricao = limparDescricao(linha[indiceDescricao]);
             BigDecimal valor = parsearValor(linha[indiceValor]);
+            String descricao = limparDescricao(linha[indiceDescricao]);
 
             if (data == null || valor == null || valor.compareTo(BigDecimal.ZERO) == 0) {
                 linhasInvalidas++;
                 continue;
             }
 
-            TipoTransacao tipo = resolverTipoNubank(valor);
+            TipoTransacao tipo = resolverTipoNubankConta(valor);
 
             Transacao transacao = criarTransacao(
                     conta,
@@ -306,12 +306,12 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Mantém o comportamento antigo do parser.
+     * Mantém o comportamento legado do CSV já aceito pelo sistema.
      *
      * Formato legado:
      * data,descricao,valor,tipo
      *
-     * Isso evita quebrar arquivos e testes que já funcionavam antes.
+     * A manutenção desse fallback evita quebrar testes e arquivos antigos.
      */
     private ResultadoParser processarCsvLegado(List<String[]> registros, Conta conta) {
         ResultadoParser resultado = new ResultadoParser();
@@ -331,13 +331,12 @@ public class ParserCSV implements ParserExtrato {
             LocalDate data = parsearData(linha[0]);
             BigDecimal valor = parsearValor(linha[2]);
 
-            if (data == null || valor == null) {
+            if (data == null || valor == null || valor.compareTo(BigDecimal.ZERO) == 0) {
                 linhasInvalidas++;
                 continue;
             }
 
             String descricao = limparDescricao(linha[1]);
-
             TipoTransacao tipo = parsearTipoLegado(linha[3], valor);
 
             Transacao transacao = criarTransacao(
@@ -359,13 +358,13 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Encontra o índice de uma coluna dentro do cabeçalho.
+     * Encontra o índice de uma coluna no cabeçalho.
      *
-     * Exemplo:
-     * date,title,amount
-     *
-     * encontrarIndiceDaColuna(cabecalho, "amount")
-     * retorna 2.
+     * A comparação usa normalização para aceitar:
+     * "Descrição"
+     * "descricao"
+     * " Descrição "
+     * "﻿Descrição"
      */
     private int encontrarIndiceDaColuna(String[] cabecalho, String nomeProcurado) {
         for (int i = 0; i < cabecalho.length; i++) {
@@ -380,35 +379,9 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Normaliza textos para comparação.
+     * Verifica se a linha tem todos os índices que serão acessados.
      *
-     * Usado principalmente para comparar cabeçalhos, como:
-     * "﻿date" -> "date"
-     * " Date " -> "date"
-     * "Descrição" -> "descricao"
-     */
-    private String normalizarTexto(String texto) {
-        if (texto == null) {
-            return "";
-        }
-
-        String normalizado = texto
-                .replace(BOM, "")
-                .replace("\"", "")
-                .trim()
-                .toLowerCase();
-
-        normalizado = Normalizer
-                .normalize(normalizado, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "");
-
-        return normalizado;
-    }
-
-    /**
-     * Garante que a linha tem as posições que serão acessadas.
-     *
-     * Isso evita ArrayIndexOutOfBoundsException quando uma linha vier quebrada
+     * Isso evita ArrayIndexOutOfBoundsException quando o CSV possui linha quebrada
      * ou com colunas faltando.
      */
     private boolean possuiIndicesObrigatorios(String[] linha, int... indices) {
@@ -422,10 +395,32 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Limpa a descrição da transação.
+     * Normaliza texto para comparação.
      *
-     * Se a descrição vier vazia, usa um fallback para evitar salvar descrição nula
-     * ou em branco.
+     * Exemplo:
+     * "Descrição" vira "descricao"
+     * "﻿Data" vira "data"
+     */
+    private String normalizarTexto(String texto) {
+        if (texto == null) {
+            return "";
+        }
+
+        String normalizado = texto
+                .replace(BOM, "")
+                .replace("\"", "")
+                .trim()
+                .toLowerCase();
+
+        return Normalizer
+                .normalize(normalizado, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+    }
+
+    /**
+     * Limpa a descrição que será salva na transação.
+     *
+     * Se a descrição vier vazia, usa um texto padrão para evitar descrição nula.
      */
     private String limparDescricao(String descricao) {
         if (descricao == null) {
@@ -445,25 +440,10 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Regra específica do extrato Nubank de cartão.
+     * Converte texto em LocalDate.
      *
-     * No arquivo enviado:
-     * - compras aparecem com amount positivo;
-     * - pagamento recebido aparece com amount negativo.
-     */
-    private TipoTransacao resolverTipoNubank(BigDecimal valor) {
-        if (valor.compareTo(BigDecimal.ZERO) > 0) {
-            return TipoTransacao.DEBITO;
-        }
-
-        return TipoTransacao.CREDITO;
-    }
-
-    /**
-     * Tenta converter uma string em LocalDate.
-     *
-     * O Nubank usa yyyy-MM-dd.
-     * O formato legado do projeto também aceitava dd/MM/yyyy e dd-MM-yyyy.
+     * O extrato bancário Nubank usa dd/MM/yyyy.
+     * O CSV legado também pode usar yyyy-MM-dd ou dd-MM-yyyy.
      */
     private LocalDate parsearData(String valor) {
         if (valor == null) {
@@ -485,15 +465,20 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Converte textos monetários em BigDecimal.
+     * Converte texto monetário em BigDecimal.
      *
      * Casos aceitos:
-     * "7,00"      -> 7.00
-     * "- 866,89"  -> -866.89
-     * "15,99"     -> 15.99
-     * "104,90"    -> 104.90
-     * "1.234,56"  -> 1234.56
-     * "1234.56"   -> 1234.56
+     * 80        -> 80
+     * -80       -> -80
+     * -8.91     -> -8.91
+     * -494.1    -> -494.1
+     * 1.234,56  -> 1234.56
+     * 1234,56   -> 1234.56
+     * R$ 100,00 -> 100.00
+     *
+     * Importante:
+     * se o valor contém apenas ponto, o ponto é tratado como decimal.
+     * Isso evita transformar -8.91 em -891.
      */
     private BigDecimal parsearValor(String valor) {
         if (valor == null) {
@@ -552,12 +537,25 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Regra antiga do CSV legado.
+     * Regra do extrato bancário Nubank.
      *
-     * Mantém compatibilidade com os testes e arquivos anteriores:
-     * - valor negativo continua sendo DEBITO;
-     * - se o tipo informado existir no enum, usa ele;
-     * - se o tipo não for reconhecido, valor positivo vira CREDITO.
+     * Valor positivo significa entrada de dinheiro na conta.
+     * Valor negativo significa saída de dinheiro da conta.
+     */
+    private TipoTransacao resolverTipoNubankConta(BigDecimal valor) {
+        if (valor.compareTo(BigDecimal.ZERO) > 0) {
+            return TipoTransacao.CREDITO;
+        }
+
+        return TipoTransacao.DEBITO;
+    }
+
+    /**
+     * Regra do CSV legado.
+     *
+     * Valores negativos continuam sendo DEBITO.
+     * Para valores positivos, tenta usar o campo tipo informado no CSV.
+     * Se o tipo não for reconhecido, faz fallback para CREDITO.
      */
     private TipoTransacao parsearTipoLegado(String tipoTexto, BigDecimal valor) {
         if (valor.compareTo(BigDecimal.ZERO) < 0) {
@@ -574,8 +572,8 @@ public class ParserCSV implements ParserExtrato {
     /**
      * Centraliza a criação da Transacao.
      *
-     * Assim, tanto o fluxo Nubank quanto o fluxo legado criam transações com
-     * a mesma estrutura mínima.
+     * O parser define apenas os dados extraídos do arquivo.
+     * Categoria e Importacao continuam sendo responsabilidades do ImportacaoService.
      */
     private Transacao criarTransacao(
             Conta conta,
