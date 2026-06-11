@@ -546,5 +546,16 @@ Essa versão foi criada para:
 - ajustar a modelagem de tipo de transação;
 - corrigir CORS para o ambiente publicado;
 - consolidar o backend do resumo mensal do dashboard.
+- gestão de contas bancárias;
+- primeira conta no onboarding;
+- edição e exclusão de transações;
+- filtros e paginação de transações;
+- resumo por forma de pagamento;
+- categorização pela interface;
+- testes frontend e backend ampliados;
+- cobertura frontend mensurada;
+- backend mais modular após refatoração;
+- documentação de deploy;
+- versão estável publicada na `main`.
 
 Com isso, a Sprint 4 passa a ter uma entrega mais completa e alinhada ao MVP validável do SmartBudget.
