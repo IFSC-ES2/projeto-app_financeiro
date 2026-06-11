@@ -10,11 +10,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.nio.charset.*;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -22,37 +25,16 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Parser para extratos bancários no formato CSV.
- *
- * Detecta automaticamente o delimitador (vírgula, ponto e vírgula ou tabulação)
- * lendo a primeira linha do arquivo antes de processá-lo.
- *
- * Formato esperado das colunas (ordem obrigatória):
- *   data | descricao | valor | tipo
- *
- * Exemplos de linha válida:
- *   2024-01-15;Supermercado Extra;-150,00;DEBITO
- *   2024-01-20,Salário,5000.00,CREDITO
- *
- * Regras de interpretação:
- * - Valores negativos são sempre tratados como DEBITO, independente do campo tipo
- * - Datas aceitas: yyyy-MM-dd, dd/MM/yyyy, dd-MM-yyyy
- * - Separador decimal aceito: ponto ou vírgula
- * - Linhas de cabeçalho são ignoradas automaticamente (detecção por ausência de data válida)
- * Linhas inválidas não interrompem a importação. Elas são ignoradas e
- * contabilizadas em ResultadoParser.linhasInvalidas.
- */
 @Component
 public class ParserCSV implements ParserExtrato {
+
+    private static final String BOM = "\uFEFF";
 
     private static final List<DateTimeFormatter> FORMATADORES = List.of(
             DateTimeFormatter.ofPattern("yyyy-MM-dd"),
             DateTimeFormatter.ofPattern("dd/MM/yyyy"),
             DateTimeFormatter.ofPattern("dd-MM-yyyy")
     );
-
-    private static final String BOM = "\uFEFF";
 
     @Override
     public boolean aceita(MultipartFile arquivo) {
@@ -87,56 +69,10 @@ public class ParserCSV implements ParserExtrato {
             }
 
             return processarCsvLegado(registros, conta);
-//        try {
-//            String conteudo = lerConteudoDoArquivo(arquivo);
-//            conteudo = removerBom(conteudo);
-//            char delimitador = quebrarEmLinhasUteis(conteudo);
-//
-//            try (CSVReader reader = new CSVReaderBuilder(
-//                    new InputStreamReader(arquivo.getInputStream(), StandardCharsets.UTF_8))
-//                    .withCSVParser(new CSVParserBuilder().withSeparator(delimitador).build())
-//                    .build()) {
-//
-//                String[] linha;
-//                while ((linha = reader.readNext()) != null) {
-//                    totalLinhas++;
-//                    if (linha.length != 4) {
-//                        linhasInvalidas++;
-//                        continue;
-//                    }
-//
-//                    // Ignora cabeçalho: primeira coluna não é uma data válida
-//                    LocalDate data = parsearData(linha[0].trim());
-//                    if (data == null) {
-//                        linhasInvalidas++;
-//                        continue;
-//                    }
-//
-//                    String descricao = linha[1].trim();
-//                    BigDecimal valor = parsearValor(linha[2].trim());
-//                    if (valor == null) {
-//                        linhasInvalidas++;
-//                        continue;
-//                    };
-//
-//                    TipoTransacao tipo = parsearTipo(linha[3].trim(), valor);
-//
-//                    // Valor sempre positivo na entidade; o tipo indica a direção
-//                    Transacao transacao = new Transacao();
-//                    transacao.setConta(conta);
-//                    transacao.setData(data);
-//                    transacao.setDescricao(descricao);
-//                    transacao.setValor(valor.abs());
-//                    transacao.setTipo(tipo);
-//                    transacao.setCategorizada(false);
-//
-//                    transacoes.add(transacao);
-//                }
-//            }
-        }catch (Exception e) {
+
+        } catch (Exception e) {
             throw new RuntimeException("Erro ao processar arquivo CSV: " + e.getMessage(), e);
         }
-
     }
 
     /**
@@ -147,15 +83,8 @@ public class ParserCSV implements ParserExtrato {
      * Isso ajuda em extratos reais, porque alguns bancos exportam arquivos com
      * acentos e caracteres especiais fora de UTF-8.
      */
-
-    private String lerConteudoDoArquivo(MultipartFile arquivo) {
-        byte[] bytes;
-
-        try {
-            bytes = arquivo.getBytes();
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Não foi possível ler o arquivo CSV.", e);
-        }
+    private String lerConteudoDoArquivo(MultipartFile arquivo) throws IOException {
+        byte[] bytes = arquivo.getBytes();
 
         String textoUtf8 = tentarConverter(bytes, StandardCharsets.UTF_8);
 
@@ -179,7 +108,6 @@ public class ParserCSV implements ParserExtrato {
      * new String(bytes, UTF_8) pode mascarar erro de encoding,
      * enquanto o decoder consegue reportar que a conversão falhou.
      */
-
     private String tentarConverter(byte[] bytes, Charset charset) {
         CharsetDecoder decoder = charset.newDecoder()
                 .onMalformedInput(CodingErrorAction.REPORT)
@@ -192,6 +120,15 @@ public class ParserCSV implements ParserExtrato {
         }
     }
 
+    /**
+     * Remove o BOM quando ele aparece no início do arquivo.
+     *
+     * Sem isso, a primeira coluna pode ser lida como:
+     * "﻿date"
+     *
+     * em vez de:
+     * "date"
+     */
     private String removerBom(String conteudo) {
         if (conteudo == null) {
             return "";

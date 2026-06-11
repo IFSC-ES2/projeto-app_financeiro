@@ -117,6 +117,88 @@ class ParserCSVTest {
         }
 
         @Test
+        @DisplayName("extrato real Nubank: importa date,title,amount inferindo tipo pelo sinal do amount")
+        void extratoRealNubank_importaDateTitleAmount() {
+            String conteudo = """
+            date,title,amount
+            2026-05-30,Mais Natural,"7,00"
+            2026-05-24,Mercado Compre Facil P,"15,99"
+            2026-05-08,Pagamento recebido,"- 866,89"
+            """;
+
+            MockMultipartFile arquivo = fromString("nubank-real.csv", conteudo);
+
+            ResultadoParser resultado = parser.parsear(arquivo, conta);
+
+            assertAll(
+                    () -> assertEquals(3, resultado.getTransacoes().size()),
+                    () -> assertEquals(3, resultado.getTotalLinhas()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+
+                    () -> assertEquals("Mais Natural", resultado.getTransacoes().get(0).getDescricao()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(0).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(0).getValor()
+                            .compareTo(new BigDecimal("7.00"))),
+
+                    () -> assertEquals("Mercado Compre Facil P", resultado.getTransacoes().get(1).getDescricao()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(1).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(1).getValor()
+                            .compareTo(new BigDecimal("15.99"))),
+
+                    () -> assertEquals("Pagamento recebido", resultado.getTransacoes().get(2).getDescricao()),
+                    () -> assertEquals(TipoTransacao.CREDITO, resultado.getTransacoes().get(2).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(2).getValor()
+                            .compareTo(new BigDecimal("866.89")))
+            );
+        }
+
+        @Test
+        @DisplayName("extrato Nubank com BOM no cabeçalho é reconhecido corretamente")
+        void extratoNubankComBom_noCabecalho_eReconhecido() {
+            String conteudo = "\uFEFFdate,title,amount\n"
+                    + "2026-05-30,Mais Natural,\"7,00\"\n";
+
+            MockMultipartFile arquivo = fromString("nubank-real.csv", conteudo);
+
+            ResultadoParser resultado = parser.parsear(arquivo, conta);
+
+            assertAll(
+                    () -> assertEquals(1, resultado.getTransacoes().size()),
+                    () -> assertEquals(1, resultado.getTotalLinhas()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+                    () -> assertEquals("Mais Natural", resultado.getTransacoes().get(0).getDescricao()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(0).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(0).getValor()
+                            .compareTo(new BigDecimal("7.00")))
+            );
+        }
+
+        @Test
+        @DisplayName("extrato Nubank com linhas inválidas não interrompe importação")
+        void extratoNubankComLinhasInvalidas_naoInterrompeImportacao() {
+            String conteudo = """
+            date,title,amount
+            2026-05-30,Mais Natural,"7,00"
+            data-invalida,Mercado,"15,99"
+            2026-05-08,Pagamento recebido,"- 866,89"
+            2026-05-10,Linha Valor Invalido,abc
+            """;
+
+            MockMultipartFile arquivo = fromString("nubank-real.csv", conteudo);
+
+            ResultadoParser resultado = parser.parsear(arquivo, conta);
+
+            assertAll(
+                    () -> assertEquals(2, resultado.getTransacoes().size()),
+                    () -> assertEquals(4, resultado.getTotalLinhas()),
+                    () -> assertEquals(2, resultado.getLinhasInvalidas()),
+
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(0).getTipo()),
+                    () -> assertEquals(TipoTransacao.CREDITO, resultado.getTransacoes().get(1).getTipo())
+            );
+        }
+
+        @Test
         @DisplayName("delimitador ponto-e-vírgula é detectado automaticamente")
         void delimitadorPontoVirgula_detectadoAutomaticamente() throws IOException {
             MockMultipartFile arquivo = fromFixture("extrato-ponto-virgula.csv");
