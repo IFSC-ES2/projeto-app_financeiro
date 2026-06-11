@@ -274,7 +274,7 @@ A partir da versão `v0.4.1`, os ambientes publicados considerados para validaç
 
 Lucas de Leon atuou principalmente em funcionalidades de transações, manutenção de contas bancárias e revisões técnicas de frontend e backend.
 
-Durante a Sprint 4, abriu PRs relacionados a:
+Durante a Sprint 4 e a estabilização da `v0.4.1`, abriu PRs relacionados a:
 
 - CRUD de transações;
 - testes backend para edição e exclusão de transações;
@@ -372,7 +372,17 @@ Também contribuiu em muitas revisões técnicas, com foco em testes, controller
 - PR `#151`, apontamento de testes faltantes e ajustes na lógica dos testes;
 - PR `#152`, revisão de testes faltantes, descrição do PR e correções pontuais;
 - PR `#153`, revisão de testes e correções nos testes montados;
-- PR `#159`, contribuição em review técnico;
+- PR `#159`, contribuição em correção backend para funcionamento da tela e review técnico;
+- PR `#163`, sugestão de novos testes;
+- PR `#142`, sugestão de novo teste;
+- PR `#143`, sugestão de novo teste e inconsistência no controller;
+- PR `#181`, review e aprovação;
+- PR `#164`, ajustes apontados por Lucas de Leon e aprovação;
+- PR `#178`, sugestão de novo teste;
+- PR `#156`, sugestão de dois novos testes;
+- PR `#185`, sugestão de novo teste;
+- PR `#186`, review e aprovação;
+- PR `#189`, review e aprovação;
 - PR `#166`, apontamentos sobre controller, service e cobertura;
 - PR `#167`, revisão de testes e validações;
 - PR `#169`, revisão de pontos de manutenção e consistência;
@@ -390,24 +400,139 @@ A contribuição de Victor Blum foi central para a evolução técnica do backen
 
 #### Contribuições principais
 
-Alexandre Villela atuou principalmente em testes, modelagem e confiabilidade da importação.
+Alexandre Villela atuou principalmente em testes, deploy, paginação, filtros server-side, categorização, documentação de publicação, modelagem e confiabilidade da importação.
 
 Durante a Sprint 4 e a estabilização da `v0.4.1`, abriu PRs relacionados a:
 
+- testes automatizados de categorização de transações;
+- deploy no Render com blueprint e datasource por variáveis de ambiente;
+- documentação de deploy;
+- testes de resumo por pagamento e gestão de contas;
+- paginação e filtros server-side nas transações;
 - testes de contrato dos parsers de importação;
 - ajuste de modelagem de `TipoTransacao`;
 - validações de comportamento esperado na importação.
 
+Também contribuiu em reviews de frontend e apontou melhorias de experiência e manutenção, incluindo confirmação antes de exclusões e redução de duplicação de código.
+
 #### Evidências associadas
 
+- PR `test(#107): testes automatizados de categorização de transações`;
+- PR `Deploy no Render: blueprint + datasource via env (#126)`;
+- PR `docs(#126): documentação de deploy + configuração por variáveis de ambiente`;
+- PR `test(#158): testes de resumo por pagamento e gestão de contas`;
+- PR `feat(#106): paginação e filtros server-side nas transações`;
 - PR `#209`, testes de contrato dos parsers de importação;
 - PR `#208`, modelagem de `TipoTransacao` apenas com sentido financeiro;
 - issue `#175`, testes de contrato dos parsers;
-- issue `#176`, ajuste de modelagem de `TipoTransacao`.
+- issue `#176`, ajuste de modelagem de `TipoTransacao`;
+- PR `#145`, review e aprovação;
+- PR `#180`, review com sugestão de ajuste visual;
+- contribuição em review da issue `#195`, sugerindo confirmação por `window` antes da exclusão de conta bancária;
+- apontamentos de duplicação de código em PRs da equipe.
 
 #### Observações
 
-A atuação de Alexandre Villela foi importante para reduzir ambiguidades no domínio financeiro e aumentar a confiabilidade da importação de extratos. As entregas foram incorporadas na versão complementar `v0.4.1`.
+A atuação de Alexandre Villela foi importante para o avanço do deploy, da documentação de execução, dos testes automatizados, da evolução da listagem de transações com filtros e paginação, da redução de ambiguidades no domínio financeiro e da confiabilidade da importação de extratos. Parte dessas entregas foi incorporada na versão complementar `v0.4.1`.
+
+---
+
+### João Pedro Callegaro Guimarães
+
+#### Contribuições principais
+
+João Pedro atuou principalmente em testes frontend, documentação arquitetural, cobertura de testes, importação de extratos e registro de ADR.
+
+Durante a Sprint 4, abriu PRs relacionados a:
+
+- atualização da documentação de padrões arquiteturais com Strategy;
+- testes automatizados da tela de importação de extratos;
+- testes automatizados da tela de registro manual de transações;
+- testes unitários da tela de nova conta bancária;
+- testes da listagem de transações;
+- testes da tela Primeira Conta;
+- relatório de cobertura dos testes frontend;
+- ADR de decomposição do `TransacaoService`;
+- correção para importação não deslogar em erro `403 Forbidden`.
+
+Também registrou que a issue `#97` foi transferida para Lucas de Leon Rodrigues Coelho.
+
+#### Evidências associadas
+
+- PR `docs: atualiza documentação de padrões arquiteturais (Strategy)`;
+- PR `test: adiciona testes automatizados da tela de importação de extratos (#151)`;
+- PR `test: adiciona testes automatizados para a tela de registro manual de transações`;
+- PR `test: adiciona testes unitários para a tela de nova conta bancária (#147)`;
+- PR `test: adiciona testes da listagem de transações (#155)`;
+- PR `test: adiciona testes da tela Primeira Conta (#184)`;
+- PR `fix: adiciona relatório de cobertura dos testes frontend (#177)`;
+- PR `docs(adr): registra decomposicao do TransacaoService na sprint 4 (#130)`;
+- PR `fix(frontend): importacao nao desloga em 403 Forbidden (#170)`;
+- PR `#143`, review concordando com a aprovação;
+- PR `#188`, review com sugestões para segurança no deploy;
+- PR `#190`, review com sugestão de ordem de merges;
+- PR `#187`, review sobre regra de negócio refatorada e posterior aprovação.
+
+#### Observações
+
+A contribuição de João Pedro foi importante para consolidar a qualidade automatizada do frontend, documentar decisões arquiteturais e registrar a cobertura de testes como métrica acompanhada pela equipe. Também contribuiu para a estabilidade do fluxo de importação ao tratar o comportamento de logout indevido em erro `403 Forbidden`.
+
+## PRs e reviews relevantes
+
+Durante a Sprint 4, os PRs tiveram papel importante não apenas para entrega de funcionalidades, mas também para discussão técnica, revisão de regras de negócio e melhoria da qualidade geral do projeto.
+
+Os PRs revisados envolveram principalmente:
+
+- frontend de contas, transações, resumo e importação;
+- backend de categorização, transações, contas e parsers;
+- testes automatizados frontend e backend;
+- documentação arquitetural;
+- deploy e configuração por variáveis de ambiente;
+- métricas e cobertura de testes.
+
+Alguns PRs se destacaram pela quantidade de comentários e discussões técnicas:
+
+### PR `Feat/#60 processamento extrato endpoint upload`
+
+Esse PR recebeu grande volume de comentários e serviu como ponto importante de discussão sobre o fluxo de importação. O PR avançou tecnicamente, mas os comentários indicaram melhorias necessárias para evitar retrabalho futuro. Victor Blum e Victor Gabriel participaram ativamente com respostas e reviews.
+
+### PR `test: Implementa testes unitários para parsers de extratos bancários (#97)`
+
+Esse PR também recebeu muitos comentários. Devido à quantidade de problemas encontrados e ao impacto no andamento da issue, a equipe decidiu fechar o PR e transferir a issue `#97` para Lucas de Leon Rodrigues Coelho, que posteriormente ficou responsável pelo encaminhamento.
+
+### PR `Feat/#64 categorizacao transacoes`
+
+Esse PR teve discussão relevante sobre categorização de transações. Victor Blum e Victor Gabriel participaram ativamente para melhorar a implementação, com reviews válidos e comunicação clara.
+
+### Reviews durante a Sprint
+
+As reviews da Sprint 4 ajudaram a:
+
+- identificar inconsistências em controllers e serviços;
+- apontar testes ausentes;
+- corrigir descrições de PRs que não representavam corretamente o escopo entregue;
+- sugerir melhorias de UX, como mensagens temporárias e confirmação antes de exclusões;
+- evitar links quebrados após mudança de rotas;
+- reforçar documentação de regras de negócio;
+- revisar deploy e segurança da configuração;
+- manter a branch `dev` mais estável antes da consolidação na `main`.
+
+Esse processo de review foi essencial para que a Sprint 4 entregasse funcionalidades novas sem perder o controle de qualidade.
+
+## Pontos adicionais de documentação
+
+A Sprint 4 também atualizou documentação técnica e de processo:
+
+- `README.md`;
+- `docs/como-rodar.md`;
+- `docs/metricas.md`;
+- `docs/arquitetura.md`;
+- `docs/adrs/ADR-0004-Estrategia-de-arquiteturas-e-camadas.md`;
+- `docs/adrs/ADR-0005-padroes-de-projeto.md`;
+- `docs/adrs/ADR-0008-decomposicao-transacao-service.md`;
+- `docs/DEPLOY.md`.
+
+Essas atualizações melhoram a rastreabilidade do projeto, a execução local, a compreensão da arquitetura e a reprodução do ambiente de entrega.
 
 ## Observação sobre a versão 0.4.1
 
