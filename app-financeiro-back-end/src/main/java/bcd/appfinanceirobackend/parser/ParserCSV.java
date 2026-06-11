@@ -85,6 +85,8 @@ public class ParserCSV implements ParserExtrato {
             if (ehCabecalhoNubank(cabecalho)) {
                 return processarCsvNubank(registros, conta);
             }
+
+            return processarCsvLegado(registros, conta);
 //        try {
 //            String conteudo = lerConteudoDoArquivo(arquivo);
 //            conteudo = removerBom(conteudo);
@@ -367,6 +369,59 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
+     * Mantém o comportamento antigo do parser.
+     *
+     * Formato legado:
+     * data,descricao,valor,tipo
+     *
+     * Isso evita quebrar arquivos e testes que já funcionavam antes.
+     */
+    private ResultadoParser processarCsvLegado(List<String[]> registros, Conta conta) {
+        ResultadoParser resultado = new ResultadoParser();
+
+        List<Transacao> transacoes = new ArrayList<>();
+        int totalLinhas = 0;
+        int linhasInvalidas = 0;
+
+        for (String[] linha : registros) {
+            totalLinhas++;
+
+            if (linha.length != 4) {
+                linhasInvalidas++;
+                continue;
+            }
+
+            LocalDate data = parsearData(linha[0]);
+            BigDecimal valor = parsearValor(linha[2]);
+
+            if (data == null || valor == null) {
+                linhasInvalidas++;
+                continue;
+            }
+
+            String descricao = limparDescricao(linha[1]);
+
+            TipoTransacao tipo = parsearTipoLegado(linha[3], valor);
+
+            Transacao transacao = criarTransacao(
+                    conta,
+                    data,
+                    descricao,
+                    valor.abs(),
+                    tipo
+            );
+
+            transacoes.add(transacao);
+        }
+
+        resultado.setTransacoes(transacoes);
+        resultado.setTotalLinhas(totalLinhas);
+        resultado.setLinhasInvalidas(linhasInvalidas);
+
+        return resultado;
+    }
+
+    /**
      * Encontra o índice de uma coluna dentro do cabeçalho.
      *
      * Exemplo:
@@ -468,55 +523,113 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Tenta parsear a data nos formatos suportados.
-     * Retorna null se nenhum formato for compatível (indica cabeçalho ou linha inválida).
+     * Tenta converter uma string em LocalDate.
+     *
+     * O Nubank usa yyyy-MM-dd.
+     * O formato legado do projeto também aceitava dd/MM/yyyy e dd-MM-yyyy.
      */
     private LocalDate parsearData(String valor) {
-        for (DateTimeFormatter fmt : FORMATADORES) {
+        if (valor == null) {
+            return null;
+        }
+
+        String valorLimpo = valor
+                .replace(BOM, "")
+                .trim();
+
+        for (DateTimeFormatter formatter : FORMATADORES) {
             try {
-                return LocalDate.parse(valor, fmt);
+                return LocalDate.parse(valorLimpo, formatter);
             } catch (DateTimeParseException ignored) {
             }
         }
+
         return null;
     }
 
     /**
-     * Parseia o valor monetário aceitando ponto ou vírgula como separador decimal.
-     * Retorna null se o valor não puder ser interpretado.
+     * Converte textos monetários em BigDecimal.
+     *
+     * Casos aceitos:
+     * "7,00"      -> 7.00
+     * "- 866,89"  -> -866.89
+     * "15,99"     -> 15.99
+     * "104,90"    -> 104.90
+     * "1.234,56"  -> 1234.56
+     * "1234.56"   -> 1234.56
      */
     private BigDecimal parsearValor(String valor) {
+        if (valor == null) {
+            return null;
+        }
+
         try {
-            // Remove separadores de milhar e normaliza o decimal
             String normalizado = valor
+                    .replace(BOM, "")
+                    .replace("\"", "")
                     .replace("R$", "")
-                    .replace(" ", "")
                     .trim();
 
-            // Se tiver vírgula e ponto, o ponto é separador de milhar (ex: 1.500,00)
+            boolean negativo = false;
+
+            if (normalizado.startsWith("(") && normalizado.endsWith(")")) {
+                negativo = true;
+                normalizado = normalizado.substring(1, normalizado.length() - 1).trim();
+            }
+
+            if (normalizado.startsWith("-")) {
+                negativo = true;
+                normalizado = normalizado.substring(1).trim();
+            }
+
+            if (normalizado.endsWith("-")) {
+                negativo = true;
+                normalizado = normalizado.substring(0, normalizado.length() - 1).trim();
+            }
+
+            normalizado = normalizado.replace(" ", "");
+
+            if (normalizado.isBlank()) {
+                return null;
+            }
+
             if (normalizado.contains(",") && normalizado.contains(".")) {
-                normalizado = normalizado.replace(".", "").replace(",", ".");
-            } else {
+                normalizado = normalizado
+                        .replace(".", "")
+                        .replace(",", ".");
+            } else if (normalizado.contains(",")) {
                 normalizado = normalizado.replace(",", ".");
             }
 
-            return new BigDecimal(normalizado);
+            BigDecimal valorDecimal = new BigDecimal(normalizado);
+
+            if (negativo) {
+                return valorDecimal.negate();
+            }
+
+            return valorDecimal;
+
         } catch (NumberFormatException e) {
             return null;
         }
     }
 
     /**
-     * Determina o TipoTransacao. Valores negativos são sempre DEBITO.
-     * Para valores positivos, tenta interpretar o campo tipo do CSV.
+     * Regra antiga do CSV legado.
+     *
+     * Mantém compatibilidade com os testes e arquivos anteriores:
+     * - valor negativo continua sendo DEBITO;
+     * - se o tipo informado existir no enum, usa ele;
+     * - se o tipo não for reconhecido, valor positivo vira CREDITO.
      */
-    private TipoTransacao parsearTipo(String tipoStr, BigDecimal valor) {
-        if (valor.compareTo(BigDecimal.ZERO) < 0) return TipoTransacao.DEBITO;
+    private TipoTransacao parsearTipoLegado(String tipoTexto, BigDecimal valor) {
+        if (valor.compareTo(BigDecimal.ZERO) < 0) {
+            return TipoTransacao.DEBITO;
+        }
 
         try {
-            return TipoTransacao.valueOf(tipoStr.toUpperCase());
+            return TipoTransacao.valueOf(normalizarTexto(tipoTexto).toUpperCase());
         } catch (IllegalArgumentException e) {
-            // Fallback: positivo sem tipo reconhecido é CREDITO
             return TipoTransacao.CREDITO;
         }
     }
