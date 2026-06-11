@@ -538,7 +538,7 @@ Essas atualizações melhoram a rastreabilidade do projeto, a execução local, 
 
 A versão `v0.4.1` não substitui o escopo principal da Sprint 4, mas registra uma rodada complementar de estabilização feita após a `v0.4.0`.
 
-Essa versão foi criada para:
+De maneira geral, 0.4.1 como a Sprint 4 toda cobre:
 
 - finalizar pendências que ainda estavam abertas no recorte inicial;
 - corrigir problemas identificados no fluxo de importação;
