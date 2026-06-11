@@ -36,8 +36,6 @@ interface EstadoEdicaoTransacao {
 const tiposTransacao: Array<{ valor: TipoTransacao; rotulo: string }> = [
   { valor: 'DEBITO', rotulo: 'Saída / despesa' },
   { valor: 'CREDITO', rotulo: 'Entrada / receita' },
-  { valor: 'PARCELAMENTO', rotulo: 'Parcelamento' },
-  { valor: 'BOLETO', rotulo: 'Boleto' },
 ];
 
 const formasPagamento: Array<{ valor: TipoPagamento; rotulo: string }> = [

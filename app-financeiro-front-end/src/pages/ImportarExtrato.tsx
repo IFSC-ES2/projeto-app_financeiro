@@ -234,8 +234,8 @@ const ImportarExtrato: React.FC = () => {
             </p>
           </div>
 
-          <Link to="/dashboard" className="btn btn-outline-secondary align-self-start align-self-md-center">
-            Voltar ao painel
+          <Link to="/transacoes" className="btn btn-outline-secondary align-self-start align-self-md-center">
+            Voltar para transações
           </Link>
         </div>
 

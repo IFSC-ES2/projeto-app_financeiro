@@ -261,8 +261,6 @@ const NovaTransacao = () => {
                 >
                   <option value="DEBITO">Saída / despesa</option>
                   <option value="CREDITO">Entrada / receita</option>
-                  <option value="PARCELAMENTO">Parcelamento</option>
-                  <option value="BOLETO">Boleto</option>
                 </select>
                 {erros.tipoTransacao && <small className="field-error">{erros.tipoTransacao}</small>}
               </label>

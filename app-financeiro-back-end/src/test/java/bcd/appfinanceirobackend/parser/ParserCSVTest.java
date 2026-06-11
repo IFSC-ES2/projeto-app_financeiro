@@ -316,4 +316,71 @@ class ParserCSVTest {
             );
         }
     }
+
+    @Nested
+    @DisplayName("parsear() - Tipo textual legado (regressão #176)")
+    class TipoTextualLegado {
+
+        @Test
+        @DisplayName("tipo BOLETO legado com valor positivo não quebra e faz fallback para CREDITO")
+        void tipoBoletoPositivo_naoQuebra_viraCredito() {
+            String conteudo = "2024-01-10,Recebimento,300.00,BOLETO\n";
+
+            ResultadoParser resultado = parser.parsear(fromString("extrato.csv", conteudo), conta);
+
+            assertAll(
+                    () -> assertEquals(1, resultado.getTransacoes().size()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+                    () -> assertEquals(TipoTransacao.CREDITO, resultado.getTransacoes().get(0).getTipo()),
+                    // o parser deriva apenas o sentido financeiro; não infere forma de pagamento do extrato
+                    () -> assertNull(resultado.getTransacoes().get(0).getFormaPagamento())
+            );
+        }
+
+        @Test
+        @DisplayName("tipo BOLETO legado com valor negativo vira DEBITO pela regra do sinal")
+        void tipoBoletoNegativo_viraDebito() {
+            String conteudo = "2024-01-10,Pagamento boleto,-300.00,BOLETO\n";
+
+            ResultadoParser resultado = parser.parsear(fromString("extrato.csv", conteudo), conta);
+
+            assertAll(
+                    () -> assertEquals(1, resultado.getTransacoes().size()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(0).getTipo())
+            );
+        }
+
+        @Test
+        @DisplayName("tipo PARCELAMENTO legado com valor negativo vira DEBITO")
+        void tipoParcelamentoNegativo_viraDebito() {
+            String conteudo = "2024-01-11,Parcela cartao,-150.00,PARCELAMENTO\n";
+
+            ResultadoParser resultado = parser.parsear(fromString("extrato.csv", conteudo), conta);
+
+            assertAll(
+                    () -> assertEquals(1, resultado.getTransacoes().size()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(0).getTipo())
+            );
+        }
+
+        @Test
+        @DisplayName("arquivo só com tipos legados não lança exceção e só produz DEBITO/CREDITO")
+        void arquivoComTiposLegados_naoLancaEProduzApenasDebitoOuCredito() {
+            String conteudo = "2024-01-10,Boleto a pagar,-300.00,BOLETO\n"
+                    + "2024-01-11,Parcela cartao,-150.00,PARCELAMENTO\n"
+                    + "2024-01-12,Recebimento,80.00,BOLETO\n";
+
+            ResultadoParser resultado = parser.parsear(fromString("extrato.csv", conteudo), conta);
+
+            assertAll(
+                    () -> assertEquals(3, resultado.getTransacoes().size()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+                    () -> assertTrue(resultado.getTransacoes().stream().allMatch(transacao ->
+                            transacao.getTipo() == TipoTransacao.DEBITO
+                                    || transacao.getTipo() == TipoTransacao.CREDITO))
+            );
+        }
+    }
 }

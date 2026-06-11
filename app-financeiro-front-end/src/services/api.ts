@@ -8,6 +8,7 @@ declare module 'axios' {
 }
 
 const api = axios.create({
+
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:8080',
   headers: {
     'Content-Type': 'application/json',
@@ -40,7 +41,7 @@ api.interceptors.response.use(
   }
 );
 
-export type TipoTransacao = 'DEBITO' | 'CREDITO' | 'PARCELAMENTO' | 'BOLETO';
+export type TipoTransacao = 'DEBITO' | 'CREDITO';
 export type TipoPagamento = 'PIX' | 'CARTAO_DEBITO' | 'CARTAO_CREDITO' | 'DINHEIRO' | 'BOLETO' | 'TED_DOC';
 export type TipoConta = 'CORRENTE' | 'POUPANCA' | 'CARTAO_CREDITO' | 'CARTEIRA';
 
