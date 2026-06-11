@@ -9,9 +9,11 @@ import com.opencsv.CSVReaderBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
+import java.nio.ByteBuffer;
+import java.nio.charset.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -48,6 +50,8 @@ public class ParserCSV implements ParserExtrato {
             DateTimeFormatter.ofPattern("dd-MM-yyyy")
     );
 
+    private static final String BOM = "\uFEFF";
+
     @Override
     public boolean aceita(MultipartFile arquivo) {
         String nome = arquivo.getOriginalFilename();
@@ -62,9 +66,7 @@ public class ParserCSV implements ParserExtrato {
         int totalLinhas = resultadoParser.getTotalLinhas();
 
         try {
-            // Lê o conteúdo bruto para detectar o delimitador
-            byte[] bytes = arquivo.getBytes();
-            String conteudo = new String(bytes, StandardCharsets.UTF_8);
+            String conteudo = lerConteudoDoArquivo(arquivo);
             char delimitador = detectarDelimitador(conteudo);
 
             try (CSVReader reader = new CSVReaderBuilder(
@@ -116,6 +118,43 @@ public class ParserCSV implements ParserExtrato {
         resultadoParser.setTotalLinhas(totalLinhas);
         return resultadoParser;
     }
+
+    private String lerConteudoDoArquivo(MultipartFile arquivo) {
+        byte[] bytes;
+
+        try {
+            bytes = arquivo.getBytes();
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Não foi possível ler o arquivo CSV.", e);
+        }
+
+        String textoUtf8 = tentarConverter(bytes, StandardCharsets.UTF_8);
+
+        if (textoUtf8 != null) {
+            return textoUtf8;
+        }
+
+        String textoWindows1252 = tentarConverter(bytes, Charset.forName("Windows-1252"));
+
+        if (textoWindows1252 != null) {
+            return textoWindows1252;
+        }
+
+        return new String(bytes, StandardCharsets.ISO_8859_1);
+    }
+
+    private String tentarConverter(byte[] bytes, Charset charset) {
+        CharsetDecoder decoder = charset.newDecoder()
+                .onMalformedInput(CodingErrorAction.REPORT)
+                .onUnmappableCharacter(CodingErrorAction.REPORT);
+
+        try {
+            return decoder.decode(ByteBuffer.wrap(bytes)).toString();
+        } catch (CharacterCodingException e) {
+            return null;
+        }
+    }
+
 
     /**
      * Detecta o delimitador mais provável analisando a primeira linha do arquivo.
