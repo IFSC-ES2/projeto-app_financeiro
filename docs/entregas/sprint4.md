@@ -2,9 +2,183 @@
 
 A Sprint 4 representou uma etapa de consolidação do MVP do SmartBudget. Enquanto a Sprint 3 havia avançado na base de importação, categorização, autenticação, listagem e testes iniciais, a Sprint 4 focou em transformar essas bases em fluxos mais completos para o usuário, com manutenção de transações, gestão de contas, melhoria de listagens, ampliação de testes, refatoração técnica e preparação do projeto para publicação estável.
 
-No recorte original da Sprint 4 foram consideradas 30 issues únicas. Após a consolidação inicial da entrega, 28 foram consideradas concluídas e 2 permaneceram como pendência ou entrega parcial: `#67` e `#170`.
+No recorte original da Sprint 4 foram consideradas 30 issues únicas. Após a consolidação inicial da entrega, 28 foram feitas na 0.4.0 e todas as 30 finalizadas na 0.4.1.
 
 Após a publicação inicial da versão `v0.4.0`, a equipe realizou uma rodada complementar de estabilização e fechamento de pendências, consolidada na versão `v0.4.1`. Essa versão incorporou correções, testes adicionais, ajustes de modelagem e a finalização de funcionalidades que haviam ficado pendentes no recorte inicial da Sprint 4.
+
+## Decisões durante a Sprint 4
+
+A equipe decidiu manter a evolução do MVP em torno de fluxos reais de uso da aplicação, priorizando funcionalidades que melhoram a experiência do usuário autenticado.
+
+A tela de conta bancária deixou de ser apenas um formulário isolado de cadastro e passou a representar uma área de **Contas**, com listagem das contas do usuário e cadastro de novas contas por modal. Também foi mantido um fluxo específico de primeira conta após o cadastro inicial do usuário.
+
+No backend, o `TransacaoService` foi refatorado para reduzir a concentração de responsabilidades. Regras auxiliares foram separadas em componentes mais específicos, como:
+
+- `ContaUsuarioService`;
+- `SugestaoCategoriaService`;
+- `TransacaoMapper`;
+- `TransacaoSpecs`.
+
+Essa decisão foi registrada na ADR `docs/adrs/ADR-0008-decomposicao-transacao-service.md`.
+
+Também foi reforçada a decisão de tornar a cobertura frontend mensurável no pipeline, com Vitest e geração de relatório de cobertura. A partir da Sprint 4, o frontend passou a ter acompanhamento formal de cobertura, complementando o JaCoCo já usado no backend.
+
+## Incremento funcional da Sprint 4
+
+### Gestão de contas bancárias
+
+A Sprint 4 evoluiu o fluxo de contas bancárias. A tela `NovaConta.tsx` passou a funcionar visualmente como uma área de **Contas**, permitindo listar contas cadastradas, exibir estado vazio e abrir um modal para cadastrar uma nova conta.
+
+Também foi criado o fluxo de primeira conta após cadastro, representado por:
+
+- `app-financeiro-front-end/src/pages/PrimeiraConta.tsx`;
+- `app-financeiro-front-end/src/pages/PrimeiraConta.test.tsx`.
+
+Com isso, o fluxo ficou dividido em duas experiências:
+
+- usuário recém-cadastrado segue para cadastrar a primeira conta;
+- usuário já logado usa a área **Contas** para gerenciar contas existentes e adicionar novas.
+
+No backend, a gestão de contas também evoluiu com suporte a edição e validação de propriedade, incluindo:
+
+- `ContaEdicaoRequestDTO`;
+- alterações em `ContaController`;
+- alterações em `ContaService`;
+- `ContaUsuarioService`.
+
+### Manutenção de transações
+
+A Sprint 4 adicionou suporte mais completo para manutenção de transações. A aplicação passou a contar com recursos de edição e exclusão de transações no backend e no frontend.
+
+As principais evidências são:
+
+- `app-financeiro-front-end/src/pages/EditarTransacao.tsx`;
+- alterações em `Transacoes.tsx`;
+- alterações em `NovaTransacao.tsx`;
+- alterações em `TransacaoController`;
+- alterações em `TransacaoService`;
+- `TransacaoEdicaoExclusaoControllerTest`;
+- `TransacaoEdicaoExclusaoServiceTest`.
+
+Com isso, o histórico de transações deixou de ser apenas uma visualização e passou a permitir manutenção pelo usuário autenticado.
+
+### Listagem, filtros e paginação de transações
+
+A listagem de transações foi evoluída com suporte a filtros e paginação server-side. A Sprint 4 introduziu estrutura para filtros no backend, incluindo:
+
+- `PaginaDTO`;
+- `TransacaoSpecs`;
+- alterações em `TransacaoRepository`;
+- alterações em `TransacaoController`;
+- testes de listagem paginada.
+
+No frontend, a tela de transações também foi ajustada para consumir e testar melhor esse fluxo.
+
+### Categorização de transações pela interface
+
+A categorização, que já havia sido iniciada no backend na Sprint 3, avançou na Sprint 4 com integração pela interface e reforço de testes.
+
+As principais evidências são:
+
+- alterações em `TransacaoController`;
+- alterações em `CategoriaService`;
+- `CategorizarTransacaoIntegrationTests`;
+- `CategorizarTransacaoTests`;
+- `CategorizacaoNaImportacaoTests`;
+- testes e ajustes na tela de transações.
+
+Também houve avanço na sugestão automática de categoria por palavras-chave com `SugestaoCategoriaService`.
+
+### Resumo por forma de pagamento
+
+A Sprint 4 avançou no resumo financeiro por forma de pagamento. No frontend, foram adicionados componentes específicos para visualização em lista e gráfico:
+
+- `ResumoFormaPagamento.tsx`;
+- `ResumoFormaPagamentoPizza.tsx`;
+- `ResumoFormaPagamento.test.tsx`;
+- `ResumoFormaPagamentoPizza.test.tsx`.
+
+No backend, houve ajustes em `ResumoController`, `ResumoService` e `GrupoPagamentoDTO`.
+
+Essa entrega contribui para a funcionalidade do MVP relacionada à categorização e visualização dos gastos por forma de pagamento, como PIX, cartão, dinheiro e boleto.
+
+### Importação de extratos e contrato dos parsers
+
+O fluxo de importação continuou sendo trabalhado na Sprint 4. Houve reorganização do contrato dos parsers e ajustes nos arquivos relacionados à importação:
+
+- `ParserExtrato`;
+- `ParserCSV`;
+- `ParserTXT`;
+- `ParserXML`;
+- `ParserNFe`;
+- `ResultadoParser`;
+- `ImportacaoService`;
+- `ImportarExtrato.tsx`;
+- `ImportarExtrato.test.tsx`.
+
+A issue `#174` melhorou a organização do contrato comum dos parsers.
+
+Ao mesmo tempo, a Sprint 4 identificou a issue `#170`, relacionada a bug no fluxo de importação de extratos. Esse bug indicou que o usuário podia ser redirecionado para login em cenários de erro que não deveriam encerrar a sessão. Por isso, na versão `v0.4.0`, a importação foi considerada funcionalidade existente, mas com ressalva operacional.
+
+Na versão complementar `v0.4.1`, essa pendência foi tratada com ajustes no fluxo de importação, incluindo correção do envio de arquivos via `FormData` e melhoria do comportamento da interface para evitar redirecionamentos indevidos.
+
+### Refatoração do `TransacaoService`
+
+A Sprint 4 teve uma frente técnica importante de reengenharia do `TransacaoService`.
+
+Antes da refatoração, o serviço concentrava responsabilidades de:
+
+- registrar transação manual;
+- editar transação;
+- excluir transação;
+- listar transações;
+- categorizar transação;
+- buscar transação do usuário;
+- validar conta;
+- sugerir categoria;
+- converter entidades em DTOs.
+
+Após a refatoração, parte dessas responsabilidades foi distribuída para componentes mais coesos:
+
+- `ContaUsuarioService`: resolução e validação de contas do usuário;
+- `SugestaoCategoriaService`: sugestão automática de categoria;
+- `CategoriaService`: validação de categoria permitida ao usuário;
+- `TransacaoMapper`: conversão de entidade para DTO;
+- `TransacaoSpecs`: composição de filtros para listagem.
+
+Essa mudança não alterou o contrato externo da API, mas reduziu acoplamento, melhorou testabilidade e facilitou evolução futura.
+
+### Testes automatizados
+
+A Sprint 4 ampliou significativamente a cobertura de testes no backend e no frontend.
+
+No backend, foram adicionados ou ajustados testes como:
+
+- `CategorizarTransacaoIntegrationTests`;
+- `ListarCategoriasIntegrationTests`;
+- `ListarTransacoesIntegrationTests`;
+- `TransacaoEdicaoExclusaoControllerTest`;
+- `TransacaoMapperTest`;
+- `CategoriaSeedIntegrationTests`;
+- `CategorizacaoNaImportacaoTests`;
+- `CategorizarTransacaoTests`;
+- `ListarTransacoesPaginadoIntegrationTests`;
+- `ListarTransacoesPaginadoTests`;
+- `ResumoServiceTest`;
+- `SugestaoCategoriaServiceTest`;
+- `TransacaoEdicaoExclusaoServiceTest`.
+
+No frontend, foram adicionados ou ampliados testes como:
+
+- `NovaConta.test.tsx`;
+- `NovaTransacao.test.tsx`;
+- `ImportarExtrato.test.tsx`;
+- `Transacoes.test.tsx`;
+- `PrimeiraConta.test.tsx`;
+- `ResumoFormaPagamento.test.tsx`;
+- `ResumoFormaPagamentoPizza.test.tsx`.
+
+Também foi consolidado o relatório de cobertura frontend com Vitest.
 
 ## Complementos incorporados na versão 0.4.1
 
@@ -15,9 +189,9 @@ Os principais complementos foram:
 | PR | Responsável pela abertura | Entrega |
 |----|---------------------------|---------|
 | `#212` - Feat/67 resumo mensal categorias | `Victor3294` | Finalização do backend do resumo mensal do dashboard, incluindo total recebido, total gasto, saldo, categoria com maior gasto, gastos agrupados por categoria e variação percentual em relação ao mês anterior. |
-| `#208` - Modelagem: `TipoTransacao` apenas com sentido financeiro (`#176`) | `apvillela` | Ajuste de modelagem para deixar `TipoTransacao` com sentido financeiro mais claro, separando melhor a ideia de crédito e débito das demais classificações do domínio. |
+| `#208` - Modelagem: `TipoTransacao` apenas com sentido financeiro (`#176`) | `Alexandre Villela` | Ajuste de modelagem para deixar `TipoTransacao` com sentido financeiro mais claro, separando melhor a ideia de crédito e débito das demais classificações do domínio. |
 | `#211` - Fix: importação + modificações pequenas na UX (`#170`) | `lucaslrc01` | Correção complementar do fluxo de importação, com ajuste no envio de arquivos via `FormData`, remoção do `Content-Type` global no Axios e melhorias de navegação e textos na interface. |
-| `#209` - Testes de contrato dos parsers de importação (`#175`) | `apvillela` | Inclusão de testes de contrato para parsers de importação, reforçando o comportamento esperado na leitura de extratos e reduzindo risco de regressões. |
+| `#209` - Testes de contrato dos parsers de importação (`#175`) | `Alexandre Villela` | Inclusão de testes de contrato para parsers de importação, reforçando o comportamento esperado na leitura de extratos e reduzindo risco de regressões. |
 | `#210` - Fix: corrige CORS para frontend em produção | `victorlcrd` | Correção de CORS para permitir integração adequada entre frontend e backend no ambiente publicado. |
 
 Com esses merges, a versão `v0.4.1` passou a representar uma versão mais estável da Sprint 4, com fechamento das principais pendências que ainda estavam abertas na `v0.4.0`.
@@ -91,6 +265,149 @@ A partir da versão `v0.4.1`, os ambientes publicados considerados para validaç
 | #194 - Backend para editar conta bancária | Concluído | Permite edição de contas com validação de propriedade. |
 | #195 - Frontend para editar e deletar contas bancárias | Concluído | Completa manutenção de contas na interface. |
 | Correção de CORS em produção | Concluído na v0.4.1 | Ajusta integração entre frontend e backend publicados. |
+
+## Registro de contribuição individual
+
+### Lucas de Leon Rodrigues Coelho
+
+#### Contribuições principais
+
+Lucas de Leon atuou principalmente em funcionalidades de transações, manutenção de contas bancárias e revisões técnicas de frontend e backend.
+
+Durante a Sprint 4, abriu PRs relacionados a:
+
+- CRUD de transações;
+- testes backend para edição e exclusão de transações;
+- implementação de funções de editar e excluir transações no menu;
+- edição de conta bancária;
+- correção complementar do fluxo de importação para a versão `v0.4.1`.
+
+Também contribuiu em reviews importantes, apontando erros de lógica, inconsistências no backend e problemas de tipagem.
+
+#### Evidências associadas
+
+- PR relacionado à issue `#134`, CRUD de transações;
+- PR relacionado à issue `#162`, testes de edição e exclusão de transações;
+- PR relacionado à issue `#194`, edição de conta bancária;
+- PR `#211`, correção de importação e melhorias pequenas de UX para a `v0.4.1`;
+- PR `#160`, revisão com apontamentos sobre lógica backend e tipos;
+- PR `#168`, revisão sobre erro na refatoração;
+- PR `#164`, revisão apontando inconsistência no backend.
+
+#### Observações
+
+A atuação de Lucas foi relevante para a estabilização das funcionalidades de manutenção de transações e contas, além de contribuir para a qualidade técnica das entregas revisadas. Na versão `v0.4.1`, também contribuiu para estabilizar o fluxo de importação de extratos.
+
+---
+
+### Victor Gabriel Lacerda
+
+#### Contribuições principais
+
+Victor Gabriel atuou principalmente no frontend, na experiência do usuário, na gestão de contas bancárias, no resumo por forma de pagamento e em revisões gerais do projeto.
+
+Durante a Sprint 4, abriu PRs relacionados a:
+
+- tela de cadastro de conta bancária para usuários logados;
+- refatoração da tela para gerenciamento de contas;
+- tela de resumo por forma de pagamento;
+- edição e exclusão de conta bancária;
+- correção de CORS para integração do frontend em produção.
+
+Também contribuiu com reviews em backend, frontend, testes e documentação, participando ativamente da aprovação de PRs antes do merge.
+
+#### Evidências associadas
+
+- PR `feat/#136-tela-cadastro-banco-logged-users`;
+- PR `refactor/tela gerenciamento contas`, relacionado à issue `#165`;
+- PR `feat/(closes #157)tela-resumo-forma-pagamento`;
+- PR `feat/(closes #195) editar e deletar conta bancaria`;
+- PR `#210`, correção de CORS para frontend em produção;
+- PR `#212`, review em cálculos do resumo mensal, ordem de parâmetros e tratamento de categoria sem nome;
+- PR `#211`, review e aprovação da correção de importação;
+- PR `#198`, review para evitar `NullPointerException` em requisições sem body e orientação sobre retorno de erro;
+- PR `#145`, review sobre mensagem de sucesso permanecendo indefinidamente e análise de possível erro de lógica;
+- PR `#163`, review e aprovação;
+- PR `#192`, review e aprovação em conversa com o responsável;
+- PR `#143`, apontamento de inconsistências pontuais na lógica;
+- PR `#183`, review e aprovação;
+- PR `#180`, review e aprovação;
+- PR `#188`, review e aprovação;
+- PR `#190`, review e aprovação;
+- PR `#187`, sugestão para documentar ajuste na regra de negócio e posterior aprovação;
+- PR `#191`, apontamento de que o PR não corrigia completamente a issue mencionada e sugestão para ajustar a descrição.
+
+#### Observações
+
+A contribuição de Victor Gabriel foi importante para transformar o cadastro de conta em um fluxo mais completo de gerenciamento, além de reforçar a experiência do usuário e a consistência dos PRs revisados. Na `v0.4.1`, também participou da estabilização do ambiente publicado e da revisão do backend de resumo mensal.
+
+---
+
+### Victor Blum
+
+#### Contribuições principais
+
+Victor Blum atuou principalmente em backend, arquitetura, categorização, refatoração do `TransacaoService`, contrato de parsers, métricas técnicas e dashboard mensal.
+
+Durante a Sprint 4, abriu PRs relacionados a:
+
+- interface de categorização;
+- categorização por forma de pagamento e conta;
+- correção do contrato dos parsers de importação;
+- atualização do documento de métricas com dados de refatoração;
+- refatoração do design do `TransacaoService`;
+- backend de resumo mensal e gastos por categoria para a versão `v0.4.1`.
+
+Também contribuiu em muitas revisões técnicas, com foco em testes, controller, backend, documentação e qualidade das entregas.
+
+#### Evidências associadas
+
+- PR `Feat/#65 interface de categorizacao`;
+- PR `Feat/#66 categorizacao por forma de pagamento e conta`;
+- PR `Fix/174 contrato parsers importacao`;
+- PR de atualização das métricas de refatoração;
+- PR `Refactor/#128 transacao service design`;
+- PR `#212`, finalização do backend do resumo mensal e gastos por categoria;
+- PR `#141`, revisão de documentação desatualizada;
+- PR `#151`, apontamento de testes faltantes e ajustes na lógica dos testes;
+- PR `#152`, revisão de testes faltantes, descrição do PR e correções pontuais;
+- PR `#153`, revisão de testes e correções nos testes montados;
+- PR `#159`, contribuição em review técnico;
+- PR `#166`, apontamentos sobre controller, service e cobertura;
+- PR `#167`, revisão de testes e validações;
+- PR `#169`, revisão de pontos de manutenção e consistência;
+- PR `#172`, acompanhamento da issue de testes do resumo mensal;
+- PR `#174`, revisão e correção do contrato dos parsers;
+- PR `#197`, documentação de métricas da Sprint 4.
+
+#### Observações
+
+A contribuição de Victor Blum foi central para a evolução técnica do backend e para a redução de complexidade do `TransacaoService`. Na versão `v0.4.1`, também foi responsável por finalizar o backend do resumo mensal e gastos por categoria, fechando uma das principais pendências da Sprint 4.
+
+---
+
+### Alexandre Villela
+
+#### Contribuições principais
+
+Alexandre Villela atuou principalmente em testes, modelagem e confiabilidade da importação.
+
+Durante a Sprint 4 e a estabilização da `v0.4.1`, abriu PRs relacionados a:
+
+- testes de contrato dos parsers de importação;
+- ajuste de modelagem de `TipoTransacao`;
+- validações de comportamento esperado na importação.
+
+#### Evidências associadas
+
+- PR `#209`, testes de contrato dos parsers de importação;
+- PR `#208`, modelagem de `TipoTransacao` apenas com sentido financeiro;
+- issue `#175`, testes de contrato dos parsers;
+- issue `#176`, ajuste de modelagem de `TipoTransacao`.
+
+#### Observações
+
+A atuação de Alexandre Villela foi importante para reduzir ambiguidades no domínio financeiro e aumentar a confiabilidade da importação de extratos. As entregas foram incorporadas na versão complementar `v0.4.1`.
 
 ## Observação sobre a versão 0.4.1
 
