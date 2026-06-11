@@ -117,38 +117,72 @@ class ParserCSVTest {
         }
 
         @Test
-        @DisplayName("extrato real Nubank: importa date,title,amount inferindo tipo pelo sinal do amount")
-        void extratoRealNubank_importaDateTitleAmount() {
+        @DisplayName("extrato bancário Nubank: valores negativos com ponto decimal viram DEBITO")
+        void extratoBancarioNubank_valoresNegativosComPontoDecimal_viramDebito() {
             String conteudo = """
-            date,title,amount
-            2026-05-30,Mais Natural,"7,00"
-            2026-05-24,Mercado Compre Facil P,"15,99"
-            2026-05-08,Pagamento recebido,"- 866,89"
+            Data,Valor,Identificador,Descrição
+            08/06/2026,-8.91,6a26e7fc-e0ff-459a-bcbc-e8a5b774f068,Transferência enviada pelo Pix
+            08/06/2026,-494.1,6a26fb54-15a4-4ad4-9dd7-82c8324803e3,Pagamento de fatura
             """;
 
-            MockMultipartFile arquivo = fromString("nubank-real.csv", conteudo);
+            MockMultipartFile arquivo = fromString("nubank-conta.csv", conteudo);
 
             ResultadoParser resultado = parser.parsear(arquivo, conta);
 
             assertAll(
-                    () -> assertEquals(3, resultado.getTransacoes().size()),
-                    () -> assertEquals(3, resultado.getTotalLinhas()),
+                    () -> assertEquals(2, resultado.getTransacoes().size()),
+                    () -> assertEquals(2, resultado.getTotalLinhas()),
                     () -> assertEquals(0, resultado.getLinhasInvalidas()),
 
-                    () -> assertEquals("Mais Natural", resultado.getTransacoes().get(0).getDescricao()),
                     () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(0).getTipo()),
                     () -> assertEquals(0, resultado.getTransacoes().get(0).getValor()
-                            .compareTo(new BigDecimal("7.00"))),
+                            .compareTo(new BigDecimal("8.91"))),
 
-                    () -> assertEquals("Mercado Compre Facil P", resultado.getTransacoes().get(1).getDescricao()),
                     () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(1).getTipo()),
                     () -> assertEquals(0, resultado.getTransacoes().get(1).getValor()
-                            .compareTo(new BigDecimal("15.99"))),
+                            .compareTo(new BigDecimal("494.1")))
+            );
+        }
 
-                    () -> assertEquals("Pagamento recebido", resultado.getTransacoes().get(2).getDescricao()),
+        @Test
+        @DisplayName("extrato bancário Nubank: importa Data,Valor,Identificador,Descrição")
+        void extratoBancarioNubank_importaDataValorIdentificadorDescricao() {
+            String conteudo = """
+            Data,Valor,Identificador,Descrição
+            03/06/2026,80,6a1fb213-a773-4548-a024-b4470e91312a,Resgate RDB
+            03/06/2026,-80,6a1fb229-140f-475c-b676-7295f4258c0f,Transferência enviada pelo Pix
+            08/06/2026,500,6a26e7e1-75af-454d-9f60-8324dda51a05,Transferência recebida pelo Pix
+            08/06/2026,-494.1,6a26fb54-15a4-4ad4-9dd7-82c8324803e3,Pagamento de fatura
+            """;
+
+            MockMultipartFile arquivo = fromString("nubank-conta.csv", conteudo);
+
+            ResultadoParser resultado = parser.parsear(arquivo, conta);
+
+            assertAll(
+                    () -> assertEquals(4, resultado.getTransacoes().size()),
+                    () -> assertEquals(4, resultado.getTotalLinhas()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+
+                    () -> assertEquals("Resgate RDB", resultado.getTransacoes().get(0).getDescricao()),
+                    () -> assertEquals(TipoTransacao.CREDITO, resultado.getTransacoes().get(0).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(0).getValor()
+                            .compareTo(new BigDecimal("80"))),
+
+                    () -> assertEquals("Transferência enviada pelo Pix", resultado.getTransacoes().get(1).getDescricao()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(1).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(1).getValor()
+                            .compareTo(new BigDecimal("80"))),
+
+                    () -> assertEquals("Transferência recebida pelo Pix", resultado.getTransacoes().get(2).getDescricao()),
                     () -> assertEquals(TipoTransacao.CREDITO, resultado.getTransacoes().get(2).getTipo()),
                     () -> assertEquals(0, resultado.getTransacoes().get(2).getValor()
-                            .compareTo(new BigDecimal("866.89")))
+                            .compareTo(new BigDecimal("500"))),
+
+                    () -> assertEquals("Pagamento de fatura", resultado.getTransacoes().get(3).getDescricao()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(3).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(3).getValor()
+                            .compareTo(new BigDecimal("494.1")))
             );
         }
 
