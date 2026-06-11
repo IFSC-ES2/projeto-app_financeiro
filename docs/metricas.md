@@ -406,6 +406,41 @@ Leitura adotada:
 | Índice de participação e presença da equipe | **100%** | **100%** | **Estável** | A sprint apresentou contribuição distribuída em funcionalidades, testes, documentação, CI, refatoração, correções e reviews. |
 | Riscos identificados vs. mitigados | **100% dos riscos documentados com plano de mitigação registrado** | **100% dos riscos documentados com plano de mitigação registrado** | **Estável, com novo ponto de atenção operacional** | Os riscos documentados permanecem com plano de mitigação. A `#170` reforça a necessidade de monitorar riscos ligados à importação, autenticação e tratamento de erros no frontend. |
 
+### Itens considerados na Sprint 4
+
+| Item | Situação observada | Impacto nas métricas |
+|------|--------------------|----------------------|
+| #65 - Interface de categorização de transações | Concluído no recorte da sprint | Melhora a usabilidade do histórico de transações e fecha o fluxo de categorização manual pela interface. |
+| #66 - Resumo por forma de pagamento e gestão de contas | Concluído no recorte da sprint | Avança a visualização agregada por forma de pagamento e complementa regras de contas. |
+| #67 - Resumo mensal/backend do dashboard | Concluído na `v0.4.1` | Consolida o backend do resumo mensal e passa a contribuir para o avanço funcional do MVP. |
+| #106 - Filtros/listagem paginada de transações | Concluído no recorte da sprint | Melhora a consulta de movimentações por filtros e paginação. |
+| #107 - Testes de categorização de transações | Concluído | Reforça a confiabilidade das regras de categorização e reduz risco de regressão. |
+| #122 - Manutenção do CI com Gradle Wrapper e lint frontend | Concluído | Melhora a reprodutibilidade do pipeline e reduz divergência entre ambiente local e CI. |
+| #124 - Documentação de padrões arquiteturais aplicados | Concluído | Atualiza a documentação arquitetural para explicar melhor a arquitetura MVC/camadas e o uso real do padrão Strategy nos parsers de importação. Melhora a rastreabilidade das decisões de design e corrige a justificativa genérica apontada na avaliação da `v0.2.0`. |
+| #125 - Ambiente de staging ou alternativa reprodutível | Concluído | Atende ao requisito da Sprint 4 de disponibilizar o MVP para validação em ambiente acessível ou por execução reprodutível, com instruções de acesso, credenciais de teste e cuidados para não expor segredos no repositório. |
+| #126 - Deploy/documentação de deploy | Concluído no controle da sprint | Atende ao requisito de documentação de implantação/reprodução do ambiente para a entrega. |
+| #127 - Atualização de métricas da Sprint 4 | Concluído | Atualiza o acompanhamento quantitativo e qualitativo do projeto ao final da Sprint 4. |
+| #128 - Refatoração/reengenharia do `TransacaoService` | Concluído | Melhora manutenibilidade, reduz responsabilidades concentradas e sustenta a comparação antes/depois registrada no documento. |
+| #129 - Comparação de métrica antes/depois da refatoração | Concluído | Atende ao requisito de registrar métrica antes/depois da reengenharia. |
+| #130 - ADR da refatoração da Sprint 4 | Concluído | Registra a decisão de design relacionada à decomposição do `TransacaoService` em ADR própria. |
+| #134 - Backend para editar e excluir transações | Concluído | Implementa suporte backend para manutenção de transações do usuário autenticado, incluindo edição, exclusão, validação de propriedade da transação, validação da conta informada e retorno adequado de erros. Complementa o fluxo de gerenciamento do histórico financeiro. |
+| #135 - Frontend para editar e excluir transações | Concluído | Consolida a manutenção de transações pela interface, permitindo que o usuário edite e exclua movimentações sem depender de chamadas manuais à API. |
+| #136 - Tela para cadastro de nova conta bancária | Concluído | Contribui para o fluxo de contas no frontend e melhora a experiência de onboarding/gestão de contas. |
+| #146 - Testes da tela de registro manual de transações | Concluído | Amplia a cobertura de frontend em fluxo essencial do MVP. |
+| #147 - Testes da tela de cadastro de nova conta bancária | Concluído | Amplia a cobertura de frontend em fluxo de contas. |
+| #151 - Testes da tela de importação de extratos | Concluído | Reforça a cobertura do fluxo de importação no frontend. |
+| #155 - Testes da tela de listagem de transações | Concluído | Reforça a confiabilidade da listagem/histórico de movimentações. |
+| #157 - Frontend do resumo por forma de pagamento | Concluído | Complementa a entrega da #66 na interface, exibindo os agrupamentos por pagamento. |
+| #158 - Testes do resumo por pagamento e contas | Concluído | Reforça a confiança sobre agrupamento por pagamento e regras de contas. |
+| #162 - Testes para edição e exclusão de transações | Concluído | Reforça a cobertura de fluxos de manutenção de transações. |
+| #165 - Tela de gerenciamento de contas bancárias | Concluído | Consolida a gestão de contas no frontend. |
+| #170 - Bug no fluxo de importação de extrato | Concluído na `v0.4.1` | Registra regressão funcional identificada na importação e resolvida na estabilização, reforçando a necessidade de monitorar autenticação, tratamento de erro e importação de arquivos. |
+| #174 - Contrato comum dos parsers de importação | Concluído | Melhora organização/manutenção do fluxo de importação e reduz acoplamento entre parsers. |
+| #177 - Relatório de cobertura dos testes frontend | Concluído | Torna a cobertura do frontend mensurável no pipeline com Vitest. |
+| #184 - Testes da tela Primeira Conta | Concluído | Amplia a cobertura do frontend no fluxo de onboarding após cadastro. |
+| #194 - Backend para editar conta bancária | Concluído | Completa o suporte de backend para edição de contas, com validação de propriedade da conta e atualização dos dados permitidos. |
+| #195 - Frontend para editar e deletar contas bancárias | Concluído | Complementa a gestão de contas na interface, permitindo ações de edição e exclusão, confirmação antes de remover, atualização da listagem e tratamento de loading/erro. |
+
 
 ### Resumo quantitativo da Sprint 4
 
