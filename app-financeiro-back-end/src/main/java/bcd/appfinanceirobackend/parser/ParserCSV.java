@@ -15,6 +15,7 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.*;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -72,6 +73,18 @@ public class ParserCSV implements ParserExtrato {
             }
 
             char delimitador = detectarDelimitador(linhas);
+
+            List<String[]> registros = lerRegistrosCsv(linhas, delimitador);
+
+            if (registros.isEmpty()) {
+                return new ResultadoParser();
+            }
+
+            String[] cabecalho = registros.getFirst();
+
+            if (ehCabecalhoNubank(cabecalho)) {
+                return processarCsvNubank(registros, conta);
+            }
 //        try {
 //            String conteudo = lerConteudoDoArquivo(arquivo);
 //            conteudo = removerBom(conteudo);
@@ -275,6 +288,69 @@ public class ParserCSV implements ParserExtrato {
         }
 
         return registros;
+    }
+
+    /**
+     * Verifica se o CSV tem o layout real do Nubank.
+     *
+     * Layout esperado:
+     * date,title,amount
+     */
+    private boolean ehCabecalhoNubank(String[] cabecalho) {
+        return encontrarIndiceDaColuna(cabecalho, "date") >= 0
+                && encontrarIndiceDaColuna(cabecalho, "title") >= 0
+                && encontrarIndiceDaColuna(cabecalho, "amount") >= 0;
+    }
+
+    private ResultadoParser processarCsvNubank(List<String[]> registros, Conta conta) {
+        
+    }
+
+    /**
+     * Encontra o índice de uma coluna dentro do cabeçalho.
+     *
+     * Exemplo:
+     * date,title,amount
+     *
+     * encontrarIndiceDaColuna(cabecalho, "amount")
+     * retorna 2.
+     */
+    private int encontrarIndiceDaColuna(String[] cabecalho, String nomeProcurado) {
+        for (int i = 0; i < cabecalho.length; i++) {
+            String colunaNormalizada = normalizarTexto(cabecalho[i]);
+
+            if (colunaNormalizada.equals(nomeProcurado)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * Normaliza textos para comparação.
+     *
+     * Usado principalmente para comparar cabeçalhos, como:
+     * "﻿date" -> "date"
+     * " Date " -> "date"
+     * "Descrição" -> "descricao"
+     */
+    private String normalizarTexto(String texto) {
+        if (texto == null) {
+            return "";
+        }
+
+        String normalizado = texto
+                .replace(BOM, "")
+                .replace("\"", "")
+                .trim()
+                .toLowerCase();
+
+        normalizado = Normalizer
+                .normalize(normalizado, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+
+        return normalizado;
     }
 
     /**
