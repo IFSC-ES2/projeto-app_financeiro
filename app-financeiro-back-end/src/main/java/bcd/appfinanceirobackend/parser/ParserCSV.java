@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.*;
@@ -69,7 +70,8 @@ public class ParserCSV implements ParserExtrato {
             if (linhas.isEmpty()) {
                 return new ResultadoParser();
             }
-        }
+
+            char delimitador = detectarDelimitador(linhas);
 //        try {
 //            String conteudo = lerConteudoDoArquivo(arquivo);
 //            conteudo = removerBom(conteudo);
@@ -116,7 +118,7 @@ public class ParserCSV implements ParserExtrato {
 //                    transacoes.add(transacao);
 //                }
 //            }
-         catch (Exception e) {
+        }catch (Exception e) {
             throw new RuntimeException("Erro ao processar arquivo CSV: " + e.getMessage(), e);
         }
         resultadoParser.setTransacoes(transacoes);
@@ -217,14 +219,62 @@ public class ParserCSV implements ParserExtrato {
 
 
     /**
-     * Detecta o delimitador mais provável analisando a primeira linha do arquivo.
-     * Prioridade: ponto e vírgula > vírgula > tabulação.
+     * Detecta o delimitador comparando vírgula, ponto e vírgula e tabulação.
+     *
+     * Para o Nubank, a linha:
+     * date,title,amount
+     *
+     * gera 3 colunas com vírgula, então a vírgula será escolhida.
      */
-    private char detectarDelimitador(String conteudo) {
-        String primeiraLinha = conteudo.split("\n")[0];
-        if (primeiraLinha.contains(";")) return ';';
-        if (primeiraLinha.contains(",")) return ',';
-        return '\t';
+    private char detectarDelimitador(List<String> linhas) throws Exception {
+        char melhorDelimitador = ',';
+        int maiorQuantidadeColunas = 1;
+
+        char[] candidatos = new char[]{',', ';', '\t'};
+
+        for (char candidato : candidatos) {
+            List<String[]> registros = lerRegistrosCsv(List.of(linhas.get(0)), candidato);
+            int quantidadeColunas = registros.get(0).length;
+
+            if (quantidadeColunas > maiorQuantidadeColunas) {
+                maiorQuantidadeColunas = quantidadeColunas;
+                melhorDelimitador = candidato;
+            }
+        }
+
+        return melhorDelimitador;
+    }
+
+    /**
+     * Lê as linhas com OpenCSV.
+     *
+     * Isso é importante porque o Nubank usa valores assim:
+     * "7,00"
+     *
+     * Se você usar split(",") simples, esse valor quebra em duas colunas:
+     * "7"
+     * "00"
+     *
+     * Com OpenCSV, o conteúdo entre aspas é preservado corretamente.
+     */
+    private List<String[]> lerRegistrosCsv(List<String> linhas, char delimitador) throws Exception {
+        String conteudo = String.join("\n", linhas);
+        List<String[]> registros = new ArrayList<>();
+
+        try (CSVReader reader = new CSVReaderBuilder(new StringReader(conteudo))
+                .withCSVParser(new CSVParserBuilder()
+                        .withSeparator(delimitador)
+                        .build())
+                .build()) {
+
+            String[] linha;
+
+            while ((linha = reader.readNext()) != null) {
+                registros.add(linha);
+            }
+        }
+
+        return registros;
     }
 
     /**
