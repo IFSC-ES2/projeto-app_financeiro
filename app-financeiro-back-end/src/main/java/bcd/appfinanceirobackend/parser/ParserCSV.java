@@ -134,10 +134,7 @@ public class ParserCSV implements ParserExtrato {
         }catch (Exception e) {
             throw new RuntimeException("Erro ao processar arquivo CSV: " + e.getMessage(), e);
         }
-        resultadoParser.setTransacoes(transacoes);
-        resultadoParser.setLinhasInvalidas(linhasInvalidas);
-        resultadoParser.setTotalLinhas(totalLinhas);
-        return resultadoParser;
+
     }
 
     /**
@@ -302,8 +299,71 @@ public class ParserCSV implements ParserExtrato {
                 && encontrarIndiceDaColuna(cabecalho, "amount") >= 0;
     }
 
+    /**
+     * Processa o CSV real do Nubank.
+     *
+     * Regras:
+     * - date vira data da transação;
+     * - title vira descrição;
+     * - amount vira valor;
+     * - amount positivo vira DEBITO, porque representa compra/gasto;
+     * - amount negativo vira CREDITO, porque representa pagamento recebido;
+     * - valor é salvo sempre positivo na entidade.
+     */
     private ResultadoParser processarCsvNubank(List<String[]> registros, Conta conta) {
-        
+        ResultadoParser resultado = new ResultadoParser();
+
+        List<Transacao> transacoes = new ArrayList<>();
+        int totalLinhas = 0;
+        int linhasInvalidas = 0;
+
+        String[] cabecalho = registros.getFirst();
+
+        int indiceData = encontrarIndiceDaColuna(cabecalho, "date");
+        int indiceDescricao = encontrarIndiceDaColuna(cabecalho, "title");
+        int indiceValor = encontrarIndiceDaColuna(cabecalho, "amount");
+
+        if (indiceData < 0 || indiceDescricao < 0 || indiceValor < 0) {
+            throw new IllegalArgumentException("Cabeçalho Nubank inválido");
+        }
+
+        for (int i = 1; i < registros.size(); i++) {
+            String[] linha = registros.get(i);
+
+            totalLinhas++;
+
+            if (!possuiIndicesObrigatorios(linha, indiceData, indiceDescricao, indiceValor)) {
+                linhasInvalidas++;
+                continue;
+            }
+
+            LocalDate data = parsearData(linha[indiceData]);
+            String descricao = limparDescricao(linha[indiceDescricao]);
+            BigDecimal valor = parsearValor(linha[indiceValor]);
+
+            if (data == null || valor == null || valor.compareTo(BigDecimal.ZERO) == 0) {
+                linhasInvalidas++;
+                continue;
+            }
+
+            TipoTransacao tipo = resolverTipoNubank(valor);
+
+            Transacao transacao = criarTransacao(
+                    conta,
+                    data,
+                    descricao,
+                    valor.abs(),
+                    tipo
+            );
+
+            transacoes.add(transacao);
+        }
+
+        resultado.setTransacoes(transacoes);
+        resultado.setTotalLinhas(totalLinhas);
+        resultado.setLinhasInvalidas(linhasInvalidas);
+
+        return resultado;
     }
 
     /**
@@ -351,6 +411,60 @@ public class ParserCSV implements ParserExtrato {
                 .replaceAll("\\p{M}", "");
 
         return normalizado;
+    }
+
+    /**
+     * Garante que a linha tem as posições que serão acessadas.
+     *
+     * Isso evita ArrayIndexOutOfBoundsException quando uma linha vier quebrada
+     * ou com colunas faltando.
+     */
+    private boolean possuiIndicesObrigatorios(String[] linha, int... indices) {
+        for (int indice : indices) {
+            if (indice < 0 || indice >= linha.length) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Limpa a descrição da transação.
+     *
+     * Se a descrição vier vazia, usa um fallback para evitar salvar descrição nula
+     * ou em branco.
+     */
+    private String limparDescricao(String descricao) {
+        if (descricao == null) {
+            return "Transação importada";
+        }
+
+        String descricaoLimpa = descricao
+                .replace(BOM, "")
+                .replace("\"", "")
+                .trim();
+
+        if (descricaoLimpa.isBlank()) {
+            return "Transação importada";
+        }
+
+        return descricaoLimpa;
+    }
+
+    /**
+     * Regra específica do extrato Nubank de cartão.
+     *
+     * No arquivo enviado:
+     * - compras aparecem com amount positivo;
+     * - pagamento recebido aparece com amount negativo.
+     */
+    private TipoTransacao resolverTipoNubank(BigDecimal valor) {
+        if (valor.compareTo(BigDecimal.ZERO) > 0) {
+            return TipoTransacao.DEBITO;
+        }
+
+        return TipoTransacao.CREDITO;
     }
 
     /**
@@ -405,5 +519,30 @@ public class ParserCSV implements ParserExtrato {
             // Fallback: positivo sem tipo reconhecido é CREDITO
             return TipoTransacao.CREDITO;
         }
+    }
+
+    /**
+     * Centraliza a criação da Transacao.
+     *
+     * Assim, tanto o fluxo Nubank quanto o fluxo legado criam transações com
+     * a mesma estrutura mínima.
+     */
+    private Transacao criarTransacao(
+            Conta conta,
+            LocalDate data,
+            String descricao,
+            BigDecimal valor,
+            TipoTransacao tipo
+    ) {
+        Transacao transacao = new Transacao();
+
+        transacao.setConta(conta);
+        transacao.setData(data);
+        transacao.setDescricao(descricao);
+        transacao.setValor(valor);
+        transacao.setTipo(tipo);
+        transacao.setCategorizada(false);
+
+        return transacao;
     }
 }
