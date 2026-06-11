@@ -168,6 +168,7 @@ public class ResumoService {
         String chaveAgrupamento = entry.getKey();
         List<Transacao> transacoesDoGrupo = entry.getValue();
         BigDecimal totalGrupo = BigDecimal.ZERO;
+
         for (Transacao transacao : transacoesDoGrupo) {
             totalGrupo = totalGrupo.add(transacao.getValor());
         }
@@ -177,17 +178,20 @@ public class ResumoService {
                 .divide(totalGeral, 2, RoundingMode.HALF_UP);
 
         GrupoCategoriaDTO grupoCategoriaDTO = new GrupoCategoriaDTO();
-        if(obterCategoriaId(chaveAgrupamento)!= null){
+
+        if(obterCategoriaId(chaveAgrupamento) != null){
             Categoria categoria = categoriaRepository.findById(
-                    Objects.requireNonNull(obterCategoriaId(chaveAgrupamento)))
+                            Objects.requireNonNull(obterCategoriaId(chaveAgrupamento)))
                     .orElseThrow(() -> new ResourceNotFoundException("Categoria Inexistente"));
+
             grupoCategoriaDTO.setCategoriaID(categoria.getId());
             grupoCategoriaDTO.setNome(categoria.getNome());
             grupoCategoriaDTO.setIcone(categoria.getIcone());
             grupoCategoriaDTO.setCor(categoria.getCor());
         } else {
-            grupoCategoriaDTO.setNome(chaveAgrupamento);
+            grupoCategoriaDTO.setNome("Sem categoria");
         }
+
         grupoCategoriaDTO.setTotal(totalGrupo);
         grupoCategoriaDTO.setQuantidade(transacoesDoGrupo.size());
         grupoCategoriaDTO.setPercentual(percentualGrupo);
