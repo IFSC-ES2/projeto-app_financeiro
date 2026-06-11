@@ -2,7 +2,7 @@
 
 A Sprint 4 representou uma etapa de consolidação do MVP do SmartBudget. Enquanto a Sprint 3 havia avançado na base de importação, categorização, autenticação, listagem e testes iniciais, a Sprint 4 focou em transformar essas bases em fluxos mais completos para o usuário, com manutenção de transações, gestão de contas, melhoria de listagens, ampliação de testes, refatoração técnica e preparação do projeto para publicação estável.
 
-No recorte original da Sprint 4 foram consideradas 30 issues únicas. Após a consolidação inicial da entrega, 28 foram feitas na 0.4.0 e todas as 30 finalizadas na 0.4.1.
+No recorte da Sprint 4 foram consideradas 32 issues, todas concluídas após a consolidação da `v0.4.0` e a rodada complementar da `v0.4.1`.
 
 Após a publicação inicial da versão `v0.4.0`, a equipe realizou uma rodada complementar de estabilização e fechamento de pendências, consolidada na versão `v0.4.1`. Essa versão incorporou correções, testes adicionais, ajustes de modelagem e a finalização de funcionalidades que haviam ficado pendentes no recorte inicial da Sprint 4.
 
