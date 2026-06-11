@@ -505,7 +505,7 @@ Cobertura de branches (frontend): 61,4% (437/712)
 
 A medição atual substitui a medição intermediária anterior da Sprint 4. A queda percentual em algumas métricas é explicada pelo aumento do volume de código testável após a entrada de novas issues no escopo do marco `v0.4.0`.
 
-Obs: não cobre dados da 0.4.1.
+Obs.: os valores de cobertura foram obtidos do último CI verde disponível antes da consolidação final da v0.4.1; por isso, podem não refletir alterações posteriores exclusivamente documentais.
 
 ### Limitações da medição
 
