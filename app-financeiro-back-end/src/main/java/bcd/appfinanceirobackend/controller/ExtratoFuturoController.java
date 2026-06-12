@@ -25,7 +25,7 @@ public class ExtratoFuturoController {
     @GetMapping
     public ResponseEntity<List<ProjecaoMensalDTO>> obterExtratoFuturo(
             @AuthenticationPrincipal Usuario usuarioAutenticado,
-            @RequestParam(required = false, defaultValue = "" + ExtratoFuturoService.MESES_PADRAO) int meses) {
+            @RequestParam(required = false) Integer meses) {
         return ResponseEntity.ok(extratoFuturoService.calcularProjecao(usuarioAutenticado, meses));
     }
 }

@@ -43,8 +43,8 @@ public class ExtratoFuturoService {
         this.faturaMapper = faturaMapper;
     }
 
-    public List<ProjecaoMensalDTO> calcularProjecao(Usuario usuario, int meses) {
-        return calcularProjecao(usuario, meses, LocalDate.now());
+    public List<ProjecaoMensalDTO> calcularProjecao(Usuario usuario, Integer meses) {
+        return calcularProjecao(usuario, meses != null ? meses : MESES_PADRAO, LocalDate.now());
     }
 
     public List<ProjecaoMensalDTO> calcularProjecao(Usuario usuario, int meses, LocalDate hoje) {
@@ -65,7 +65,8 @@ public class ExtratoFuturoService {
 
         List<ProjecaoMensalDTO> projecao = new ArrayList<>();
         for (YearMonth mes = mesInicial; !mes.isAfter(mesFinal); mes = mes.plusMonths(1)) {
-            ProjecaoMensalDTO projecaoMensal = montarProjecaoDoMes(mes, transacoesFuturas, faturasEmAberto, saldoCorrente);
+            ProjecaoMensalDTO projecaoMensal =
+                    montarProjecaoDoMes(mes, mesInicial, transacoesFuturas, faturasEmAberto, saldoCorrente);
             saldoCorrente = projecaoMensal.getSaldoPrevisto();
             projecao.add(projecaoMensal);
         }
@@ -79,6 +80,7 @@ public class ExtratoFuturoService {
 
     private ProjecaoMensalDTO montarProjecaoDoMes(
             YearMonth mes,
+            YearMonth mesInicial,
             List<Transacao> transacoesFuturas,
             List<Fatura> faturasEmAberto,
             BigDecimal saldoAnterior) {
@@ -88,20 +90,21 @@ public class ExtratoFuturoService {
                 .sorted(Comparator.comparing(Transacao::getData))
                 .toList();
 
+        // Fatura atrasada (não paga, vencida antes da janela) ainda é saída de caixa pendente:
+        // pesa no primeiro mês projetado
         List<Fatura> faturasDoMes = faturasEmAberto.stream()
-                .filter(fatura -> fatura.getDataVencimento() != null
-                        && YearMonth.from(fatura.getDataVencimento()).equals(mes))
+                .filter(fatura -> fatura.getDataVencimento() != null)
+                .filter(fatura -> {
+                    YearMonth vencimento = YearMonth.from(fatura.getDataVencimento());
+                    return mes.equals(mesInicial) ? !vencimento.isAfter(mesInicial) : vencimento.equals(mes);
+                })
                 .sorted(Comparator.comparing(Fatura::getDataVencimento))
                 .toList();
 
-        BigDecimal totalCreditos = somarPorTipo(transacoesDoMes, TipoTransacao.CREDITO);
-
-        // Débitos já vinculados a uma fatura entram pelo valor da fatura (não pelo lançamento),
-        // para não contar duas vezes a mesma despesa
-        BigDecimal debitosAvulsos = transacoesDoMes.stream()
-                .filter(transacao -> transacao.getTipo() == TipoTransacao.DEBITO && transacao.getFatura() == null)
-                .map(Transacao::getValor)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // Lançamentos vinculados a fatura (compras e estornos) entram pelo valorTotal da fatura,
+        // não pelo lançamento individual, para não contar duas vezes
+        BigDecimal totalCreditos = somarAvulsosPorTipo(transacoesDoMes, TipoTransacao.CREDITO);
+        BigDecimal debitosAvulsos = somarAvulsosPorTipo(transacoesDoMes, TipoTransacao.DEBITO);
 
         BigDecimal totalFaturas = faturasDoMes.stream()
                 .map(Fatura::getValorTotal)
@@ -125,8 +128,11 @@ public class ExtratoFuturoService {
 
     private BigDecimal calcularSaldoAtual(Usuario usuario, LocalDate hoje) {
         BigDecimal saldo = BigDecimal.ZERO;
-        for (Transacao transacao : transacaoRepository.findAllByContaUsuarioId(usuario.getId())) {
-            if (transacao.getData().isAfter(hoje)) {
+        for (Transacao transacao :
+                transacaoRepository.findAllByContaUsuarioIdAndDataLessThanEqual(usuario.getId(), hoje)) {
+            // Lançamento de fatura em aberto ainda não saiu do caixa — sai no vencimento,
+            // quando a fatura inteira é descontada pelo valorTotal
+            if (transacao.getFatura() != null && transacao.getFatura().getStatus() != StatusFatura.PAGA) {
                 continue;
             }
             saldo = transacao.getTipo() == TipoTransacao.CREDITO
@@ -136,9 +142,9 @@ public class ExtratoFuturoService {
         return saldo;
     }
 
-    private BigDecimal somarPorTipo(List<Transacao> transacoes, TipoTransacao tipo) {
+    private BigDecimal somarAvulsosPorTipo(List<Transacao> transacoes, TipoTransacao tipo) {
         return transacoes.stream()
-                .filter(transacao -> transacao.getTipo() == tipo)
+                .filter(transacao -> transacao.getTipo() == tipo && transacao.getFatura() == null)
                 .map(Transacao::getValor)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }

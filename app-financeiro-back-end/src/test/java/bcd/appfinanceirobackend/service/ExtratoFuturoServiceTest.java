@@ -31,6 +31,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -70,7 +72,8 @@ class ExtratoFuturoServiceTest {
         LocalDate fimPeriodo = YearMonth.from(HOJE).plusMonths(2).atEndOfMonth();
         when(transacaoRepository.findAllByContaUsuarioIdAndDataBetween(usuario.getId(), HOJE.plusDays(1), fimPeriodo))
                 .thenReturn(futuras);
-        when(transacaoRepository.findAllByContaUsuarioId(usuario.getId())).thenReturn(historico);
+        when(transacaoRepository.findAllByContaUsuarioIdAndDataLessThanEqual(usuario.getId(), HOJE))
+                .thenReturn(historico);
         when(faturaRepository.findAllByContaUsuarioIdAndStatusNot(usuario.getId(), StatusFatura.PAGA))
                 .thenReturn(faturasEmAberto);
     }
@@ -197,6 +200,84 @@ class ExtratoFuturoServiceTest {
             assertThat(projecao.get(1).getSaldoPrevisto()).isEqualByComparingTo("1300.00");
             assertThat(projecao.get(1).getTotalCreditos()).isEqualByComparingTo("500.00");
             assertThat(projecao.get(2).getSaldoPrevisto()).isEqualByComparingTo("1000.00");
+        }
+
+        @Test
+        @DisplayName("não deve descontar do saldo débito passado vinculado a fatura em aberto")
+        void naoDeveDescontarDoSaldoDebitoVinculadoAFaturaEmAberto() {
+            Fatura faturaJulho = fatura(LocalDate.of(2026, 7, 10), "500.00", StatusFatura.ABERTA);
+            Transacao salarioPassado = transacao(
+                    LocalDate.of(2026, 6, 1), TipoTransacao.CREDITO, "1000.00", TipoPagamento.PIX);
+            Transacao compraPassada = transacao(
+                    LocalDate.of(2026, 6, 5), TipoTransacao.DEBITO, "500.00", TipoPagamento.CARTAO_CREDITO);
+            compraPassada.setFatura(faturaJulho);
+            prepararCenario(List.of(salarioPassado, compraPassada), List.of(), List.of(faturaJulho));
+
+            List<ProjecaoMensalDTO> projecao = extratoFuturoService.calcularProjecao(usuario, 3, HOJE);
+
+            // A compra só sai do caixa no vencimento da fatura, em julho
+            assertThat(projecao.get(0).getSaldoPrevisto()).isEqualByComparingTo("1000.00");
+            assertThat(projecao.get(1).getSaldoPrevisto()).isEqualByComparingTo("500.00");
+        }
+
+        @Test
+        @DisplayName("deve descontar do saldo débito passado vinculado a fatura já paga")
+        void deveDescontarDoSaldoDebitoVinculadoAFaturaPaga() {
+            Fatura faturaPaga = fatura(LocalDate.of(2026, 5, 10), "500.00", StatusFatura.PAGA);
+            Transacao compraPassada = transacao(
+                    LocalDate.of(2026, 5, 2), TipoTransacao.DEBITO, "500.00", TipoPagamento.CARTAO_CREDITO);
+            compraPassada.setFatura(faturaPaga);
+            prepararCenario(List.of(compraPassada), List.of(), List.of());
+
+            List<ProjecaoMensalDTO> projecao = extratoFuturoService.calcularProjecao(usuario, 3, HOJE);
+
+            assertThat(projecao.get(0).getSaldoPrevisto()).isEqualByComparingTo("-500.00");
+        }
+
+        @Test
+        @DisplayName("não deve somar crédito futuro vinculado a fatura nos totais")
+        void naoDeveSomarCreditoVinculadoAFatura() {
+            Fatura faturaJulho = fatura(LocalDate.of(2026, 7, 10), "470.00", StatusFatura.ABERTA);
+            Transacao estornoFuturo = transacao(
+                    LocalDate.of(2026, 7, 12), TipoTransacao.CREDITO, "30.00", TipoPagamento.CARTAO_CREDITO);
+            estornoFuturo.setFatura(faturaJulho);
+            prepararCenario(List.of(), List.of(estornoFuturo), List.of(faturaJulho));
+
+            List<ProjecaoMensalDTO> projecao = extratoFuturoService.calcularProjecao(usuario, 3, HOJE);
+
+            // O estorno já abate o valorTotal da fatura; somar de novo contaria duas vezes
+            assertThat(projecao.get(1).getTotalCreditos()).isEqualByComparingTo("0");
+            assertThat(projecao.get(1).getTotalDebitos()).isEqualByComparingTo("470.00");
+            assertThat(projecao.get(1).getTransacoes()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("deve incluir fatura atrasada não paga no primeiro mês projetado")
+        void deveIncluirFaturaAtrasadaNoPrimeiroMes() {
+            Fatura faturaAtrasada = fatura(LocalDate.of(2026, 5, 10), "200.00", StatusFatura.FECHADA);
+            prepararCenario(List.of(), List.of(), List.of(faturaAtrasada));
+
+            List<ProjecaoMensalDTO> projecao = extratoFuturoService.calcularProjecao(usuario, 3, HOJE);
+
+            assertThat(projecao.get(0).getFaturas()).hasSize(1);
+            assertThat(projecao.get(0).getTotalDebitos()).isEqualByComparingTo("200.00");
+            assertThat(projecao.get(1).getFaturas()).isEmpty();
+            assertThat(projecao.get(2).getFaturas()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("deve projetar 3 meses por padrão quando a quantidade não é informada")
+        void deveProjetarTresMesesPorPadrao() {
+            when(transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
+                    eq(usuario.getId()), any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
+            when(transacaoRepository.findAllByContaUsuarioIdAndDataLessThanEqual(
+                    eq(usuario.getId()), any(LocalDate.class))).thenReturn(List.of());
+            when(faturaRepository.findAllByContaUsuarioIdAndStatusNot(usuario.getId(), StatusFatura.PAGA))
+                    .thenReturn(List.of());
+
+            List<ProjecaoMensalDTO> projecao = extratoFuturoService.calcularProjecao(usuario, (Integer) null);
+
+            assertThat(projecao).hasSize(3);
         }
 
         @Test

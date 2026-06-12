@@ -4,6 +4,8 @@ import bcd.appfinanceirobackend.dto.fatura.FaturaResumoDTO;
 import bcd.appfinanceirobackend.model.Fatura;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Component
 public class FaturaMapper {
 
@@ -16,7 +18,7 @@ public class FaturaMapper {
                 fatura.getMesReferencia() != null ? fatura.getMesReferencia().toString() : null
         );
         resumoDTO.setDataVencimento(fatura.getDataVencimento());
-        resumoDTO.setValorTotal(fatura.getValorTotal());
+        resumoDTO.setValorTotal(fatura.getValorTotal() != null ? fatura.getValorTotal() : BigDecimal.ZERO);
         resumoDTO.setStatus(fatura.getStatus());
         if (fatura.getConta() != null) {
             resumoDTO.setContaId(fatura.getConta().getId());

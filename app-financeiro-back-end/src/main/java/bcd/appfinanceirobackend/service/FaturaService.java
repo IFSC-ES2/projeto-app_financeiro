@@ -129,7 +129,7 @@ public class FaturaService {
     }
 
     private void validarAcesso(Conta conta, Usuario usuarioAutenticado) {
-        if (!conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
+        if (conta == null || !conta.getUsuario().getId().equals(usuarioAutenticado.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado a esta conta");
         }
     }

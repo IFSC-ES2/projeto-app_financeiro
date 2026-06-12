@@ -16,5 +16,6 @@ public interface TransacaoRepository
     List<Transacao> findAllByContaUsuarioId(UUID usuarioId);
     boolean existsByContaId(UUID contaId);
     List<Transacao> findAllByContaUsuarioIdAndDataBetween(UUID usuarioId, LocalDate dataInicio, LocalDate dataFim);
+    List<Transacao> findAllByContaUsuarioIdAndDataLessThanEqual(UUID usuarioId, LocalDate data);
     List<Transacao> findAllByFaturaId(UUID faturaId);
 }
