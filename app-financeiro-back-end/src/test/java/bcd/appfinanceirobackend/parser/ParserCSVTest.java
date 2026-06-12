@@ -187,12 +187,12 @@ class ParserCSVTest {
         }
 
         @Test
-        @DisplayName("extrato Nubank com BOM no cabeçalho é reconhecido corretamente")
-        void extratoNubankComBom_noCabecalho_eReconhecido() {
-            String conteudo = "\uFEFFdate,title,amount\n"
-                    + "2026-05-30,Mais Natural,\"7,00\"\n";
+        @DisplayName("extrato bancário Nubank: BOM no cabeçalho não impede importação")
+        void extratoBancarioNubank_comBomNoCabecalho_importaCorretamente() {
+            String conteudo = "\uFEFFData,Valor,Identificador,Descrição\n"
+                    + "03/06/2026,80,6a1fb213-a773-4548-a024-b4470e91312a,Resgate RDB\n";
 
-            MockMultipartFile arquivo = fromString("nubank-real.csv", conteudo);
+            MockMultipartFile arquivo = fromString("nubank-conta.csv", conteudo);
 
             ResultadoParser resultado = parser.parsear(arquivo, conta);
 
@@ -200,25 +200,25 @@ class ParserCSVTest {
                     () -> assertEquals(1, resultado.getTransacoes().size()),
                     () -> assertEquals(1, resultado.getTotalLinhas()),
                     () -> assertEquals(0, resultado.getLinhasInvalidas()),
-                    () -> assertEquals("Mais Natural", resultado.getTransacoes().get(0).getDescricao()),
-                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(0).getTipo()),
+                    () -> assertEquals("Resgate RDB", resultado.getTransacoes().get(0).getDescricao()),
+                    () -> assertEquals(TipoTransacao.CREDITO, resultado.getTransacoes().get(0).getTipo()),
                     () -> assertEquals(0, resultado.getTransacoes().get(0).getValor()
-                            .compareTo(new BigDecimal("7.00")))
+                            .compareTo(new BigDecimal("80")))
             );
         }
 
         @Test
-        @DisplayName("extrato Nubank com linhas inválidas não interrompe importação")
-        void extratoNubankComLinhasInvalidas_naoInterrompeImportacao() {
+        @DisplayName("extrato bancário Nubank: linhas inválidas são contabilizadas sem interromper parse")
+        void extratoBancarioNubank_linhasInvalidas_naoInterrompemParse() {
             String conteudo = """
-            date,title,amount
-            2026-05-30,Mais Natural,"7,00"
-            data-invalida,Mercado,"15,99"
-            2026-05-08,Pagamento recebido,"- 866,89"
-            2026-05-10,Linha Valor Invalido,abc
+            Data,Valor,Identificador,Descrição
+            03/06/2026,80,6a1fb213-a773-4548-a024-b4470e91312a,Resgate RDB
+            data-invalida,-80,6a1fb229-140f-475c-b676-7295f4258c0f,Transferência enviada pelo Pix
+            08/06/2026,abc,6a26e7e1-75af-454d-9f60-8324dda51a05,Valor inválido
+            08/06/2026,-8.91,6a26e7fc-e0ff-459a-bcbc-e8a5b774f068,Transferência enviada pelo Pix
             """;
 
-            MockMultipartFile arquivo = fromString("nubank-real.csv", conteudo);
+            MockMultipartFile arquivo = fromString("nubank-conta.csv", conteudo);
 
             ResultadoParser resultado = parser.parsear(arquivo, conta);
 
@@ -227,8 +227,13 @@ class ParserCSVTest {
                     () -> assertEquals(4, resultado.getTotalLinhas()),
                     () -> assertEquals(2, resultado.getLinhasInvalidas()),
 
-                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(0).getTipo()),
-                    () -> assertEquals(TipoTransacao.CREDITO, resultado.getTransacoes().get(1).getTipo())
+                    () -> assertEquals("Resgate RDB", resultado.getTransacoes().get(0).getDescricao()),
+                    () -> assertEquals(TipoTransacao.CREDITO, resultado.getTransacoes().get(0).getTipo()),
+
+                    () -> assertEquals("Transferência enviada pelo Pix", resultado.getTransacoes().get(1).getDescricao()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(1).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(1).getValor()
+                            .compareTo(new BigDecimal("8.91")))
             );
         }
 

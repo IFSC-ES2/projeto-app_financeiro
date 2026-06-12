@@ -233,6 +233,7 @@ public class ParserCSV implements ParserExtrato {
     private boolean ehCabecalhoNubankConta(String[] cabecalho) {
         return encontrarIndiceDaColuna(cabecalho, "data") >= 0
                 && encontrarIndiceDaColuna(cabecalho, "valor") >= 0
+                && encontrarIndiceDaColuna(cabecalho, "identificador") >= 0
                 && encontrarIndiceDaColuna(cabecalho, "descricao") >= 0;
     }
 
