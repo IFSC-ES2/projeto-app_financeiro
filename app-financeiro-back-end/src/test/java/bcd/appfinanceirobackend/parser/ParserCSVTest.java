@@ -117,6 +117,127 @@ class ParserCSVTest {
         }
 
         @Test
+        @DisplayName("extrato bancário Nubank: valores negativos com ponto decimal viram DEBITO")
+        void extratoBancarioNubank_valoresNegativosComPontoDecimal_viramDebito() {
+            String conteudo = """
+            Data,Valor,Identificador,Descrição
+            08/06/2026,-8.91,6a26e7fc-e0ff-459a-bcbc-e8a5b774f068,Transferência enviada pelo Pix
+            08/06/2026,-494.1,6a26fb54-15a4-4ad4-9dd7-82c8324803e3,Pagamento de fatura
+            """;
+
+            MockMultipartFile arquivo = fromString("nubank-conta.csv", conteudo);
+
+            ResultadoParser resultado = parser.parsear(arquivo, conta);
+
+            assertAll(
+                    () -> assertEquals(2, resultado.getTransacoes().size()),
+                    () -> assertEquals(2, resultado.getTotalLinhas()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(0).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(0).getValor()
+                            .compareTo(new BigDecimal("8.91"))),
+
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(1).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(1).getValor()
+                            .compareTo(new BigDecimal("494.1")))
+            );
+        }
+
+        @Test
+        @DisplayName("extrato bancário Nubank: importa Data,Valor,Identificador,Descrição")
+        void extratoBancarioNubank_importaDataValorIdentificadorDescricao() {
+            String conteudo = """
+            Data,Valor,Identificador,Descrição
+            03/06/2026,80,6a1fb213-a773-4548-a024-b4470e91312a,Resgate RDB
+            03/06/2026,-80,6a1fb229-140f-475c-b676-7295f4258c0f,Transferência enviada pelo Pix
+            08/06/2026,500,6a26e7e1-75af-454d-9f60-8324dda51a05,Transferência recebida pelo Pix
+            08/06/2026,-494.1,6a26fb54-15a4-4ad4-9dd7-82c8324803e3,Pagamento de fatura
+            """;
+
+            MockMultipartFile arquivo = fromString("nubank-conta.csv", conteudo);
+
+            ResultadoParser resultado = parser.parsear(arquivo, conta);
+
+            assertAll(
+                    () -> assertEquals(4, resultado.getTransacoes().size()),
+                    () -> assertEquals(4, resultado.getTotalLinhas()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+
+                    () -> assertEquals("Resgate RDB", resultado.getTransacoes().get(0).getDescricao()),
+                    () -> assertEquals(TipoTransacao.CREDITO, resultado.getTransacoes().get(0).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(0).getValor()
+                            .compareTo(new BigDecimal("80"))),
+
+                    () -> assertEquals("Transferência enviada pelo Pix", resultado.getTransacoes().get(1).getDescricao()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(1).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(1).getValor()
+                            .compareTo(new BigDecimal("80"))),
+
+                    () -> assertEquals("Transferência recebida pelo Pix", resultado.getTransacoes().get(2).getDescricao()),
+                    () -> assertEquals(TipoTransacao.CREDITO, resultado.getTransacoes().get(2).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(2).getValor()
+                            .compareTo(new BigDecimal("500"))),
+
+                    () -> assertEquals("Pagamento de fatura", resultado.getTransacoes().get(3).getDescricao()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(3).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(3).getValor()
+                            .compareTo(new BigDecimal("494.1")))
+            );
+        }
+
+        @Test
+        @DisplayName("extrato bancário Nubank: BOM no cabeçalho não impede importação")
+        void extratoBancarioNubank_comBomNoCabecalho_importaCorretamente() {
+            String conteudo = "\uFEFFData,Valor,Identificador,Descrição\n"
+                    + "03/06/2026,80,6a1fb213-a773-4548-a024-b4470e91312a,Resgate RDB\n";
+
+            MockMultipartFile arquivo = fromString("nubank-conta.csv", conteudo);
+
+            ResultadoParser resultado = parser.parsear(arquivo, conta);
+
+            assertAll(
+                    () -> assertEquals(1, resultado.getTransacoes().size()),
+                    () -> assertEquals(1, resultado.getTotalLinhas()),
+                    () -> assertEquals(0, resultado.getLinhasInvalidas()),
+                    () -> assertEquals("Resgate RDB", resultado.getTransacoes().get(0).getDescricao()),
+                    () -> assertEquals(TipoTransacao.CREDITO, resultado.getTransacoes().get(0).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(0).getValor()
+                            .compareTo(new BigDecimal("80")))
+            );
+        }
+
+        @Test
+        @DisplayName("extrato bancário Nubank: linhas inválidas são contabilizadas sem interromper parse")
+        void extratoBancarioNubank_linhasInvalidas_naoInterrompemParse() {
+            String conteudo = """
+            Data,Valor,Identificador,Descrição
+            03/06/2026,80,6a1fb213-a773-4548-a024-b4470e91312a,Resgate RDB
+            data-invalida,-80,6a1fb229-140f-475c-b676-7295f4258c0f,Transferência enviada pelo Pix
+            08/06/2026,abc,6a26e7e1-75af-454d-9f60-8324dda51a05,Valor inválido
+            08/06/2026,-8.91,6a26e7fc-e0ff-459a-bcbc-e8a5b774f068,Transferência enviada pelo Pix
+            """;
+
+            MockMultipartFile arquivo = fromString("nubank-conta.csv", conteudo);
+
+            ResultadoParser resultado = parser.parsear(arquivo, conta);
+
+            assertAll(
+                    () -> assertEquals(2, resultado.getTransacoes().size()),
+                    () -> assertEquals(4, resultado.getTotalLinhas()),
+                    () -> assertEquals(2, resultado.getLinhasInvalidas()),
+
+                    () -> assertEquals("Resgate RDB", resultado.getTransacoes().get(0).getDescricao()),
+                    () -> assertEquals(TipoTransacao.CREDITO, resultado.getTransacoes().get(0).getTipo()),
+
+                    () -> assertEquals("Transferência enviada pelo Pix", resultado.getTransacoes().get(1).getDescricao()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(1).getTipo()),
+                    () -> assertEquals(0, resultado.getTransacoes().get(1).getValor()
+                            .compareTo(new BigDecimal("8.91")))
+            );
+        }
+
+        @Test
         @DisplayName("delimitador ponto-e-vírgula é detectado automaticamente")
         void delimitadorPontoVirgula_detectadoAutomaticamente() throws IOException {
             MockMultipartFile arquivo = fromFixture("extrato-ponto-virgula.csv");

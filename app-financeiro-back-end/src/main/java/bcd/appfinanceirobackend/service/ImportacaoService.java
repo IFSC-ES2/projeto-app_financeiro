@@ -89,6 +89,16 @@ public class ImportacaoService {
         int sucessos = 0, falhas = 0;
         try {
             ResultadoParser resultado = parser.parsear(arquivo, conta);
+            if(resultado.getTransacoes().isEmpty()){
+                importacao.setStatusImportacao(StatusImportacao.ERRO);
+                importacao.setTotal_linhas(resultado.getTotalLinhas());
+                importacao.setSucessos(0);
+                importacao.setFalhas(resultado.getLinhasInvalidas());
+                importacao.
+                setMensagemErro("Nenhuma transação valida foi encontrada no arquivo. Verifique o formato das colunas de data, descrição e valor");
+                importacaoRepository.save(importacao);
+                return toResponse(importacao);
+            }
             falhas = resultado.getLinhasInvalidas();
             for (Transacao t: resultado.getTransacoes()){
                 try {
