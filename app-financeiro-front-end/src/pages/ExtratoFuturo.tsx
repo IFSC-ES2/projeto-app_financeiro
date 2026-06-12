@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import LayoutPrivado from '../components/layout/LayoutPrivado';
 import EstadoVazio from '../components/ui/EstadoVazio';
+import MensagemAlerta from '../components/ui/MensagemAlerta';
 import {
   obterExtratoFuturo,
   obterMensagemErroApi,
@@ -39,6 +40,7 @@ const ExtratoFuturo = () => {
   const [projecao, setProjecao] = useState<ProjecaoMensalResponse[]>([]);
   const [horizonte, setHorizonte] = useState(3);
   const [carregando, setCarregando] = useState(true);
+  const [erroCarregamento, setErroCarregamento] = useState('');
   const [erro, setErro] = useState('');
   const [mensagem, setMensagem] = useState('');
   const [faturaPagandoId, setFaturaPagandoId] = useState<string | null>(null);
@@ -49,13 +51,15 @@ const ExtratoFuturo = () => {
 
     const carregar = async () => {
       setCarregando(true);
-      setErro('');
+      setErroCarregamento('');
 
       try {
         const dados = await obterExtratoFuturo(horizonte);
         if (ativo) setProjecao(dados);
       } catch (erroApi) {
-        if (ativo) setErro(obterMensagemErroApi(erroApi, 'Não foi possível carregar o extrato futuro.'));
+        if (ativo) {
+          setErroCarregamento(obterMensagemErroApi(erroApi, 'Não foi possível carregar o extrato futuro.'));
+        }
       } finally {
         if (ativo) setCarregando(false);
       }
@@ -91,7 +95,7 @@ const ExtratoFuturo = () => {
 
   const semMovimentacoesFuturas =
     !carregando &&
-    !erro &&
+    !erroCarregamento &&
     projecao.every((mes) => mes.transacoes.length === 0 && mes.faturas.length === 0);
 
   const ultimoMes = projecao.at(-1);
@@ -103,28 +107,16 @@ const ExtratoFuturo = () => {
       titulo="Extrato futuro"
       subtitulo="Projeção de parcelas, boletos e faturas dos próximos meses."
     >
-      {mensagem && (
-        <div className="sb-alert sb-alert-success" role="status">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M20 6 9 17l-5-5" />
-          </svg>
-          {mensagem}
-        </div>
+      <MensagemAlerta mensagem={mensagem} tipo="success" />
+      <MensagemAlerta mensagem={erroCarregamento || erro} tipo="danger" />
+
+      {carregando && (
+        <p className="loading-inline" aria-live="polite">
+          Carregando extrato futuro…
+        </p>
       )}
 
-      {erro && (
-        <div className="sb-alert sb-alert-danger" role="alert">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 8v4M12 16h.01" />
-          </svg>
-          {erro}
-        </div>
-      )}
-
-      {carregando && <p className="loading-inline">Carregando extrato futuro…</p>}
-
-      {!carregando && !erro && (
+      {!carregando && !erroCarregamento && (
         <>
           <section className="future-hero" aria-label="Resumo da projeção">
             <div className="future-hero-glow" aria-hidden="true" />

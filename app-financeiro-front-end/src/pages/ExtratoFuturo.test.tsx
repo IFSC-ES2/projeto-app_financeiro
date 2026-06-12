@@ -133,6 +133,39 @@ describe('Tela de Extrato Futuro (Issue #68)', () => {
     expect(screen.getByText(/Fatura Cartão Nubank/i)).toBeInTheDocument();
     expect(screen.getByText(/Vence em 08\/07\/2026/i)).toBeInTheDocument();
     expect(screen.getByText('Aberta')).toBeInTheDocument();
+    expect(screen.getByText(/980,00/)).toBeInTheDocument();
+  });
+
+  it('deve exibir saldo previsto e totais do mês projetado', async () => {
+    vi.mocked(api.obterExtratoFuturo).mockResolvedValue(projecaoComDados);
+
+    renderExtratoFuturo();
+    await aguardarCarregamento();
+
+    // -1.230,00 no saldo previsto de julho; 1.230,00 nos débitos do mês e no "A pagar" do hero
+    expect(screen.getAllByText(/-?R\$\s?1\.230,00/).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText(/Saldo previsto/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Débitos/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Créditos/i).length).toBeGreaterThan(0);
+  });
+
+  it('deve manter a projeção na tela quando o pagamento da fatura falha', async () => {
+    vi.mocked(api.obterExtratoFuturo).mockResolvedValue(projecaoComDados);
+    vi.mocked(api.pagarFatura).mockRejectedValueOnce(new Error('Falha na API'));
+
+    const usuario = userEvent.setup();
+
+    renderExtratoFuturo();
+    await aguardarCarregamento();
+
+    await usuario.click(screen.getByRole('button', { name: /Marcar paga/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Não foi possível pagar a fatura.')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Julho de 2026')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Marcar paga/i })).toBeEnabled();
   });
 
   it('deve marcar fatura como paga e recarregar a projeção', async () => {

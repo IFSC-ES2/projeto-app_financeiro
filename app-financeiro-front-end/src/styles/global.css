@@ -1765,7 +1765,7 @@ button:disabled {
 }
 
 .future-horizon span {
-  color: rgba(244, 251, 248, 0.66);
+  color: rgba(244, 251, 248, 0.88);
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -1805,7 +1805,7 @@ button:disabled {
 
 .future-hero-stat dt {
   margin: 0 0 6px;
-  color: rgba(244, 251, 248, 0.66);
+  color: rgba(244, 251, 248, 0.88);
   font-size: 0.78rem;
   font-weight: 750;
 }
@@ -2016,6 +2016,7 @@ button:disabled {
   display: block;
   color: var(--sb-primary-dark);
   font-size: 0.95rem;
+  overflow-wrap: anywhere;
 }
 
 .future-fatura-info small {
@@ -2076,6 +2077,7 @@ button:disabled {
   display: block;
   color: var(--sb-primary-dark);
   font-size: 0.95rem;
+  overflow-wrap: anywhere;
 }
 
 .future-transacao-info small {

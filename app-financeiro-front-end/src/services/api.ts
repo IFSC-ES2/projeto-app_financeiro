@@ -288,16 +288,6 @@ export const obterExtratoFuturo = async (meses = 3) => {
   return data;
 };
 
-export const listarFaturasDaConta = async (contaId: string) => {
-  const { data } = await api.get<FaturaResumoResponse[]>(`/contas/${contaId}/faturas`);
-  return data;
-};
-
-export const buscarFatura = async (faturaId: string) => {
-  const { data } = await api.get<FaturaResumoResponse>(`/faturas/${faturaId}`);
-  return data;
-};
-
 export const pagarFatura = async (faturaId: string) => {
   const { data } = await api.patch<FaturaResumoResponse>(`/faturas/${faturaId}/pagar`);
   return data;
