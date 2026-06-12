@@ -21,7 +21,11 @@
 | 7       | Lucas de Leon Rodrigues | 9a6b86f | 31/05/26 | 03/06/26 | 8,3  | 10   |
 | 7       | Victor Blum             | 9a6b86f | 31/05/26 | 03/06/26 | 8,6  | 10   |
 | 7       | Victor Gabriel Lacerda  | 9a6b86f | 31/05/26 | 03/06/26 | 8,4  | 10   |
-| 8       |                         |         |          |          |      | 10   |
+| 8       | Alexandre Villela       | f5eb4f7 | 08/06/26 | 11/06/26 | 8,7  | 10   |
+| 8       | João Pedro Callegaro    | f5eb4f7 | 08/06/26 | 11/06/26 | 8,5  | 10   |
+| 8       | Lucas de Leon Rodrigues | f5eb4f7 | 08/06/26 | 11/06/26 | 8,8  | 10   |
+| 8       | Victor Blum             | f5eb4f7 | 08/06/26 | 11/06/26 | 9,2  | 10   |
+| 8       | Victor Gabriel Lacerda  | f5eb4f7 | 08/06/26 | 11/06/26 | 9,0  | 10   |
 | 9       |                         |         |          |          |      | 10   |
 | 10      |                         |         |          |          |      | 10   |
 | 11/12   |                         |         |          |          |      | 30   |
@@ -30,11 +34,11 @@
 
 | aluno                   | nota parcial |
 | ----------------------- | ------------ |
-| Alexandre Villela       | 7,6          |
-| João Pedro Callegaro    | 7,3          |
-| Lucas de Leon Rodrigues | 7,6          |
-| Victor Blum             | 7,9          |
-| Victor Gabriel Lacerda  | 7,8          |
+| Alexandre Villela       | 7,8          |
+| João Pedro Callegaro    | 7,5          |
+| Lucas de Leon Rodrigues | 7,9          |
+| Victor Blum             | 8,1          |
+| Victor Gabriel Lacerda  | 8,1          |
 
 ## Comentários
 
@@ -209,8 +213,55 @@
 8. Registro de contribuição individual: parcial.
    - `sprint3.md` registra contribuições individuais por integrante, com PRs abertos, observações e reviews.
    - O registro é mais forte que nas entregas anteriores, mas ainda mistura PRs fechados, PRs parcialmente implementados e trabalho pós-prazo.
-   - Alexandre: contribuiu com documentação de execução local/testes, Docker Compose e gate de CI, além de reviews e correções pontuais. A nota melhora pela correção objetiva de reprodutibilidade, mas é limitada pelo menor volume e menor centralidade no incremento funcional.
-   - João Pedro: contribuiu em configuração e testes frontend, testes da tela de login/cadastro, ADRs e reviews. A nota é limitada pelo menor protagonismo no incremento funcional.
-   - Lucas: contribuiu de forma relevante em testes de importação/parsers, testes adicionais, correções e reviews, coerente com qualidade. A nota é limitada por pendências de categorização e atraso.
-   - Victor Blum: teve a contribuição técnica mais central e volumosa: importação, parsers, categorização, migrations, arquitetura, métricas e reviews. A nota é limitada pelas lacunas remanescentes de categorização/testes e falha local do teste com Testcontainers.
-   - Victor Gabriel: teve contribuição forte em frontend, fluxo de conta bancária, registro manual, ajustes de integração, navegação/listagem, reviews e documentação final da sprint/release.
+    - Alexandre: contribuiu com documentação de execução local/testes, Docker Compose e gate de CI, além de reviews e correções pontuais. A nota melhora pela correção objetiva de reprodutibilidade, mas é limitada pelo menor volume e menor centralidade no incremento funcional.
+    - João Pedro: contribuiu em configuração e testes frontend, testes da tela de login/cadastro, ADRs e reviews. A nota é limitada pelo menor protagonismo no incremento funcional.
+    - Lucas: contribuiu de forma relevante em testes de importação/parsers, testes adicionais, correções e reviews, coerente com qualidade. A nota é limitada por pendências de categorização e atraso.
+    - Victor Blum: teve a contribuição técnica mais central e volumosa: importação, parsers, categorização, migrations, arquitetura, métricas e reviews. A nota é limitada pelas lacunas remanescentes de categorização/testes e falha local do teste com Testcontainers.
+    - Victor Gabriel: teve contribuição forte em frontend, fluxo de conta bancária, registro manual, ajustes de integração, navegação/listagem, reviews e documentação final da sprint/release.
+
+### Entrega 8
+
+1. Ambiente de staging ou equivalente acessível: atendido.
+   - `README.md` e `DEPLOY.md` informam os ambientes publicados no Render: web em `https://smartbudget-web-0sic.onrender.com` e API em `https://smartbudget-api-kbze.onrender.com`.
+   - O frontend publicado respondeu corretamente.
+   - A API publicada respondeu ao fluxo funcional `POST /auth/register` com HTTP 201 e token JWT.
+   - As rotas testadas de Swagger/health retornaram 503, mas isso não inviabilizou a validação do endpoint funcional principal; fica como ressalva de observabilidade/validação pública.
+2. Manutenção e atualização da integração contínua: atendido.
+   - `.github/workflows/ci.yml` possui jobs separados para backend, frontend, YAML e arquivos obrigatórios.
+   - O backend valida Gradle Wrapper, executa `assemble`, `test` e resumo JaCoCo.
+   - O frontend executa `npm ci`, `npm run lint`, `npm run build` e `npm run test:coverage`, além de imprimir resumo de cobertura.
+   - Verificação local: frontend passou em `npm run lint`, `npm run build` e `npm run test:coverage` com 10 arquivos e 68 testes.
+   - Backend: `./gradlew test --no-daemon` compilou e executou boa parte da suíte, mas falhou em 4 testes de integração por Testcontainers não conseguir acessar o ambiente Docker local (`ContainerFetchException`/`DockerClientProviderStrategy`). Foram reportados 321 testes executados e 4 falhas de inicialização por Docker.
+   - A solução ambiental é garantir Docker daemon acessível ao usuário antes dos testes, por exemplo iniciar o Docker, validar permissões no socket `/var/run/docker.sock` e rodar novamente `./gradlew test --no-daemon`.
+   - Não foi possível confirmar os checks/reviews via `gh` nesta correção por instabilidade/timeouts já observados nas consultas ao GitHub, mas a evidência versionada do workflow é consistente e a documentação registra uso de PRs e reviews.
+3. Documentação de deploy: atendido.
+   - `DEPLOY.md` documenta stack, portas, URLs públicas, variáveis de ambiente, execução por `docker-compose.prod.yml`, build manual, validação com `curl`, segurança e troubleshooting.
+   - Há exemplos de `.env`, `render.yaml`, Dockerfiles para backend/frontend, nginx e compose de produção.
+   - A documentação alerta corretamente para `JWT_SECRET`, credenciais de banco e CORS em produção.
+4. Atualização das métricas do projeto: atendido.
+   - `metricas.md` compara Sprint 3 e Sprint 4, explicita limitações da ausência de story points e registra valores de cobertura backend/frontend, taxa de conclusão, MVP e bug `#170`.
+   - A cobertura frontend observada localmente ficou muito próxima da documentada: linhas 72,09%, statements 69,33%, funções 66,01%, branches 61,4%.
+   - A documentação é transparente ao tratar velocity como contagem de issues, não como story points formais.
+   - A estimativa de 85% do MVP é defensável, mas ainda depende de interpretação ampla de funcionalidades concluídas com ressalva.
+5. Manutenção/reengenharia: atendido.
+   - A refatoração do `TransacaoService` foi bem documentada em `adrs/ADR-0008-decomposicao-transacao-service.md`.
+   - O problema real de baixa coesão/acoplamento foi identificado e mitigado com `ContaUsuarioService`, `SugestaoCategoriaService`, `TransacaoMapper`, extensões em `CategoriaService` e `TransacaoSpecs`.
+   - A decisão preserva a API externa e melhora separação de responsabilidades dentro do monólito Spring.
+   - Como evidência funcional associada, a entrega consolidou gestão de contas, primeira conta após cadastro, edição/exclusão de transações, filtros/paginação, categorização pela interface, resumo por forma de pagamento, ajustes de importação, resumo mensal/backend do dashboard e correções de CORS.
+   - O MVP ainda não cobre completamente extrato futuro/próximos meses, reconhecido pela própria documentação como funcionalidade não concluída.
+6. Comparação de métrica antes/depois: atendido.
+   - `metricas.md` registra comparação objetiva da refatoração: `TransacaoService` de 304 para 166 linhas, responsabilidades concentradas de 14 para 7 e remoção da dependência `ImportacaoService -> TransacaoService` para sugestão de categoria.
+   - A métrica escolhida é coerente com o problema de design: manutenibilidade, coesão e acoplamento.
+7. Release/tag do marco: atendido.
+   - A tag `v0.4.1` existe e aponta para `f5eb4f7`, o mesmo commit restaurado em `main`.
+   - Existe também tag `0.4.0` sem prefixo `v`, o que é uma pequena inconsistência de nomenclatura anterior; a maior tag `v0.4.x` correta é `v0.4.1`.
+   - A documentação explica que `v0.4.1` é rodada complementar de estabilização da Sprint 4.
+8. Registro de contribuição individual: atendido.
+   - `entregas/sprint4.md` registra contribuições individuais extensas, com PRs, issues, reviews e observações por integrante.
+   - O histórico `v0.3.1..v0.4.1` confirma participação de todos os membros em funcionalidades, testes, documentação, CI, deploy e reviews, embora os aliases variem bastante por integrante.
+   - Contribuições individuais:
+      - Alexandre: contribuição forte em deploy Render, documentação, paginação/filtros, testes de contrato de parsers e ajuste de modelagem de `TipoTransacao`; nota limitada apenas pelo menor protagonismo no incremento funcional de interface quando comparado aos Victors.
+      - João Pedro: contribuição relevante em testes frontend, cobertura, documentação arquitetural, ADR e importação; nota alta, mas um pouco menor pelo menor volume relativo no backend funcional central da Sprint 4.
+      - Lucas: contribuição relevante em CRUD/manutenção de transações, testes de edição/exclusão, edição de conta, correção de importação na `v0.4.1` e reviews técnicos; nota alta pela atuação em estabilização e qualidade.
+      - Victor Blum: contribuição central em backend, arquitetura, categorização, contrato de parsers, refatoração do `TransacaoService`, métricas e resumo mensal; maior nota pela centralidade técnica e pela reengenharia exigida na entrega.
+      - Victor Gabriel: contribuição forte em frontend, gestão de contas, resumo por forma de pagamento, UX, correção de CORS em produção e muitas revisões; nota muito alta pela entrega de fluxos visíveis do MVP e estabilização do ambiente publicado.
