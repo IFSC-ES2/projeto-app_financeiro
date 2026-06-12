@@ -15,6 +15,7 @@ const itensNavegacao = [
   { para: "/transacoes", rotulo: "Transações", icone: "transacoes" },
   { para: "/categorias", rotulo: "Categorias", icone: "categorias" },
   { para: "/parcelamentos", rotulo: "Parcelamentos", icone: "parcelamentos" },
+  { para: "/extrato-futuro", rotulo: "Extrato futuro", icone: "extrato-futuro" },
   { para: "/contas", rotulo: "Contas", icone: "contas" },
 ];
 
@@ -39,6 +40,15 @@ const IconeNavegacao = ({ nome }: { nome: string }) => {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M4 7h16M7 11h10M7 15h6M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+      </svg>
+    );
+  }
+
+  if (nome === "extrato-futuro") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 17l5.5-5.5 4 4L21 7" />
+        <path d="M15 7h6v6" />
       </svg>
     );
   }

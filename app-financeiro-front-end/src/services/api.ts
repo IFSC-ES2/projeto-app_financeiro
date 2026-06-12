@@ -137,6 +137,30 @@ export interface CategorizarTransacaoResponse{
   categoriaId: string;
 }
 
+export type StatusFatura = 'ABERTA' | 'FECHADA' | 'PAGA';
+
+export interface FaturaResumoResponse {
+  faturaId: string;
+  contaId: string;
+  contaNome?: string | null;
+  mesReferencia?: string | null;
+  dataVencimento?: string | null;
+  valorTotal: number;
+  status: StatusFatura;
+}
+
+export interface ProjecaoMensalResponse {
+  ano: number;
+  mes: number;
+  dataInicio: string;
+  dataFim: string;
+  saldoPrevisto: number;
+  totalDebitos: number;
+  totalCreditos: number;
+  faturas: FaturaResumoResponse[];
+  transacoes: TransacaoResponse[];
+}
+
 interface ErroApiPayload {
   erro?: unknown;
   message?: unknown;
@@ -256,6 +280,16 @@ export const listarTransacoes = async (params: FiltroTransacoesParams = {}) => {
   if (params.tipo) query.tipo = params.tipo;
 
   const { data } = await api.get<PaginaResponse<TransacaoResponse>>('/transacoes', { params: query });
+  return data;
+};
+
+export const obterExtratoFuturo = async (meses = 3) => {
+  const { data } = await api.get<ProjecaoMensalResponse[]>('/extrato-futuro', { params: { meses } });
+  return data;
+};
+
+export const pagarFatura = async (faturaId: string) => {
+  const { data } = await api.patch<FaturaResumoResponse>(`/faturas/${faturaId}/pagar`);
   return data;
 };
 
