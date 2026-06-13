@@ -13,6 +13,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -110,6 +112,20 @@ class CartaoCreditoServiceTest {
                     .isInstanceOf(ResponseStatusException.class)
                     .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
                     .isEqualTo(HttpStatus.FORBIDDEN);
+        }
+
+        @ParameterizedTest(name = "deve rejeitar conta do tipo {0}")
+        @EnumSource(value = TipoConta.class, names = {"CORRENTE", "POUPANCA", "CARTEIRA"})
+        @DisplayName("deve rejeitar conta que não é de cartão de crédito")
+        void deveRejeitarContaQueNaoEhCartaoDeCredito(TipoConta tipoConta) {
+            conta.setTipoConta(tipoConta);
+            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
+
+            assertThatThrownBy(() -> cartaoCreditoService.associar(conta.getId(), dtoValido, usuario))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
+            verify(cartaoCreditoRepository, never()).save(any());
         }
 
         @Test

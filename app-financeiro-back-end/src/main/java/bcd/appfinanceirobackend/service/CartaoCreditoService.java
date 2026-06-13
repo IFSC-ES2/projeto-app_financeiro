@@ -5,6 +5,7 @@ import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
 import bcd.appfinanceirobackend.model.CartaoCredito;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Usuario;
+import bcd.appfinanceirobackend.model.enums.TipoConta;
 import bcd.appfinanceirobackend.repository.CartaoCreditoRepository;
 import bcd.appfinanceirobackend.repository.ContaRepository;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,11 @@ public class CartaoCreditoService {
 
     public CartaoCredito associar(UUID contaId, CartaoCreditoRequestDTO requestDTO, Usuario usuarioAutenticado) {
         Conta conta = buscarContaDoUsuario(contaId, usuarioAutenticado);
+
+        if (conta.getTipoConta() != TipoConta.CARTAO_CREDITO) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A conta informada não é uma conta de cartão de crédito");
+        }
 
         if (cartaoCreditoRepository.findByContaId(conta.getId()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Conta já possui cartão de crédito associado");

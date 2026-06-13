@@ -46,9 +46,13 @@ public class FaturaService {
         this.faturaMapper = faturaMapper;
     }
 
-    public Fatura gerarFatura(UUID contaId, YearMonth mesReferencia) {
-        return faturaRepository.findByContaIdAndMesReferencia(contaId, mesReferencia)
-                .orElseGet(() -> criarFatura(contaId, mesReferencia));
+    public Fatura gerarFatura(UUID contaId, YearMonth mesReferencia, Usuario usuarioAutenticado) {
+        Conta conta = contaRepository.findById(contaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
+        validarAcesso(conta, usuarioAutenticado);
+
+        return faturaRepository.findByContaIdAndMesReferencia(conta.getId(), mesReferencia)
+                .orElseGet(() -> criarFatura(conta, mesReferencia));
     }
 
     public List<FaturaResumoDTO> buscarPorConta(UUID contaId, Usuario usuarioAutenticado) {
@@ -65,9 +69,8 @@ public class FaturaService {
         return faturaMapper.toResumo(buscarFaturaDoUsuario(faturaId, usuarioAutenticado));
     }
 
-    public BigDecimal calcularTotal(UUID faturaId) {
-        Fatura fatura = faturaRepository.findById(faturaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Fatura não encontrada"));
+    public BigDecimal calcularTotal(UUID faturaId, Usuario usuarioAutenticado) {
+        Fatura fatura = buscarFaturaDoUsuario(faturaId, usuarioAutenticado);
 
         // Débitos somam ao total da fatura; créditos (estornos) abatem
         BigDecimal total = BigDecimal.ZERO;
@@ -95,11 +98,8 @@ public class FaturaService {
         return faturaMapper.toResumo(faturaRepository.save(fatura));
     }
 
-    private Fatura criarFatura(UUID contaId, YearMonth mesReferencia) {
-        Conta conta = contaRepository.findById(contaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Conta não encontrada"));
-
-        CartaoCredito cartao = cartaoCreditoRepository.findByContaId(contaId)
+    private Fatura criarFatura(Conta conta, YearMonth mesReferencia) {
+        CartaoCredito cartao = cartaoCreditoRepository.findByContaId(conta.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Conta não possui cartão de crédito associado"));
 
         Fatura fatura = new Fatura();

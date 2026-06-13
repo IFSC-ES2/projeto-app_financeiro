@@ -118,12 +118,25 @@ class FaturaServiceTest {
         @DisplayName("deve retornar fatura existente sem criar outra")
         void deveRetornarFaturaExistente() {
             Fatura existente = fatura(StatusFatura.ABERTA);
+            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
             when(faturaRepository.findByContaIdAndMesReferencia(conta.getId(), YearMonth.of(2026, 7)))
                     .thenReturn(Optional.of(existente));
 
-            Fatura resultado = faturaService.gerarFatura(conta.getId(), YearMonth.of(2026, 7));
+            Fatura resultado = faturaService.gerarFatura(conta.getId(), YearMonth.of(2026, 7), usuario);
 
             assertThat(resultado).isSameAs(existente);
+            verify(faturaRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("deve negar geração de fatura em conta de outro usuário")
+        void deveNegarGeracaoParaContaDeOutroUsuario() {
+            when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
+
+            assertThatThrownBy(() -> faturaService.gerarFatura(conta.getId(), YearMonth.of(2026, 7), outroUsuario))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                    .isEqualTo(HttpStatus.FORBIDDEN);
             verify(faturaRepository, never()).save(any());
         }
 
@@ -136,7 +149,7 @@ class FaturaServiceTest {
             when(cartaoCreditoRepository.findByContaId(conta.getId())).thenReturn(Optional.of(cartao(20, 28)));
             when(faturaRepository.save(any(Fatura.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            Fatura resultado = faturaService.gerarFatura(conta.getId(), YearMonth.of(2026, 7));
+            Fatura resultado = faturaService.gerarFatura(conta.getId(), YearMonth.of(2026, 7), usuario);
 
             assertThat(resultado.getStatus()).isEqualTo(StatusFatura.ABERTA);
             assertThat(resultado.getValorTotal()).isEqualByComparingTo("0");
@@ -153,7 +166,7 @@ class FaturaServiceTest {
             when(cartaoCreditoRepository.findByContaId(conta.getId())).thenReturn(Optional.of(cartao(25, 5)));
             when(faturaRepository.save(any(Fatura.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            Fatura resultado = faturaService.gerarFatura(conta.getId(), YearMonth.of(2026, 7));
+            Fatura resultado = faturaService.gerarFatura(conta.getId(), YearMonth.of(2026, 7), usuario);
 
             assertThat(resultado.getDataVencimento()).isEqualTo(LocalDate.of(2026, 8, 5));
         }
@@ -167,7 +180,7 @@ class FaturaServiceTest {
             when(cartaoCreditoRepository.findByContaId(conta.getId())).thenReturn(Optional.of(cartao(20, 31)));
             when(faturaRepository.save(any(Fatura.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            Fatura resultado = faturaService.gerarFatura(conta.getId(), YearMonth.of(2026, 2));
+            Fatura resultado = faturaService.gerarFatura(conta.getId(), YearMonth.of(2026, 2), usuario);
 
             assertThat(resultado.getDataVencimento()).isEqualTo(LocalDate.of(2026, 2, 28));
         }
@@ -180,7 +193,7 @@ class FaturaServiceTest {
             when(contaRepository.findById(conta.getId())).thenReturn(Optional.of(conta));
             when(cartaoCreditoRepository.findByContaId(conta.getId())).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> faturaService.gerarFatura(conta.getId(), YearMonth.of(2026, 7)))
+            assertThatThrownBy(() -> faturaService.gerarFatura(conta.getId(), YearMonth.of(2026, 7), usuario))
                     .isInstanceOf(ResourceNotFoundException.class);
             verify(faturaRepository, never()).save(any());
         }
@@ -200,7 +213,7 @@ class FaturaServiceTest {
                     transacaoDaFatura(TipoTransacao.DEBITO, "50.00"),
                     transacaoDaFatura(TipoTransacao.CREDITO, "30.00")));
 
-            BigDecimal total = faturaService.calcularTotal(faturaAberta.getId());
+            BigDecimal total = faturaService.calcularTotal(faturaAberta.getId(), usuario);
 
             assertThat(total).isEqualByComparingTo("120.00");
             ArgumentCaptor<Fatura> captor = ArgumentCaptor.forClass(Fatura.class);
@@ -214,8 +227,21 @@ class FaturaServiceTest {
             UUID faturaId = UUID.randomUUID();
             when(faturaRepository.findById(faturaId)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> faturaService.calcularTotal(faturaId))
+            assertThatThrownBy(() -> faturaService.calcularTotal(faturaId, usuario))
                     .isInstanceOf(ResourceNotFoundException.class);
+        }
+
+        @Test
+        @DisplayName("deve negar recálculo de fatura de outro usuário")
+        void deveNegarRecalculoParaFaturaDeOutroUsuario() {
+            Fatura faturaAberta = fatura(StatusFatura.ABERTA);
+            when(faturaRepository.findById(faturaAberta.getId())).thenReturn(Optional.of(faturaAberta));
+
+            assertThatThrownBy(() -> faturaService.calcularTotal(faturaAberta.getId(), outroUsuario))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                    .isEqualTo(HttpStatus.FORBIDDEN);
+            verify(faturaRepository, never()).save(any());
         }
     }
 
