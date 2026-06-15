@@ -125,7 +125,77 @@ Funcionalidades que não devem ser consideradas concluídas nesta versão:
 - múltiplas moedas;
 - multiusuário familiar/empresarial.
 
-## 6. Execução local
+## 6. Fechamento do Release Candidate
+
+O Release Candidate do SmartBudget entrega os fluxos principais de autenticação, gestão de contas, cadastro manual de transações, listagem com filtros, categorização de transações, importação de arquivos financeiros, resumo por forma de pagamento e backend do resumo mensal.
+
+Algumas funcionalidades previstas no inception foram entregues com ressalvas. A importação de arquivos está implementada para CSV, TXT, XML e NF-e, mas extratos reais podem variar por banco e exigir ajustes específicos de parser. O dashboard mensal possui backend implementado, mas a visualização completa no frontend ainda não está finalizada. A categorização de transações está funcional, mas a tela própria de gestão de categorias permanece em construção.
+
+O extrato futuro, projeções de próximos meses, parcelamentos e avisos de vencimento não fazem parte do escopo funcional entregue neste RC e devem ser tratados como evolução futura.
+
+### Resumo em relação ao inception
+
+Não entregue:
+
+- extrato futuro;
+- projeção de saldo dos próximos meses;
+- avisos/lembretes de vencimento;
+- parcelamentos funcionais;
+- faturas funcionais.
+
+Entregue parcialmente:
+
+- dashboard de gastos do mês: backend entregue e frontend completo pendente;
+- importação de extratos reais: fluxo e parsers entregues, mas suporte real ainda limitado por layout;
+- categorização: transações categorizáveis, mas tela própria de categorias ainda não finalizada;
+- cartão/conta/banco: conta e banco entregues, mas cartão, fatura e parcelamento não finalizados.
+
+Entregue além ou como complemento do inception:
+
+- cadastro manual de transações;
+- edição e exclusão de transações;
+- edição e exclusão de contas;
+- filtros e paginação;
+- resumo por forma de pagamento;
+- testes automatizados;
+- cobertura frontend/backend;
+- CI;
+- deploy;
+- documentação de arquitetura, métricas e ADRs;
+- refatoração do `TransacaoService`.
+
+### Classificação final do RC
+
+Concluído:
+
+- autenticação e perfil pessoal;
+- cadastro manual de transações;
+- listagem, edição e exclusão de transações;
+- gestão de contas;
+- filtros e paginação;
+- categorização manual de transações;
+- resumo por forma de pagamento;
+- deploy e documentação de execução.
+
+Concluído com ressalva:
+
+- importação de extratos e NF-e;
+- categorização automática;
+- categorização por conta/banco/cartão;
+- backend do dashboard mensal;
+- dashboard enquanto página, pois ainda não exibe todo o resumo financeiro planejado.
+
+Pendente ou fora do RC:
+
+- extrato futuro;
+- parcelamentos;
+- faturas;
+- avisos de vencimento;
+- dashboard visual completo;
+- gestão visual completa de categorias;
+- suporte universal a extratos reais de bancos diferentes.
+
+## 7. Execução local
 
 ### Banco de dados local
 
