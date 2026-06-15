@@ -28,13 +28,15 @@ O sistema é focado em pessoas físicas, não empresas. Os usuários são pessoa
 
 A proposta é ser um assistente financeiro prático e inteligente que elimina o trabalho de anotar gastos na mão, sendo necessário apenas enviar extratos bancários e notas fiscais para leitura automática. Ele resolve a falta de controle e visualização de gastos centralizando tudo em um único lugar, separando despesas por categoria e criando um "extrato futuro", que avisa com antecedência o valor das faturas do cartão e o vencimento de boletos.
 
-## 3. MVP
+## 3. MVP planejado inicialmente
 
-### a) o que o MVP fará?
+Esta seção registra o escopo inicialmente planejado para o MVP. O estado real do RC, com funcionalidades concluídas, concluídas com ressalva e pendentes, está detalhado nas seções 4 e 5.
+
+### a) o que o MVP pretendia fazer?
 
 O sistema vai permitir a leitura de extratos bancários e notas fiscais (.xml, .csv, .txt), separando os gastos em categorias automaticamente ou manualmente, se necessário. Também informará o "extrato futuro", baseando-se nos extratos bancários enviados, considerando vencimento de boletos, parcelamentos, financiamentos, entre outros.
 
-### b) quais são as funcionalidades principais?
+### b) quais eram as funcionalidades principais previstas?
 
 1. Criação de perfil pessoal, com autenticação;
 1. Adicionar gastos manualmente;
@@ -56,25 +58,74 @@ O sistema vai permitir a leitura de extratos bancários e notas fiscais (.xml, .
 
 O projeto possui backend em Spring Boot, frontend em React + Vite, autenticação com JWT, banco PostgreSQL, versionamento de schema com Flyway e ambiente local padronizado com Docker Compose.
 
-Na versão atual, o MVP já possui:
+Na versão RC, o projeto consolidou os fluxos principais de autenticação, contas, transações, categorias, importação de arquivos, resumos de dados, testes automatizados, documentação de deploy e ambiente de execução. A lista detalhada do que foi entregue, do que foi entregue com ressalva e do que ficou fora do RC está registrada na seção seguinte.
 
-- cadastro e login de usuários;
-- autenticação com JWT;
-- rotas públicas e privadas no frontend;
-- layout privado com navegação interna;
+Algumas telas ainda estão em evolução, como dashboard visual completo, categorias, parcelamentos, faturas de cartão de crédito e extrato futuro. Elas podem existir como parte da navegação, modelo ou base técnica do sistema, mas ainda não representam a versão final dessas funcionalidades.
+
+## 5. Pontos que foram feitos
+
+### Funcionalidades concluídas
+
+Funcionalidades entregues no RC:
+
+- cadastro de usuário;
+- login;
+- autenticação JWT;
+- rotas públicas e privadas;
 - cadastro de contas;
+- listagem de contas;
+- edição de contas;
+- exclusão de contas sem transações vinculadas;
+- fluxo de primeira conta;
 - cadastro manual de transações;
-- listagem de transações do usuário autenticado;
+- edição de transações;
+- exclusão de transações;
+- listagem paginada de transações;
 - filtros de transações por período, tipo, conta e categoria;
 - listagem de categorias;
-- importação de extratos por arquivo;
-- acompanhamento do status da importação;
-- banco local PostgreSQL executado via Docker Compose;
-- migrations de banco com Flyway;
-- testes automatizados no backend e no frontend;
-- pipeline de CI com validações obrigatórias em pull requests.
+- categorização manual de transações;
+- importação de arquivos pela tela;
+- envio de arquivo via `multipart/form-data`;
+- consulta de status da importação;
+- parsers para CSV, TXT, XML genérico e NF-e;
+- resumo por forma de pagamento;
+- componente visual de resumo por forma de pagamento;
+- backend de resumo mensal;
+- backend de agrupamento por categoria;
+- testes automatizados no backend;
+- testes automatizados no frontend;
+- documentação de deploy;
+- ambiente com PostgreSQL, Flyway, Docker Compose e Render.
 
-Algumas telas ainda estão em evolução, como dashboard, categorias e parcelamentos. Elas já existem como parte da navegação do sistema, mas ainda não representam a versão final dessas funcionalidades.
+### Funcionalidades com ressalva
+
+Funcionalidades existentes ou parcialmente atendidas, mas com limitação de escopo, validação ou completude no RC:
+
+- importação de extratos reais;
+- categorização automática por regras de palavras-chave;
+- dashboard mensal;
+- categorização por cartão/banco quando envolver faturas ou cartão de crédito completo.
+
+### Funcionalidades pendentes ou fora do RC
+
+Funcionalidades que não devem ser consideradas concluídas nesta versão:
+
+- extrato futuro;
+- projeção de saldo dos próximos meses;
+- avisos de vencimentos;
+- parcelamentos;
+- faturas de cartão de crédito como fluxo funcional;
+- dashboard visual completo de gastos do mês;
+- gestão visual completa de categorias;
+- suporte universal a qualquer layout real de extrato bancário;
+- integração bancária direta;
+- Open Finance;
+- PDF;
+- investimentos;
+- múltiplas moedas;
+- multiusuário familiar/empresarial.
+
+## 6. Execução local
 
 ### Banco de dados local
 
