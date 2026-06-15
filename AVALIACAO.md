@@ -21,8 +21,16 @@
 | 7       | Lucas de Leon Rodrigues | 9a6b86f | 31/05/26 | 03/06/26 | 8,3  | 10   |
 | 7       | Victor Blum             | 9a6b86f | 31/05/26 | 03/06/26 | 8,6  | 10   |
 | 7       | Victor Gabriel Lacerda  | 9a6b86f | 31/05/26 | 03/06/26 | 8,4  | 10   |
-| 8       |                         |         |          |          |      | 10   |
-| 9       |                         |         |          |          |      | 10   |
+| 8       | Alexandre Villela       | f5eb4f7 | 08/06/26 | 11/06/26 | 8,7  | 10   |
+| 8       | João Pedro Callegaro    | f5eb4f7 | 08/06/26 | 11/06/26 | 8,5  | 10   |
+| 8       | Lucas de Leon Rodrigues | f5eb4f7 | 08/06/26 | 11/06/26 | 8,8  | 10   |
+| 8       | Victor Blum             | f5eb4f7 | 08/06/26 | 11/06/26 | 9,2  | 10   |
+| 8       | Victor Gabriel Lacerda  | f5eb4f7 | 08/06/26 | 11/06/26 | 9,0  | 10   |
+| 9       | Alexandre Villela       | f5eb4f7 | 08/06/26 | 14/06/26 | 7,1  | 10   |
+| 9       | João Pedro Callegaro    | f5eb4f7 | 08/06/26 | 14/06/26 | 6,8  | 10   |
+| 9       | Lucas de Leon Rodrigues | f5eb4f7 | 08/06/26 | 14/06/26 | 7,0  | 10   |
+| 9       | Victor Blum             | f5eb4f7 | 08/06/26 | 14/06/26 | 7,5  | 10   |
+| 9       | Victor Gabriel Lacerda  | f5eb4f7 | 08/06/26 | 14/06/26 | 7,3  | 10   |
 | 10      |                         |         |          |          |      | 10   |
 | 11/12   |                         |         |          |          |      | 30   |
 
@@ -30,11 +38,11 @@
 
 | aluno                   | nota parcial |
 | ----------------------- | ------------ |
-| Alexandre Villela       | 7,6          |
-| João Pedro Callegaro    | 7,3          |
-| Lucas de Leon Rodrigues | 7,6          |
-| Victor Blum             | 7,9          |
-| Victor Gabriel Lacerda  | 7,8          |
+| Alexandre Villela       | 7,7          |
+| João Pedro Callegaro    | 7,4          |
+| Lucas de Leon Rodrigues | 7,7          |
+| Victor Blum             | 8,0          |
+| Victor Gabriel Lacerda  | 7,9          |
 
 ## Comentários
 
@@ -209,8 +217,95 @@
 8. Registro de contribuição individual: parcial.
    - `sprint3.md` registra contribuições individuais por integrante, com PRs abertos, observações e reviews.
    - O registro é mais forte que nas entregas anteriores, mas ainda mistura PRs fechados, PRs parcialmente implementados e trabalho pós-prazo.
-   - Alexandre: contribuiu com documentação de execução local/testes, Docker Compose e gate de CI, além de reviews e correções pontuais. A nota melhora pela correção objetiva de reprodutibilidade, mas é limitada pelo menor volume e menor centralidade no incremento funcional.
-   - João Pedro: contribuiu em configuração e testes frontend, testes da tela de login/cadastro, ADRs e reviews. A nota é limitada pelo menor protagonismo no incremento funcional.
-   - Lucas: contribuiu de forma relevante em testes de importação/parsers, testes adicionais, correções e reviews, coerente com qualidade. A nota é limitada por pendências de categorização e atraso.
-   - Victor Blum: teve a contribuição técnica mais central e volumosa: importação, parsers, categorização, migrations, arquitetura, métricas e reviews. A nota é limitada pelas lacunas remanescentes de categorização/testes e falha local do teste com Testcontainers.
-   - Victor Gabriel: teve contribuição forte em frontend, fluxo de conta bancária, registro manual, ajustes de integração, navegação/listagem, reviews e documentação final da sprint/release.
+    - Alexandre: contribuiu com documentação de execução local/testes, Docker Compose e gate de CI, além de reviews e correções pontuais. A nota melhora pela correção objetiva de reprodutibilidade, mas é limitada pelo menor volume e menor centralidade no incremento funcional.
+    - João Pedro: contribuiu em configuração e testes frontend, testes da tela de login/cadastro, ADRs e reviews. A nota é limitada pelo menor protagonismo no incremento funcional.
+    - Lucas: contribuiu de forma relevante em testes de importação/parsers, testes adicionais, correções e reviews, coerente com qualidade. A nota é limitada por pendências de categorização e atraso.
+    - Victor Blum: teve a contribuição técnica mais central e volumosa: importação, parsers, categorização, migrations, arquitetura, métricas e reviews. A nota é limitada pelas lacunas remanescentes de categorização/testes e falha local do teste com Testcontainers.
+    - Victor Gabriel: teve contribuição forte em frontend, fluxo de conta bancária, registro manual, ajustes de integração, navegação/listagem, reviews e documentação final da sprint/release.
+
+### Entrega 8
+
+1. Ambiente de staging ou equivalente acessível: atendido.
+   - `README.md` e `DEPLOY.md` informam os ambientes publicados no Render: web em `https://smartbudget-web-0sic.onrender.com` e API em `https://smartbudget-api-kbze.onrender.com`.
+   - O frontend publicado respondeu corretamente.
+   - A API publicada respondeu ao fluxo funcional `POST /auth/register` com HTTP 201 e token JWT.
+   - As rotas testadas de Swagger/health retornaram 503, mas isso não inviabilizou a validação do endpoint funcional principal; fica como ressalva de observabilidade/validação pública.
+2. Manutenção e atualização da integração contínua: atendido.
+   - `.github/workflows/ci.yml` possui jobs separados para backend, frontend, YAML e arquivos obrigatórios.
+   - O backend valida Gradle Wrapper, executa `assemble`, `test` e resumo JaCoCo.
+   - O frontend executa `npm ci`, `npm run lint`, `npm run build` e `npm run test:coverage`, além de imprimir resumo de cobertura.
+   - Verificação local: frontend passou em `npm run lint`, `npm run build` e `npm run test:coverage` com 10 arquivos e 68 testes.
+   - Backend: `./gradlew test --no-daemon` compilou e executou boa parte da suíte, mas falhou em 4 testes de integração por Testcontainers não conseguir acessar o ambiente Docker local (`ContainerFetchException`/`DockerClientProviderStrategy`). Foram reportados 321 testes executados e 4 falhas de inicialização por Docker.
+   - A solução ambiental é garantir Docker daemon acessível ao usuário antes dos testes, por exemplo iniciar o Docker, validar permissões no socket `/var/run/docker.sock` e rodar novamente `./gradlew test --no-daemon`.
+   - Não foi possível confirmar os checks/reviews via `gh` nesta correção por instabilidade/timeouts já observados nas consultas ao GitHub, mas a evidência versionada do workflow é consistente e a documentação registra uso de PRs e reviews.
+3. Documentação de deploy: atendido.
+   - `DEPLOY.md` documenta stack, portas, URLs públicas, variáveis de ambiente, execução por `docker-compose.prod.yml`, build manual, validação com `curl`, segurança e troubleshooting.
+   - Há exemplos de `.env`, `render.yaml`, Dockerfiles para backend/frontend, nginx e compose de produção.
+   - A documentação alerta corretamente para `JWT_SECRET`, credenciais de banco e CORS em produção.
+4. Atualização das métricas do projeto: atendido.
+   - `metricas.md` compara Sprint 3 e Sprint 4, explicita limitações da ausência de story points e registra valores de cobertura backend/frontend, taxa de conclusão, MVP e bug `#170`.
+   - A cobertura frontend observada localmente ficou muito próxima da documentada: linhas 72,09%, statements 69,33%, funções 66,01%, branches 61,4%.
+   - A documentação é transparente ao tratar velocity como contagem de issues, não como story points formais.
+   - A estimativa de 85% do MVP é defensável, mas ainda depende de interpretação ampla de funcionalidades concluídas com ressalva.
+5. Manutenção/reengenharia: atendido.
+   - A refatoração do `TransacaoService` foi bem documentada em `adrs/ADR-0008-decomposicao-transacao-service.md`.
+   - O problema real de baixa coesão/acoplamento foi identificado e mitigado com `ContaUsuarioService`, `SugestaoCategoriaService`, `TransacaoMapper`, extensões em `CategoriaService` e `TransacaoSpecs`.
+   - A decisão preserva a API externa e melhora separação de responsabilidades dentro do monólito Spring.
+   - Como evidência funcional associada, a entrega consolidou gestão de contas, primeira conta após cadastro, edição/exclusão de transações, filtros/paginação, categorização pela interface, resumo por forma de pagamento, ajustes de importação, resumo mensal/backend do dashboard e correções de CORS.
+   - O MVP ainda não cobre completamente extrato futuro/próximos meses, reconhecido pela própria documentação como funcionalidade não concluída.
+6. Comparação de métrica antes/depois: atendido.
+   - `metricas.md` registra comparação objetiva da refatoração: `TransacaoService` de 304 para 166 linhas, responsabilidades concentradas de 14 para 7 e remoção da dependência `ImportacaoService -> TransacaoService` para sugestão de categoria.
+   - A métrica escolhida é coerente com o problema de design: manutenibilidade, coesão e acoplamento.
+7. Release/tag do marco: atendido.
+   - A tag `v0.4.1` existe e aponta para `f5eb4f7`, o mesmo commit restaurado em `main`.
+   - Existe também tag `0.4.0` sem prefixo `v`, o que é uma pequena inconsistência de nomenclatura anterior; a maior tag `v0.4.x` correta é `v0.4.1`.
+   - A documentação explica que `v0.4.1` é rodada complementar de estabilização da Sprint 4.
+8. Registro de contribuição individual: atendido.
+   - `entregas/sprint4.md` registra contribuições individuais extensas, com PRs, issues, reviews e observações por integrante.
+   - O histórico `v0.3.1..v0.4.1` confirma participação de todos os membros em funcionalidades, testes, documentação, CI, deploy e reviews, embora os aliases variem bastante por integrante.
+Notas individuais:
+   - Alexandre: contribuição forte em deploy Render, documentação, paginação/filtros, testes de contrato de parsers e ajuste de modelagem de `TipoTransacao`; nota limitada apenas pelo menor protagonismo no incremento funcional de interface quando comparado aos Victors.
+   - João Pedro: contribuição relevante em testes frontend, cobertura, documentação arquitetural, ADR e importação; nota alta, mas um pouco menor pelo menor volume relativo no backend funcional central da Sprint 4.
+   - Lucas: contribuição relevante em CRUD/manutenção de transações, testes de edição/exclusão, edição de conta, correção de importação na `v0.4.1` e reviews técnicos; nota alta pela atuação em estabilização e qualidade.
+   - Victor Blum: contribuição central em backend, arquitetura, categorização, contrato de parsers, refatoração do `TransacaoService`, métricas e resumo mensal; maior nota pela centralidade técnica e pela reengenharia exigida na entrega.
+    - Victor Gabriel: contribuição forte em frontend, gestão de contas, resumo por forma de pagamento, UX, correção de CORS em produção e muitas revisões; nota muito alta pela entrega de fluxos visíveis do MVP e estabilização do ambiente publicado.
+
+### Entrega 9
+
+1. MVP completo e integrado: parcial.
+   - A versão avaliada foi `v0.4.1` (`f5eb4f7`), maior tag disponível. Não há tag/release `v1.0.0-rc.1` para a entrega final.
+   - O sistema possui MVP integrado e funcional em boa parte do escopo: cadastro/login com JWT, rotas privadas, gestão de contas, cadastro/listagem/filtros/paginação/edição/exclusão de transações, categorização manual, importação de extratos, resumo por forma de pagamento, resumo mensal no backend, Flyway, PostgreSQL e integração frontend/backend.
+   - O frontend publicado respondeu HTTP 200 em `https://smartbudget-web-0sic.onrender.com`.
+   - A API publicada respondeu após nova tentativa: `POST /auth/register` retornou HTTP 409 com mensagem de CPF já cadastrado, confirmando aplicação ativa, embora a primeira tentativa tenha esgotado timeout de 30s, compatível com cold start/instabilidade do Render.
+   - O MVP ainda não fecha integralmente a proposta original: extrato futuro/próximos meses e algumas telas como dashboard/categorias/parcelamentos ainda são reconhecidas como em evolução na própria documentação.
+2. Hardening do sistema: atendido em grande parte.
+   - Há evidências fortes de estabilização: correção de CORS em produção, ajustes de importação via `FormData`, validação de propriedade de contas/transações/categorias, autenticação JWT, Flyway, separação de responsabilidades no backend e ampliação relevante de testes.
+   - A refatoração do `TransacaoService` reduziu responsabilidades e acoplamento com `ContaUsuarioService`, `SugestaoCategoriaService`, `CategoriaService`, `TransacaoMapper` e `TransacaoSpecs`.
+   - Persistem ressalvas: o teste local completo do backend falhou por ambiente Testcontainers/Docker (`ContainerFetchException`/`DockerClientProviderStrategy`), e o primeiro acesso à API pública apresentou timeout antes de responder em nova tentativa.
+3. Integração contínua obrigatória: parcial.
+   - `.github/workflows/ci.yml` executa build/testes backend, valida Gradle Wrapper, JaCoCo, lint/build/testes/cobertura frontend, validação YAML e verificação de arquivos obrigatórios.
+   - Verificação local: frontend passou em `npm run lint`, `npm run build` e `npm run test:coverage`, com warnings de `act(...)` nos testes.
+   - Backend: `./gradlew test --no-daemon` iniciou a suíte e reportou 321 testes, mas 4 testes de integração falharam por indisponibilidade/estratégia Docker do Testcontainers no ambiente local.
+   - O workflow da tag avaliada dispara apenas em `pull_request`; não há execução em `push` na branch principal, o que reduz a garantia contínua sobre `main`/release.
+4. Testes de aceitação: não atendido.
+   - Há muitos testes unitários/de integração no backend e testes de componentes/fluxos no frontend, incluindo cobertura para autenticação, contas, transações, importação, categorização, paginação, resumo e telas principais.
+   - Não encontrei documentação ou automação específica de testes de aceitação da entrega final, como cenários end-to-end de usuário, roteiro de aceite, evidência de execução manual estruturada, Playwright/Cypress ou matriz de critérios de aceitação validada contra o MVP.
+5. Ambiente de execução acessível: atendido com ressalvas.
+   - O frontend público está acessível e respondeu HTTP 200.
+   - A API pública respondeu a chamada funcional após aquecimento, mas a primeira chamada ao cadastro retornou HTTP `000` por timeout de 30s; isso sugere instabilidade/cold start que afeta a experiência de validação.
+   - A documentação de deploy (`DEPLOY.md`) descreve Render, variáveis de ambiente, Dockerfiles, `docker-compose.prod.yml`, `render.yaml`, validação e troubleshooting.
+6. Revisão final da documentação: parcial.
+   - README, `DEPLOY.md`, `arquitetura.md`, ADRs, métricas, riscos e `entregas/sprint4.md` estão atualizados e descrevem bem o estado técnico da Sprint 4/v0.4.1.
+   - Não há um documento final consolidado da entrega 9/Release Candidate fechando critérios de aceite, limitações finais conhecidas, pendências remanescentes e instruções específicas de validação do RC.
+   - A documentação ainda descreve funcionalidades em evolução, o que é honesto, mas reforça que a versão não foi tratada como fechamento final do produto.
+7. Release Candidate: não atendido.
+   - Não existe tag/release `v1.0.0-rc.1`.
+   - A maior tag disponível é `v0.4.1`, publicada como estabilização da Sprint 4, não como release candidate final.
+   - O commit posterior em `main` (`050fc883`) altera apenas `AVALIACAO.md` e não representa entrega técnica nova.
+
+Notas individuais:
+   - Alexandre: contribuição relevante e confirmada em deploy Render, documentação de deploy, paginação/filtros, testes de contrato dos parsers e ajuste de modelagem de `TipoTransacao`. Nota limitada pelas lacunas gerais da entrega 9, especialmente ausência de RC e de testes de aceitação finais.
+   - João Pedro: contribuição consistente em testes frontend, cobertura, documentação arquitetural, ADR da refatoração e correção de comportamento da importação. Nota um pouco menor pelo menor protagonismo relativo no fechamento funcional/deploy e pelas lacunas finais de processo.
+   - Lucas: contribuição relevante em manutenção de transações, edição de contas, testes backend e correção de importação na estabilização. Nota limitada pela ausência de evidência de testes de aceitação finais, apesar do papel de qualidade.
+   - Victor Blum: contribuição técnica mais central no backend, arquitetura, categorização, contrato dos parsers, refatoração do `TransacaoService`, métricas e resumo mensal. Nota penalizada pela ausência de RC e fechamento formal da entrega final.
+   - Victor Gabriel: contribuição forte em frontend, UX, gestão de contas, resumo por forma de pagamento, correção de CORS em produção e reviews. Nota limitada pelas mesmas lacunas de release candidate, aceite e fechamento documental.
