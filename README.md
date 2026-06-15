@@ -189,9 +189,11 @@ Rotas principais disponíveis no frontend:
 - `/login` - tela de login
 - `/cadastro` - tela de cadastro
 - `/dashboard` - painel inicial autenticado
-- `/contas/nova` - cadastro de conta
+- `/contas` - gestão de contas
+- `/contas/primeira` - fluxo de primeira conta
 - `/transacoes` - listagem de transações
 - `/transacoes/nova` - cadastro manual de transação
+- `/transacoes/:transacaoId/editar` - edição de transação
 - `/categorias` - tela de categorias
 - `/parcelamentos` - tela de parcelamentos
 - `/importacoes/nova` - importação de extratos
@@ -230,7 +232,9 @@ curl -X POST http://localhost:8080/auth/register \
   -d '{"nome":"Alexandre","email":"alex@test.com","cpf":"12345678909","senha":"123456"}'
 ```
 
-Informações mais detalhadas estão disponíveis em [docs/como-rodar.md](docs/como-rodar.md).
+Informações mais detalhadas sobre execução local estão disponíveis em [docs/como-rodar.md](docs/como-rodar.md).
+
+Documentação de deploy: [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Migrations e versionamento do banco
 
@@ -343,3 +347,4 @@ A proteção da branch `main` no GitHub já exige os quatro jobs (`Backend (buil
 - [Métricas](docs/metricas.md)
 - [Baseline](docs/baseline.md)
 - [Como rodar](docs/como-rodar.md)
+- [Deploy](docs/DEPLOY.md)
