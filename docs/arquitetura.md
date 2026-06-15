@@ -6,7 +6,7 @@ Este documento descreve a arquitetura atual do SmartBudget utilizando o modelo C
 
 ## 1. Visão geral
 
-O SmartBudget é um sistema de gerenciamento financeiro pessoal. O MVP atual permite cadastro e autenticação de usuários, criação e listagem de contas, cadastro manual de transações, listagem de categorias, categorização de transações e importação de arquivos financeiros em formatos como CSV, XML, TXT e NF-e.
+O SmartBudget é um sistema de gerenciamento financeiro pessoal. O MVP atual permite cadastro e autenticação de usuários, criação, listagem, edição e exclusão de contas, cadastro manual, edição, exclusão e listagem paginada de transações, listagem de categorias, categorização de transações, importação de arquivos financeiros em formatos como CSV, XML, TXT e NF-e e consultas de resumo mensal no backend.
 
 A arquitetura está organizada em uma aplicação frontend React, uma API backend Spring Boot e um banco relacional PostgreSQL. A comunicação entre frontend e backend ocorre via HTTP/JSON. As rotas protegidas usam autenticação por token JWT enviado no cabeçalho `Authorization: Bearer <token>`.
 
@@ -66,20 +66,43 @@ Principais responsabilidades:
 - Guardar o token JWT no `localStorage` após login ou cadastro.
 - Incluir automaticamente o token JWT no cabeçalho `Authorization` das requisições autenticadas.
 - Permitir navegação entre páginas com `react-router-dom`.
-- Fornecer telas para criação de conta e lançamento manual de transações.
-- Consumir endpoints de contas, categorias e transações.
+- Fornecer telas para contas, primeira conta, transações, importação, resumo, categorias e parcelamentos.
+- Consumir endpoints de contas, categorias, transações, importações e resumos.
 
 Principais arquivos:
 
 | Arquivo | Responsabilidade |
 | --- | --- |
-| `src/App.tsx` | Define as rotas principais da aplicação: login, cadastro, dashboard provisório, nova transação e nova conta. |
+| `src/App.tsx` | Define as rotas principais da aplicação, incluindo login, cadastro, dashboard, contas, transações, categorias, parcelamentos e importações. |
 | `src/contexts/ContextoAutenticacao.tsx` | Centraliza login, cadastro, token JWT, estado de autenticação e logout. |
 | `src/services/api.ts` | Configura Axios, URL base do backend e interceptador que injeta o token JWT. |
 | `src/pages/Login.tsx` | Tela de autenticação do usuário. |
 | `src/pages/Cadastro.tsx` | Tela de criação de perfil. |
-| `src/pages/NovaConta.tsx` | Tela para registrar contas financeiras. |
+| `src/pages/NovaConta.tsx` | Tela para registrar, listar, editar e excluir contas financeiras. |
+| `src/pages/PrimeiraConta.tsx` | Fluxo de cadastro da primeira conta após autenticação. |
 | `src/pages/NovaTransacao.tsx` | Tela para registrar transações manualmente. |
+| `src/pages/EditarTransacao.tsx` | Tela para editar transações existentes. |
+| `src/pages/Transacoes.tsx` | Tela para listar, filtrar, paginar, editar, excluir e categorizar transações. |
+| `src/pages/ImportarExtrato.tsx` | Tela para enviar arquivos financeiros para importação. |
+| `src/pages/Dashboard.tsx` | Tela de dashboard/resumo; o backend de resumo mensal existe, mas o dashboard visual completo ainda está em evolução. |
+| `src/pages/Categorias.tsx` | Tela de categorias em construção. |
+| `src/pages/Parcelamentos.tsx` | Tela de parcelamentos em construção. |
+
+Rotas principais do frontend:
+
+| Rota | Situação |
+| --- | --- |
+| `/login` | Tela pública de login. |
+| `/cadastro` | Tela pública de cadastro. |
+| `/dashboard` | Tela autenticada de dashboard/resumo; dashboard visual completo ainda em evolução. |
+| `/contas` | Tela autenticada de gestão de contas. |
+| `/contas/primeira` | Fluxo autenticado de primeira conta. |
+| `/transacoes` | Tela autenticada de listagem, filtros, paginação e ações de transações. |
+| `/transacoes/nova` | Tela autenticada de cadastro manual de transação. |
+| `/transacoes/:transacaoId/editar` | Tela autenticada de edição de transação. |
+| `/importacoes/nova` | Tela autenticada de importação de arquivos. |
+| `/categorias` | Tela autenticada de categorias, ainda em construção. |
+| `/parcelamentos` | Tela autenticada de parcelamentos, ainda em construção. |
 
 Dependências principais:
 
@@ -100,10 +123,12 @@ Principais responsabilidades:
 - Gerar e validar tokens JWT.
 - Proteger rotas da API com Spring Security.
 - Registrar e listar contas do usuário autenticado.
-- Registrar transações manuais.
+- Editar e excluir contas do usuário autenticado.
+- Registrar, listar, editar e excluir transações.
 - Listar categorias padrão e categorias do usuário.
 - Categorizar transações existentes.
 - Importar extratos e NF-e a partir de arquivos enviados pelo usuário.
+- Expor resumo mensal, agrupamento por categorias e agrupamento por forma de pagamento no backend.
 - Persistir entidades no banco relacional usando Spring Data JPA.
 - Controlar evolução do banco com Flyway.
 
@@ -129,11 +154,19 @@ Endpoints principais identificados:
 | `/health` | `GET` | Verificar saúde da API. |
 | `/contas` | `GET` | Listar contas do usuário autenticado. |
 | `/contas/registrar` | `POST` | Registrar nova conta para o usuário autenticado. |
+| `/contas/{contaId}` | `PUT` | Editar conta do usuário autenticado. |
+| `/contas/{id}` | `DELETE` | Excluir conta do usuário autenticado quando permitido pelas regras de negócio. |
 | `/categorias` | `GET` | Listar categorias padrão e categorias do usuário. |
 | `/transacoes/manual` | `POST` | Registrar transação manual. |
+| `/transacoes` | `GET` | Listar transações com filtros por período, tipo, conta e categoria, além de paginação. |
+| `/transacoes/{transacaoId}` | `PUT` | Editar transação do usuário autenticado. |
+| `/transacoes/{transacaoId}` | `DELETE` | Excluir transação do usuário autenticado. |
 | `/transacoes/{transacaoId}/categoria` | `PATCH` | Alterar categoria de uma transação. |
 | `/importacoes` | `POST` | Importar arquivo financeiro via `multipart/form-data`. |
 | `/importacoes/{id}/status` | `GET` | Consultar status de uma importação. |
+| `/resumo` | `GET` | Obter resumo mensal, com filtros opcionais de ano e mês. |
+| `/resumo/categorias` | `GET` | Obter gastos agrupados por categoria, com filtros opcionais de ano e mês. |
+| `/resumo/pagamentos` | `GET` | Obter resumo agrupado por forma de pagamento. |
 
 Dependências principais:
 
@@ -186,7 +219,7 @@ Rotas de autenticação e saúde são públicas. As demais rotas exigem usuário
 
 ### Contas
 
-O módulo de contas permite registrar e listar contas financeiras do usuário. `ContaController` recebe as requisições HTTP, `ContaService` aplica a regra de negócio e `ContaRepository` persiste os dados.
+O módulo de contas permite registrar, listar, editar e excluir contas financeiras do usuário. `ContaController` recebe as requisições HTTP, `ContaService` aplica a regra de negócio e `ContaRepository` persiste os dados. A exclusão respeita as regras do domínio, como impedir remoção de contas com transações vinculadas.
 
 Esse módulo apoia o MVP porque transações e importações precisam estar vinculadas a uma conta específica.
 
@@ -227,7 +260,21 @@ Parsers implementados:
 
 Esse módulo apoia o MVP ao reduzir o trabalho manual de lançamento de gastos.
 
-#### Contrato comum dos parsers
+Apesar dos parsers estarem implementados, o suporte a extratos reais depende do layout exportado por cada banco. CSV, TXT, XML genérico e NF-e possuem tratamento no backend, mas novos layouts bancários podem exigir ajustes específicos.
+
+### Resumos e dashboard
+
+O backend possui endpoints de resumo mensal, agrupamento por categoria e agrupamento por forma de pagamento por meio de `ResumoController` e `ResumoService`.
+
+Esses endpoints apoiam o dashboard mensal, mas o frontend do dashboard visual completo ainda está incompleto/evolutivo no RC.
+
+### Estruturas não funcionais no RC
+
+As classes `ExtratoFuturoController` e `ExtratoFuturoService` existem apenas como estrutura técnica inicial, sem endpoints funcionais implementados no RC.
+
+As classes `FaturaController` e `FaturaService` também existem apenas como estrutura técnica inicial, sem endpoint funcional no RC. A entidade `Fatura` e tabelas relacionadas indicam base de modelagem para evolução futura, mas faturas de cartão de crédito não formam um fluxo funcional completo nesta versão.
+
+### Contrato comum dos parsers
 
 O módulo de importação utiliza a interface `ParserExtrato` como contrato comum entre o `ImportacaoService` e os parsers concretos (`ParserCSV`, `ParserTXT`, `ParserXML` e `ParserNFe`).
 
@@ -259,7 +306,7 @@ O projeto possui `GlobalExceptionHandler` para tratar exceções como recurso n�
 A ADR-0004 define MVC como estratégia de arquitetura e camadas. No estado atual, essa decisão apoia o MVP pelos seguintes motivos:
 
 - **Separação de responsabilidades:** controllers cuidam da API HTTP, services concentram regras de negócio, models representam dados e repositories isolam persistência.
-- **Evolução incremental:** novas funcionalidades do MVP, como relatórios, dashboards e extrato futuro, podem ser adicionadas criando novos controllers/services sem misturar responsabilidades nas telas.
+- **Evolução incremental:** novas funcionalidades e evoluções pós-RC, como relatórios visuais completos, dashboard completo e extrato futuro, podem ser adicionadas criando novos controllers/services sem misturar responsabilidades nas telas.
 - **Testabilidade:** services e parsers podem ser testados sem depender diretamente da interface web. O projeto já possui testes para autenticação, registro manual e parsers de importação.
 - **Aderência ao Spring Boot:** a arquitetura acompanha o padrão natural do framework, reduzindo complexidade para a equipe.
 - **Organização entre frontend e backend:** o frontend atua como camada de apresentação, enquanto o backend centraliza regras, segurança e dados.
@@ -273,9 +320,9 @@ A ADR-0004 define MVC como estratégia de arquitetura e camadas. No estado atual
 | Leitura de extratos e NF-e | Backend possui `/importacoes` e parsers para CSV, TXT, XML e NF-e. |
 | Categorizar gastos | Backend possui categorias persistidas e endpoint para alterar categoria de transação. |
 | Categorizar por forma de pagamento | Modelo de transação possui `forma_pagamento`, com enum para PIX, cartão, dinheiro, boleto e TED/DOC. |
-| Categorizar por cartão/banco utilizado | Transações pertencem a uma `Conta`, que possui tipo e banco. Cartões de crédito possuem tabela complementar. |
-| Visualização de gastos mensais | O backend já possui base de dados e modelos necessários; há classes de DTO/service/controller para resumo, embora o frontend ainda esteja em evolução. |
-| Extrato futuro | O modelo possui campo `futura`, faturas e classes para extrato futuro, criando base para evolução dessa funcionalidade. |
+| Categorizar por cartão/banco utilizado | Transações pertencem a uma `Conta`, que possui tipo e banco. A categorização por cartão/banco existe com ressalva quando envolve faturas ou fluxo completo de cartão de crédito. |
+| Visualização de gastos mensais | O backend possui resumo mensal e agrupamento por categoria; o dashboard mensal completo no frontend permanece com ressalva/evolução. |
+| Extrato futuro | O modelo possui campo `futura`, faturas e classes de apoio, mas o extrato futuro como fluxo funcional ficou pendente/fora do RC. |
 
 ## 8. Restrições e decisões atuais
 
@@ -285,7 +332,8 @@ A ADR-0004 define MVC como estratégia de arquitetura e camadas. No estado atual
 - O banco atual é PostgreSQL, não MySQL.
 - Não há integração direta com contas bancárias ou APIs externas no MVP atual.
 - Arquivos financeiros são enviados manualmente pelo usuário.
-- O dashboard oficial ainda está em construção no frontend; existe uma tela provisória após login.
+- O dashboard mensal completo ainda está em evolução no frontend.
+- Extrato futuro, parcelamentos e faturas de cartão de crédito como fluxo funcional não foram concluídos no RC.
 
 ## 9. Como rodar os contêineres lógicos em desenvolvimento
 

@@ -28,13 +28,15 @@ O sistema é focado em pessoas físicas, não empresas. Os usuários são pessoa
 
 A proposta é ser um assistente financeiro prático e inteligente que elimina o trabalho de anotar gastos na mão, sendo necessário apenas enviar extratos bancários e notas fiscais para leitura automática. Ele resolve a falta de controle e visualização de gastos centralizando tudo em um único lugar, separando despesas por categoria e criando um "extrato futuro", que avisa com antecedência o valor das faturas do cartão e o vencimento de boletos.
 
-## 3. MVP
+## 3. MVP planejado inicialmente
 
-### a) o que o MVP fará?
+Esta seção registra o escopo inicialmente planejado para o MVP. O estado real do RC, com funcionalidades concluídas, concluídas com ressalva e pendentes, está detalhado nas seções 4 e 5.
+
+### a) o que o MVP pretendia fazer?
 
 O sistema vai permitir a leitura de extratos bancários e notas fiscais (.xml, .csv, .txt), separando os gastos em categorias automaticamente ou manualmente, se necessário. Também informará o "extrato futuro", baseando-se nos extratos bancários enviados, considerando vencimento de boletos, parcelamentos, financiamentos, entre outros.
 
-### b) quais são as funcionalidades principais?
+### b) quais eram as funcionalidades principais previstas?
 
 1. Criação de perfil pessoal, com autenticação;
 1. Adicionar gastos manualmente;
@@ -56,25 +58,144 @@ O sistema vai permitir a leitura de extratos bancários e notas fiscais (.xml, .
 
 O projeto possui backend em Spring Boot, frontend em React + Vite, autenticação com JWT, banco PostgreSQL, versionamento de schema com Flyway e ambiente local padronizado com Docker Compose.
 
-Na versão atual, o MVP já possui:
+Na versão RC, o projeto consolidou os fluxos principais de autenticação, contas, transações, categorias, importação de arquivos, resumos de dados, testes automatizados, documentação de deploy e ambiente de execução. A lista detalhada do que foi entregue, do que foi entregue com ressalva e do que ficou fora do RC está registrada na seção seguinte.
 
-- cadastro e login de usuários;
-- autenticação com JWT;
-- rotas públicas e privadas no frontend;
-- layout privado com navegação interna;
+Algumas telas ainda estão em evolução, como dashboard visual completo, categorias, parcelamentos, faturas de cartão de crédito e extrato futuro. Elas podem existir como parte da navegação, modelo ou base técnica do sistema, mas ainda não representam a versão final dessas funcionalidades.
+
+## 5. Pontos que foram feitos
+
+### Funcionalidades concluídas
+
+Funcionalidades entregues no RC:
+
+- cadastro de usuário;
+- login;
+- autenticação JWT;
+- rotas públicas e privadas;
 - cadastro de contas;
+- listagem de contas;
+- edição de contas;
+- exclusão de contas sem transações vinculadas;
+- fluxo de primeira conta;
 - cadastro manual de transações;
-- listagem de transações do usuário autenticado;
+- edição de transações;
+- exclusão de transações;
+- listagem paginada de transações;
 - filtros de transações por período, tipo, conta e categoria;
 - listagem de categorias;
-- importação de extratos por arquivo;
-- acompanhamento do status da importação;
-- banco local PostgreSQL executado via Docker Compose;
-- migrations de banco com Flyway;
-- testes automatizados no backend e no frontend;
-- pipeline de CI com validações obrigatórias em pull requests.
+- categorização manual de transações;
+- importação de arquivos pela tela;
+- envio de arquivo via `multipart/form-data`;
+- consulta de status da importação;
+- parsers para CSV, TXT, XML genérico e NF-e;
+- resumo por forma de pagamento;
+- componente visual de resumo por forma de pagamento;
+- backend de resumo mensal;
+- backend de agrupamento por categoria;
+- testes automatizados no backend;
+- testes automatizados no frontend;
+- documentação de deploy;
+- ambiente com PostgreSQL, Flyway, Docker Compose e Render.
 
-Algumas telas ainda estão em evolução, como dashboard, categorias e parcelamentos. Elas já existem como parte da navegação do sistema, mas ainda não representam a versão final dessas funcionalidades.
+### Funcionalidades com ressalva
+
+Funcionalidades existentes ou parcialmente atendidas, mas com limitação de escopo, validação ou completude no RC:
+
+- importação de extratos reais;
+- categorização automática por regras de palavras-chave;
+- dashboard mensal;
+- categorização por cartão/banco quando envolver faturas ou cartão de crédito completo.
+
+### Funcionalidades pendentes ou fora do RC
+
+Funcionalidades que não devem ser consideradas concluídas nesta versão:
+
+- extrato futuro;
+- projeção de saldo dos próximos meses;
+- avisos de vencimentos;
+- parcelamentos;
+- faturas de cartão de crédito como fluxo funcional;
+- dashboard visual completo de gastos do mês;
+- gestão visual completa de categorias;
+- suporte universal a qualquer layout real de extrato bancário;
+- integração bancária direta;
+- Open Finance;
+- PDF;
+- investimentos;
+- múltiplas moedas;
+- multiusuário familiar/empresarial.
+
+## 6. Fechamento do Release Candidate
+
+O Release Candidate do SmartBudget entrega os fluxos principais de autenticação, gestão de contas, cadastro manual de transações, listagem com filtros, categorização de transações, importação de arquivos financeiros, resumo por forma de pagamento e backend do resumo mensal.
+
+Algumas funcionalidades previstas no inception foram entregues com ressalvas. A importação de arquivos está implementada para CSV, TXT, XML e NF-e, mas extratos reais podem variar por banco e exigir ajustes específicos de parser. O dashboard mensal possui backend implementado, mas a visualização completa no frontend ainda não está finalizada. A categorização de transações está funcional, mas a tela própria de gestão de categorias permanece em construção.
+
+O extrato futuro, projeções de próximos meses, parcelamentos e avisos de vencimento não fazem parte do escopo funcional entregue neste RC e devem ser tratados como evolução futura.
+
+### Resumo em relação ao inception
+
+Não entregue:
+
+- extrato futuro;
+- projeção de saldo dos próximos meses;
+- avisos/lembretes de vencimento;
+- parcelamentos funcionais;
+- faturas funcionais.
+
+Entregue parcialmente:
+
+- dashboard de gastos do mês: backend entregue e frontend completo pendente;
+- importação de extratos reais: fluxo e parsers entregues, mas suporte real ainda limitado por layout;
+- categorização: transações categorizáveis, mas tela própria de categorias ainda não finalizada;
+- cartão/conta/banco: conta e banco entregues, mas cartão, fatura e parcelamento não finalizados.
+
+Entregue além ou como complemento do inception:
+
+- cadastro manual de transações;
+- edição e exclusão de transações;
+- edição e exclusão de contas;
+- filtros e paginação;
+- resumo por forma de pagamento;
+- testes automatizados;
+- cobertura frontend/backend;
+- CI;
+- deploy;
+- documentação de arquitetura, métricas e ADRs;
+- refatoração do `TransacaoService`.
+
+### Classificação final do RC
+
+Concluído:
+
+- autenticação e perfil pessoal;
+- cadastro manual de transações;
+- listagem, edição e exclusão de transações;
+- gestão de contas;
+- filtros e paginação;
+- categorização manual de transações;
+- resumo por forma de pagamento;
+- deploy e documentação de execução.
+
+Concluído com ressalva:
+
+- importação de extratos e NF-e;
+- categorização automática;
+- categorização por conta/banco/cartão;
+- backend do dashboard mensal;
+- dashboard enquanto página, pois ainda não exibe todo o resumo financeiro planejado.
+
+Pendente ou fora do RC:
+
+- extrato futuro;
+- parcelamentos;
+- faturas;
+- avisos de vencimento;
+- dashboard visual completo;
+- gestão visual completa de categorias;
+- suporte universal a extratos reais de bancos diferentes.
+
+## 7. Execução local
 
 ### Banco de dados local
 
@@ -138,9 +259,11 @@ Rotas principais disponíveis no frontend:
 - `/login` - tela de login
 - `/cadastro` - tela de cadastro
 - `/dashboard` - painel inicial autenticado
-- `/contas/nova` - cadastro de conta
+- `/contas` - gestão de contas
+- `/contas/primeira` - fluxo de primeira conta
 - `/transacoes` - listagem de transações
 - `/transacoes/nova` - cadastro manual de transação
+- `/transacoes/:transacaoId/editar` - edição de transação
 - `/categorias` - tela de categorias
 - `/parcelamentos` - tela de parcelamentos
 - `/importacoes/nova` - importação de extratos
@@ -179,7 +302,9 @@ curl -X POST http://localhost:8080/auth/register \
   -d '{"nome":"Alexandre","email":"alex@test.com","cpf":"12345678909","senha":"123456"}'
 ```
 
-Informações mais detalhadas estão disponíveis em [docs/como-rodar.md](docs/como-rodar.md).
+Informações mais detalhadas sobre execução local estão disponíveis em [docs/como-rodar.md](docs/como-rodar.md).
+
+Documentação de deploy: [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Migrations e versionamento do banco
 
@@ -292,3 +417,5 @@ A proteção da branch `main` no GitHub já exige os quatro jobs (`Backend (buil
 - [Métricas](docs/metricas.md)
 - [Baseline](docs/baseline.md)
 - [Como rodar](docs/como-rodar.md)
+- [Deploy](docs/DEPLOY.md)
+- [Roteiro de apresentação do RC](docs/roteiro-apresentacao-rc.md)
