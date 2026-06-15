@@ -259,7 +259,7 @@ O projeto possui `GlobalExceptionHandler` para tratar exceções como recurso n�
 A ADR-0004 define MVC como estratégia de arquitetura e camadas. No estado atual, essa decisão apoia o MVP pelos seguintes motivos:
 
 - **Separação de responsabilidades:** controllers cuidam da API HTTP, services concentram regras de negócio, models representam dados e repositories isolam persistência.
-- **Evolução incremental:** novas funcionalidades do MVP, como relatórios, dashboards e extrato futuro, podem ser adicionadas criando novos controllers/services sem misturar responsabilidades nas telas.
+- **Evolução incremental:** novas funcionalidades e evoluções pós-RC, como relatórios visuais completos, dashboard completo e extrato futuro, podem ser adicionadas criando novos controllers/services sem misturar responsabilidades nas telas.
 - **Testabilidade:** services e parsers podem ser testados sem depender diretamente da interface web. O projeto já possui testes para autenticação, registro manual e parsers de importação.
 - **Aderência ao Spring Boot:** a arquitetura acompanha o padrão natural do framework, reduzindo complexidade para a equipe.
 - **Organização entre frontend e backend:** o frontend atua como camada de apresentação, enquanto o backend centraliza regras, segurança e dados.
@@ -273,9 +273,9 @@ A ADR-0004 define MVC como estratégia de arquitetura e camadas. No estado atual
 | Leitura de extratos e NF-e | Backend possui `/importacoes` e parsers para CSV, TXT, XML e NF-e. |
 | Categorizar gastos | Backend possui categorias persistidas e endpoint para alterar categoria de transação. |
 | Categorizar por forma de pagamento | Modelo de transação possui `forma_pagamento`, com enum para PIX, cartão, dinheiro, boleto e TED/DOC. |
-| Categorizar por cartão/banco utilizado | Transações pertencem a uma `Conta`, que possui tipo e banco. Cartões de crédito possuem tabela complementar. |
-| Visualização de gastos mensais | O backend já possui base de dados e modelos necessários; há classes de DTO/service/controller para resumo, embora o frontend ainda esteja em evolução. |
-| Extrato futuro | O modelo possui campo `futura`, faturas e classes para extrato futuro, criando base para evolução dessa funcionalidade. |
+| Categorizar por cartão/banco utilizado | Transações pertencem a uma `Conta`, que possui tipo e banco. A categorização por cartão/banco existe com ressalva quando envolve faturas ou fluxo completo de cartão de crédito. |
+| Visualização de gastos mensais | O backend possui resumo mensal e agrupamento por categoria; o dashboard mensal completo no frontend permanece com ressalva/evolução. |
+| Extrato futuro | O modelo possui campo `futura`, faturas e classes de apoio, mas o extrato futuro como fluxo funcional ficou pendente/fora do RC. |
 
 ## 8. Restrições e decisões atuais
 
@@ -285,7 +285,8 @@ A ADR-0004 define MVC como estratégia de arquitetura e camadas. No estado atual
 - O banco atual é PostgreSQL, não MySQL.
 - Não há integração direta com contas bancárias ou APIs externas no MVP atual.
 - Arquivos financeiros são enviados manualmente pelo usuário.
-- O dashboard oficial ainda está em construção no frontend; existe uma tela provisória após login.
+- O dashboard mensal completo ainda está em evolução no frontend.
+- Extrato futuro, parcelamentos e faturas de cartão de crédito como fluxo funcional não foram concluídos no RC.
 
 ## 9. Como rodar os contêineres lógicos em desenvolvimento
 
