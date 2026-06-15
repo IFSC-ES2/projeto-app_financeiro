@@ -222,13 +222,13 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Detecta se o CSV possui o cabeçalho do extrato bancário Nubank.
+     * Verifica se o cabeçalho corresponde ao formato do extrato bancário Nubank.
      *
-     * Formato esperado:
-     * Data,Valor,Identificador,Descrição
+     * Para reconhecer esse layout, são obrigatórias as colunas:
+     * Data, Valor, Identificador e Descrição.
      *
-     * O campo Identificador é ignorado na criação da transação, mas pode existir
-     * no arquivo. Para processar, o mínimo necessário é: Data, Valor e Descrição.
+     * O Identificador é utilizado apenas para reconhecer o formato do arquivo
+     * neste momento e não é persistido na entidade Transacao.
      */
     private boolean ehCabecalhoNubankConta(String[] cabecalho) {
         return encontrarIndiceDaColuna(cabecalho, "data") >= 0
@@ -241,11 +241,12 @@ public class ParserCSV implements ParserExtrato {
      * Processa o extrato bancário real do Nubank.
      *
      * Mapeamento:
-     * Data      -> data da transação
-     * Valor     -> valor e tipo da transação
-     * Descrição -> descrição da transação
+     * Data          -> data da transação
+     * Valor         -> valor e tipo da transação
+     * Descrição     -> descrição da transação
+     * Identificador -> usado apenas para identificar o layout e ignorado no domínio
      *
-     * Regra:
+     * Regra do extrato bancário:
      * Valor positivo -> CREDITO
      * Valor negativo -> DEBITO
      * Valor salvo    -> sempre positivo
