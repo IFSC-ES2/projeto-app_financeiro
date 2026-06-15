@@ -388,6 +388,45 @@ Leitura adotada:
 - Bugs que afetaram fluxo principal, como a issue `#170`, devem aparecer nas limitações e na análise qualitativa.
 - Funcionalidades não implementadas ou sem evidência no código, como o extrato futuro, não são contabilizadas como concluídas.
 
+### Fechamento em relação ao inception
+
+Não entregue no RC:
+
+- extrato futuro;
+- projeção de saldo dos próximos meses;
+- avisos/lembretes de vencimento;
+- parcelamentos funcionais;
+- faturas funcionais.
+
+Entregue parcialmente:
+
+- dashboard de gastos do mês: backend entregue e frontend completo pendente;
+- importação de extratos reais: fluxo e parsers entregues, mas suporte real ainda limitado por layout;
+- categorização: transações categorizáveis, mas tela própria de categorias ainda não finalizada;
+- cartão/conta/banco: conta e banco entregues, mas cartão, fatura e parcelamento não finalizados.
+
+Entregue além ou como complemento do inception:
+
+- cadastro manual de transações;
+- edição e exclusão de transações;
+- edição e exclusão de contas;
+- filtros e paginação;
+- resumo por forma de pagamento;
+- testes automatizados;
+- cobertura frontend/backend;
+- CI;
+- deploy;
+- documentação de arquitetura, métricas e ADRs;
+- refatoração do `TransacaoService`.
+
+### Classificação final do Release Candidate
+
+| Classificação | Funcionalidades |
+|---------------|-----------------|
+| Concluído | Autenticação e perfil pessoal; cadastro manual de transações; listagem, edição e exclusão de transações; gestão de contas; filtros e paginação; categorização manual de transações; resumo por forma de pagamento; deploy e documentação de execução. |
+| Concluído com ressalva | Importação de extratos e NF-e; categorização automática; categorização por conta/banco/cartão; backend do dashboard mensal; dashboard enquanto página, pois ainda não exibe todo o resumo financeiro planejado. |
+| Pendente ou fora do RC | Extrato futuro; parcelamentos; faturas; avisos de vencimento; dashboard visual completo; gestão visual completa de categorias; suporte universal a extratos reais de bancos diferentes. |
+
 ### Comparação Sprint 3 x Sprint 4
 
 | Métrica | Sprint 3 | Sprint 4 | Comparação | Leitura |
