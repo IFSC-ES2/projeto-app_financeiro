@@ -418,3 +418,4 @@ A proteção da branch `main` no GitHub já exige os quatro jobs (`Backend (buil
 - [Baseline](docs/baseline.md)
 - [Como rodar](docs/como-rodar.md)
 - [Deploy](docs/DEPLOY.md)
+- [Roteiro de apresentação do RC](docs/roteiro-apresentacao-rc.md)
