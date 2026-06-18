@@ -27,6 +27,7 @@ vi.mock('../services/api', async (importOriginal) => {
     listarCategorias: vi.fn(),
     listarTransacoes: vi.fn(),
     categorizarTransacao: vi.fn(),
+    excluirTransacao: vi.fn(),
     obterMensagemErroApi: vi.fn((_err: unknown, fallback: string) => fallback),
   };
 });
@@ -118,13 +119,16 @@ describe('Tela de listagem de Transações (Issue #155)', () => {
     vi.mocked(api.listarCategorias).mockReset();
     vi.mocked(api.listarTransacoes).mockReset();
     vi.mocked(api.categorizarTransacao).mockReset();
+    vi.mocked(api.excluirTransacao).mockReset();
     vi.mocked(api.listarContas).mockResolvedValue(mockContas);
     vi.mocked(api.listarCategorias).mockResolvedValue(mockCategorias);
     vi.mocked(api.listarTransacoes).mockResolvedValue(paginaVazia());
+    vi.mocked(api.excluirTransacao).mockResolvedValue(undefined);
   });
 
   afterEach(() => {
     vi.clearAllTimers();
+    vi.restoreAllMocks();
   });
 
   it('deve exibir loading e depois os filtros e painel de movimentações', async () => {
@@ -335,5 +339,102 @@ describe('Tela de listagem de Transações (Issue #155)', () => {
       expect(api.categorizarTransacao).toHaveBeenCalledWith('tx-2', 'cat-1');
       expect(screen.getByText('Categoria atualizada com sucesso.')).toBeInTheDocument();
     });
+  });
+
+  describe('Exclusão de transações (Issue #150)', () => { 
+    it('deve solicitar confirmação ao acionar a exclusão de uma transação', async () => {
+      vi.mocked(api.listarTransacoes).mockResolvedValueOnce(
+         paginaComConteudo([transacaoDespesa]), 
+        ); 
+      
+        const confirmarExclusao = vi
+        .spyOn(window, 'confirm') 
+        .mockReturnValue(false); 
+        
+        const usuario = userEvent.setup();
+        
+        renderTransacoes(); 
+        await aguardarCarregamento(); 
+        
+        await usuario.click( 
+          screen.getByRole('button', { name: /^Excluir$/i }), 
+        ); 
+        
+        expect(confirmarExclusao).toHaveBeenCalledWith( 
+          'Deseja excluir a transação "Supermercado"? Esta ação não pode ser desfeita.', 
+        ); 
+        
+        expect(api.excluirTransacao).not.toHaveBeenCalled(); 
+    }); 
+    
+    it('deve excluir a transação, atualizar a listagem e exibir feedback de sucesso após confirmação', async () => { 
+      vi.mocked(api.listarTransacoes) 
+      .mockResolvedValueOnce( 
+        paginaComConteudo([transacaoDespesa]), 
+      ) 
+      .mockResolvedValueOnce(
+         paginaVazia(), 
+      ); 
+      
+      vi.mocked(api.excluirTransacao).mockResolvedValueOnce(undefined); 
+      
+      vi.spyOn(window, 'confirm').mockReturnValue(true); 
+      
+      const usuario = userEvent.setup();
+      
+      renderTransacoes();
+      
+      await aguardarCarregamento(); 
+      
+      expect(screen.getByText('Supermercado')).toBeInTheDocument(); 
+      
+      await usuario.click( 
+        screen.getByRole('button', { name: /^Excluir$/i }), 
+      ); 
+      
+      await waitFor(() => { 
+        expect(api.excluirTransacao).toHaveBeenCalledWith('tx-1'); 
+      }); 
+      
+      expect( 
+        await screen.findByText('Transação excluída com sucesso.'), 
+      ).toBeInTheDocument(); 
+      
+      await waitFor(() => { 
+        expect( 
+          screen.queryByText('Supermercado'), 
+        ).not.toBeInTheDocument(); 
+        
+        expect( 
+          screen.getByText(/Nenhuma transação encontrada/i), 
+        ).toBeInTheDocument(); 
+      }); 
+    }); 
+    it('deve manter a transação na listagem quando a exclusão for cancelada', async () => { 
+      vi.mocked(api.listarTransacoes).mockResolvedValueOnce( 
+        paginaComConteudo([transacaoDespesa]), 
+      ); 
+
+      vi.spyOn(window, 'confirm').mockReturnValue(false); 
+      
+      const usuario = userEvent.setup(); 
+      
+      renderTransacoes(); 
+      await aguardarCarregamento(); 
+      
+      await usuario.click( 
+        screen.getByRole('button', { name: /^Excluir$/i }), 
+      ); 
+      
+      expect(api.excluirTransacao).not.toHaveBeenCalled(); 
+      
+      expect( 
+        screen.getByText('Supermercado'), 
+      ).toBeInTheDocument(); 
+      
+      expect( 
+        screen.queryByText('Transação excluída com sucesso.'), 
+      ).not.toBeInTheDocument(); 
+    }); 
   });
 });
