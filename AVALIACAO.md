@@ -31,18 +31,18 @@
 | 9       | Lucas de Leon Rodrigues | f5eb4f7 | 08/06/26 | 14/06/26 | 7,0  | 10   |
 | 9       | Victor Blum             | f5eb4f7 | 08/06/26 | 14/06/26 | 7,5  | 10   |
 | 9       | Victor Gabriel Lacerda  | f5eb4f7 | 08/06/26 | 14/06/26 | 7,3  | 10   |
-| 10      |                         |         |          |          |      | 10   |
+| 10      | equipe                  | --      | 15/06/26 | 15/06/26 | 8,7  | 10   |
 | 11/12   |                         |         |          |          |      | 30   |
 
 ## Nota parcial
 
 | aluno                   | nota parcial |
 | ----------------------- | ------------ |
-| Alexandre Villela       | 7,7          |
-| João Pedro Callegaro    | 7,4          |
-| Lucas de Leon Rodrigues | 7,7          |
-| Victor Blum             | 8,0          |
-| Victor Gabriel Lacerda  | 7,9          |
+| Alexandre Villela       | 7,8          |
+| João Pedro Callegaro    | 7,6          |
+| Lucas de Leon Rodrigues | 7,9          |
+| Victor Blum             | 8,1          |
+| Victor Gabriel Lacerda  | 8            |
 
 ## Comentários
 
@@ -217,11 +217,11 @@
 8. Registro de contribuição individual: parcial.
    - `sprint3.md` registra contribuições individuais por integrante, com PRs abertos, observações e reviews.
    - O registro é mais forte que nas entregas anteriores, mas ainda mistura PRs fechados, PRs parcialmente implementados e trabalho pós-prazo.
-    - Alexandre: contribuiu com documentação de execução local/testes, Docker Compose e gate de CI, além de reviews e correções pontuais. A nota melhora pela correção objetiva de reprodutibilidade, mas é limitada pelo menor volume e menor centralidade no incremento funcional.
-    - João Pedro: contribuiu em configuração e testes frontend, testes da tela de login/cadastro, ADRs e reviews. A nota é limitada pelo menor protagonismo no incremento funcional.
-    - Lucas: contribuiu de forma relevante em testes de importação/parsers, testes adicionais, correções e reviews, coerente com qualidade. A nota é limitada por pendências de categorização e atraso.
-    - Victor Blum: teve a contribuição técnica mais central e volumosa: importação, parsers, categorização, migrations, arquitetura, métricas e reviews. A nota é limitada pelas lacunas remanescentes de categorização/testes e falha local do teste com Testcontainers.
-    - Victor Gabriel: teve contribuição forte em frontend, fluxo de conta bancária, registro manual, ajustes de integração, navegação/listagem, reviews e documentação final da sprint/release.
+   - Alexandre: contribuiu com documentação de execução local/testes, Docker Compose e gate de CI, além de reviews e correções pontuais. A nota melhora pela correção objetiva de reprodutibilidade, mas é limitada pelo menor volume e menor centralidade no incremento funcional.
+   - João Pedro: contribuiu em configuração e testes frontend, testes da tela de login/cadastro, ADRs e reviews. A nota é limitada pelo menor protagonismo no incremento funcional.
+   - Lucas: contribuiu de forma relevante em testes de importação/parsers, testes adicionais, correções e reviews, coerente com qualidade. A nota é limitada por pendências de categorização e atraso.
+   - Victor Blum: teve a contribuição técnica mais central e volumosa: importação, parsers, categorização, migrations, arquitetura, métricas e reviews. A nota é limitada pelas lacunas remanescentes de categorização/testes e falha local do teste com Testcontainers.
+   - Victor Gabriel: teve contribuição forte em frontend, fluxo de conta bancária, registro manual, ajustes de integração, navegação/listagem, reviews e documentação final da sprint/release.
 
 ### Entrega 8
 
@@ -263,12 +263,12 @@
 8. Registro de contribuição individual: atendido.
    - `entregas/sprint4.md` registra contribuições individuais extensas, com PRs, issues, reviews e observações por integrante.
    - O histórico `v0.3.1..v0.4.1` confirma participação de todos os membros em funcionalidades, testes, documentação, CI, deploy e reviews, embora os aliases variem bastante por integrante.
-Notas individuais:
+     Notas individuais:
    - Alexandre: contribuição forte em deploy Render, documentação, paginação/filtros, testes de contrato de parsers e ajuste de modelagem de `TipoTransacao`; nota limitada apenas pelo menor protagonismo no incremento funcional de interface quando comparado aos Victors.
    - João Pedro: contribuição relevante em testes frontend, cobertura, documentação arquitetural, ADR e importação; nota alta, mas um pouco menor pelo menor volume relativo no backend funcional central da Sprint 4.
    - Lucas: contribuição relevante em CRUD/manutenção de transações, testes de edição/exclusão, edição de conta, correção de importação na `v0.4.1` e reviews técnicos; nota alta pela atuação em estabilização e qualidade.
    - Victor Blum: contribuição central em backend, arquitetura, categorização, contrato de parsers, refatoração do `TransacaoService`, métricas e resumo mensal; maior nota pela centralidade técnica e pela reengenharia exigida na entrega.
-    - Victor Gabriel: contribuição forte em frontend, gestão de contas, resumo por forma de pagamento, UX, correção de CORS em produção e muitas revisões; nota muito alta pela entrega de fluxos visíveis do MVP e estabilização do ambiente publicado.
+   - Victor Gabriel: contribuição forte em frontend, gestão de contas, resumo por forma de pagamento, UX, correção de CORS em produção e muitas revisões; nota muito alta pela entrega de fluxos visíveis do MVP e estabilização do ambiente publicado.
 
 ### Entrega 9
 
@@ -304,8 +304,19 @@ Notas individuais:
    - O commit posterior em `main` (`050fc883`) altera apenas `AVALIACAO.md` e não representa entrega técnica nova.
 
 Notas individuais:
-   - Alexandre: contribuição relevante e confirmada em deploy Render, documentação de deploy, paginação/filtros, testes de contrato dos parsers e ajuste de modelagem de `TipoTransacao`. Nota limitada pelas lacunas gerais da entrega 9, especialmente ausência de RC e de testes de aceitação finais.
-   - João Pedro: contribuição consistente em testes frontend, cobertura, documentação arquitetural, ADR da refatoração e correção de comportamento da importação. Nota um pouco menor pelo menor protagonismo relativo no fechamento funcional/deploy e pelas lacunas finais de processo.
-   - Lucas: contribuição relevante em manutenção de transações, edição de contas, testes backend e correção de importação na estabilização. Nota limitada pela ausência de evidência de testes de aceitação finais, apesar do papel de qualidade.
-   - Victor Blum: contribuição técnica mais central no backend, arquitetura, categorização, contrato dos parsers, refatoração do `TransacaoService`, métricas e resumo mensal. Nota penalizada pela ausência de RC e fechamento formal da entrega final.
-   - Victor Gabriel: contribuição forte em frontend, UX, gestão de contas, resumo por forma de pagamento, correção de CORS em produção e reviews. Nota limitada pelas mesmas lacunas de release candidate, aceite e fechamento documental.
+
+- Alexandre: contribuição relevante e confirmada em deploy Render, documentação de deploy, paginação/filtros, testes de contrato dos parsers e ajuste de modelagem de `TipoTransacao`. Nota limitada pelas lacunas gerais da entrega 9, especialmente ausência de RC e de testes de aceitação finais.
+- João Pedro: contribuição consistente em testes frontend, cobertura, documentação arquitetural, ADR da refatoração e correção de comportamento da importação. Nota um pouco menor pelo menor protagonismo relativo no fechamento funcional/deploy e pelas lacunas finais de processo.
+- Lucas: contribuição relevante em manutenção de transações, edição de contas, testes backend e correção de importação na estabilização. Nota limitada pela ausência de evidência de testes de aceitação finais, apesar do papel de qualidade.
+- Victor Blum: contribuição técnica mais central no backend, arquitetura, categorização, contrato dos parsers, refatoração do `TransacaoService`, métricas e resumo mensal. Nota penalizada pela ausência de RC e fechamento formal da entrega final.
+- Victor Gabriel: contribuição forte em frontend, UX, gestão de contas, resumo por forma de pagamento, correção de CORS em produção e reviews. Nota limitada pelas mesmas lacunas de release candidate, aceite e fechamento documental.
+
+### Entrega 10
+
+| critério                  | peso | nota |
+| ------------------------- | ---- | ---- |
+| Identificação do projeto  | 1    | 10   |
+| Resumo do MVP             | 2    | 10   |
+| Demonstração do sistema   | 4    | 7    |
+| Situação final do projeto | 1,5  | 10   |
+| Objetividade e perguntas  | 0,5  | 10   |
