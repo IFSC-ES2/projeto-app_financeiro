@@ -32,17 +32,21 @@
 | 9       | Victor Blum             | f5eb4f7 | 08/06/26 | 14/06/26 | 7,5  | 10   |
 | 9       | Victor Gabriel Lacerda  | f5eb4f7 | 08/06/26 | 14/06/26 | 7,3  | 10   |
 | 10      | equipe                  | --      | 15/06/26 | 15/06/26 | 8,7  | 10   |
-| 11/12   |                         |         |          |          |      | 30   |
+| 11/12   | Alexandre Villela       | --      | 22/06/26 | 24/06/26 | 7    | 30   |
+| 11/12   | João Pedro Callegaro    | --      | 22/06/26 | 24/06/26 | 5    | 30   |
+| 11/12   | Lucas de Leon Rodrigues | --      | 22/06/26 | 24/06/26 | 8,5  | 30   |
+| 11/12   | Victor Blum             | --      | 22/06/26 | 24/06/26 | 8,5  | 30   |
+| 11/12   | Victor Gabriel Lacerda  | --      | 22/06/26 | 24/06/26 | 8,5  | 30   |
 
-## Nota parcial
+## Nota final
 
-| aluno                   | nota parcial |
-| ----------------------- | ------------ |
-| Alexandre Villela       | 7,8          |
-| João Pedro Callegaro    | 7,6          |
-| Lucas de Leon Rodrigues | 7,9          |
-| Victor Blum             | 8,1          |
-| Victor Gabriel Lacerda  | 8            |
+| aluno                   | nota |
+| ----------------------- | ---- |
+| Alexandre Villela       | 7,6  |
+| João Pedro Callegaro    | 6,8  |
+| Lucas de Leon Rodrigues | 8    |
+| Victor Blum             | 8,2  |
+| Victor Gabriel Lacerda  | 8,2  |
 
 ## Comentários
 
@@ -320,3 +324,107 @@ Notas individuais:
 | Demonstração do sistema   | 4    | 7    |
 | Situação final do projeto | 1,5  | 10   |
 | Objetividade e perguntas  | 0,5  | 10   |
+
+### Entrega 11/12
+
+1. MVP completo e integrado: atendido com ressalvas.
+   - O Release Candidate (`v1.0.0`, commit `1631a36d`, 15/06/26) consolida os fluxos principais: cadastro/login com JWT, rotas privadas, gestão de contas (CRUD), transações (CRUD com filtros/paginação), categorização manual, importação de extratos (CSV/TXT/XML/NF-e), resumo por forma de pagamento, resumo mensal no backend e ambiente com PostgreSQL/Flyway/Docker Compose/Render.
+   - O frontend publicado (`https://smartbudget-web-0sic.onrender.com`) e a API (`https://smartbudget-api-kbze.onrender.com`) estão acessíveis.
+   - A documentação da RC é honesta sobre o que foi entregue e o que ficou com ressalva: dashboard visual completo, extrato futuro, parcelamentos e faturas de cartão de crédito permanecem como evolução futura.
+   - Verificações locais: backend compilou 325 testes (321 passaram, 4 falharam por Testcontainers/Docker não disponível); frontend `npm run build` e `npm test -- --run` passaram (10 arquivos, 68 testes); `npm run lint` reportou 3 erros em `coverage/` (arquivos gerados, não código fonte).
+
+2. Hardening do sistema: atendido.
+   - Estabilização evidente: correção de CORS em produção, ajustes de importação via `FormData`, validação de propriedade de contas/transações/categorias, autenticação JWT com BCrypt, Flyway, decomposição do `TransacaoService` (ADR-0008), parser CSV atualizado para extratos Nubank reais, CI expandido para executar em `push` na `main`, blueprint Render e documentação de deploy.
+   - A refatoração do `TransacaoService` reduziu responsabilidades de 14 para 7 e linhas de 304 para 166.
+   - Ressalva: 4 testes de integração falham sem Docker disponível localmente para Testcontainers.
+
+3. Integração contínua obrigatória: atendido.
+   - Workflow `.github/workflows/ci.yml` com 4 jobs: backend (Java 21, PostgreSQL 16, Gradle Wrapper, assemble, test, JaCoCo), frontend (Node 20, npm ci, lint, build, test:coverage com Vitest), YAML lint (PyYAML), verificação de arquivos obrigatórios.
+   - CI atualizado para executar também em `push` na `main` (PR `#221`), não apenas em PRs.
+   - Frontend passou em lint (excluindo 3 erros de `coverage/` autogerados), build e 68 testes.
+   - Backend: 321 de 325 testes passaram; 4 falhas por Testcontainers/Docker — infraestrutura local, não configuração do CI.
+
+4. Testes de aceitação: não atendido.
+   - O projeto possui farta suíte de testes automatizados (325 backend, 68 frontend), mas não há documento formal de testes de aceitação com cenários end-to-end, roteiro de aceite, evidência de execução manual estruturada ou matriz de critérios de aceitação validada contra o MVP.
+   - O `docs/roteiro-apresentacao-rc.md` serve como guia de demonstração, mas não substitui um plano formal de testes de aceitação.
+
+5. Ambiente de execução acessível: atendido.
+   - Frontend e API publicados no Render acessíveis e responsivos.
+   - Deploy local reprodutível via Docker Compose com PostgreSQL, Flyway e variáveis de ambiente documentadas.
+   - A execução local do backend depende de Docker para 4 testes de integração com Testcontainers, mas o fluxo principal é funcional sem eles.
+
+6. Revisão final da documentação: atendido.
+   - README, DEPLOY.md, arquitetura C4, 8 ADRs, métricas, riscos, fluxo de trabalho, baseline, estimativas, quality model ISO 25010 e relatórios de sprint atualizados para o RC.
+   - `docs/metricas.md`: cobertura backend 86%, service 88,6%, frontend 72,1% linhas; 80% do MVP; comparações objetivas antes/depois da refatoração.
+   - `docs/riscos.md`: atualizado para o RC com riscos ativos, mitigados e concretizados, incluindo R09 (RC não contemplar 100% do MVP).
+   - `docs/roteiro-apresentacao-rc.md`: roteiro de demonstração com 6 fluxos, dados de teste e limitações a não apresentar como concluídas.
+   - ADR-0008 documenta a decomposição do `TransacaoService`.
+
+7. Release Candidate: atendido.
+   - Tag `v1.0.0` (commit `1631a36d`, 15/06/26) criada como marco da RC.
+   - PR `#226` (`docs/release-candidate`) consolidou a documentação final: fechamento da RC no README, arquitetura atualizada, métricas finais, roteiro de apresentação e funcionalidades adicionais do MVP.
+   - O commit `1631a36d` representa o HEAD de `main` e contém também correções de importação de extratos reais (#200), CI em push na main (#221) e blueprint Render.
+   - A release cobre o MVP planejado em ~80%, com as limitações reconhecidas e documentadas.
+
+8. Colaboração e contribuição individual: parcial.
+   - O período entre `v0.4.1` (08/06) e `v1.0.0` (15/06) apresentou contribuições relevantes de todos os integrantes, embora em intensidades diferentes:
+     - Alexandre Villela: contribuição central no extrato futuro (tela, projeção, serviço, testes, correção de dupla contagem de faturas), blueprint/deploy Render e correções de validação. Atuação técnica ampla e coerente com o papel de DevOps/Infra, embora o extrato futuro não tenha entrado como concluído no RC por estar em estágio inicial (funcional, mas ainda sem interface consolidada no fluxo principal).
+     - João Pedro Callegaro: contribuição contundente em testes frontend de importação, nova conta, nova transação e correções de revisão. A atuação é consistente com o papel de qualidade/DevOps; a nota reflete o volume de testes, mas reconhece que as contribuições foram concentradas em testes, sem implementação de novas funcionalidades.
+     - Lucas de Leon Rodrigues: contribuição como merge master dos PRs finais da RC e do CI em `push` na `main`. Atuação de qualidade/governança evidente nos merges, mas sem commits de código ou documentação no período da RC; o trabalho operacional de integração foi importante para consolidar a entrega.
+     - Victor Blum: merges da dev para RC (`#225`) e do fix/axios-importacao (`#224`), além de trabalho em diversas frentes de dev ao longo de todo o projeto. A contribuição de arquitetura é evidente no código e nas ADRs, mas no período específico da RC atuou principalmente como integrador/revisor.
+     - Victor Gabriel Lacerda (Victor3294): contribuição mais volumosa e diversa no período da RC: documentação completa da RC (README, métricas, arquitetura, MVP), roteiro de apresentação, correção de importação de extratos reais Nubank (#200) com novo parser e testes, ajuste de axios global, blueprint Render e CI em push na main. A intensidade de trabalho no fechamento foi a maior da equipe, cobrindo documentação, código e infraestrutura.
+
+**Riscos aceitos:**
+
+- Extrato futuro/projeção de saldo não consolidado no RC; implementado em estágio inicial por Alexandre no commit `3f700d34`, mas não integrado como funcionalidade concluída.
+- Dashboard visual completo do mês não implementado no frontend; apenas backend do resumo mensal e componente de pizza por forma de pagamento.
+- Parcelamentos e faturas de cartão de crédito não funcionais no RC.
+- 4 testes de integração dependem de Docker/Testcontainers; falham em ambiente sem Docker daemon.
+- 3 erros de lint em `coverage/` (arquivos gerados) não foram excluídos do escopo do lint.
+
+#### Perguntas para a defesa
+
+Alexandre:
+
+1. Você implementou o extrato futuro com projeção mensal, faturas e validação de posse. Considerando o ciclo de vida de software e releases, por que essa funcionalidade não entrou como concluída no RC e como você avalia a decisão de aceitar esse risco?
+   - Resposta esperada: deve explicar que o extrato futuro foi implementado como backend/serviço e tela inicial (commits `3f700d34`, `ac88647c`, `a284cac8`, `3f700d34`), mas ainda não estava integrado ao fluxo principal de navegação do frontend e não passou por testes de aceitação completos. Pela gestão de riscos, a equipe avaliou que o escopo do MVP não seria 100% atingido (R09 concretizado) e documentou a pendência. Deve reconhecer que a decisão foi acertada para não comprometer a estabilidade dos fluxos já funcionais.
+2. Como DevOps/Infra, você configurou o blueprint Render e o deploy. Como você garante que o ambiente de produção seja reprodutível a partir do repositório e quais variáveis de ambiente e segredos são críticos para a segurança do deploy?
+   - Resposta esperada: deve citar `render.yaml`, `docker-compose.prod.yml`, `.env.prod.example` e os Dockerfiles. Variáveis críticas: `JWT_SECRET`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `CORS_ALLOWED_ORIGINS`, `PORT`. Deve explicar que segredos não devem ser versionados e que o Render permite configurá-los via painel ou `render.yaml` com valores referenciados de secrets do GitHub.
+3. Pela ISO 25010, quais atributos de qualidade são mais impactados pela decisão de manter PostgreSQL real em vez de H2 em memória, e como isso se reflete nas métricas e testes do projeto?
+   - Resposta esperada: PostgreSQL real melhora confiabilidade (persistência, integridade referencial) e adequação funcional (recursos do banco), mas exige mais da infraestrutura de testes (Testcontainers, Docker). Na prática, permitiu usar Flyway, constraints reais e consultas SQL avançadas, mas 4 testes de integração ficaram dependentes de Docker. Pela ISO 25010, isso afeta manutenibilidade (ambiente mais complexo) e confiabilidade (dados não voláteis).
+
+João Pedro:
+
+1. Você escreveu testes automatizados para as telas de importação, nova conta e nova transação. Considerando a diferença entre teste de unidade, teste de integração e teste de aceitação vistos em aula, como você classifica esses testes e o que ainda faltaria para cobrir a aceitação do MVP?
+   - Resposta esperada: os testes escritos são predominantemente testes de componente/interface com mocks das chamadas HTTP (Vitest + Testing Library). São testes de unidade/integração controlada que verificam comportamento dos componentes. Para testes de aceitação, faltariam cenários end-to-end (ex.: Playwright/Cypress) que percorressem fluxos completos do usuário (cadastrar → login → importar → categorizar → ver resumo), validando a integração real entre frontend, API e banco.
+2. Como DevOps/Infra, como você relaciona a cobertura de testes do frontend (72,1% linhas) com a definição de pronto (DoD) e a qualidade do software entregue no RC?
+   - Resposta esperada: a cobertura é uma métrica de processo que ajuda a identificar código não testado, mas não substitui critérios qualitativos da DoD (testes passando, lint/build ok, review aprovado, CI verde). Deve reconhecer que 72% é um valor razoável para frontend, mas que alguns fluxos críticos (extrato futuro, dashboard) têm cobertura menor ou inexistente. A DoD deve priorizar qualidade do teste (asserções significativas) sobre quantidade.
+3. Como os riscos foram tratados ao longo do projeto e qual o papel do DevOps na mitigação de riscos de segurança (R07) e infraestrutura (R02)? Dê exemplos concretos.
+   - Resposta esperada: R07 (segurança) mitigado com JWT + BCrypt + filtro de autenticação + validação de posse de recursos. R02 (setup ambiente) mitigado com Docker Compose, Flyway, script de init e `render.yaml`. Como DevOps, a contribuição foi documentar procedimentos, configurar CI, manter ambiente padronizado e garantir que a execução local e em produção usassem a mesma stack. Deve citar exemplos: PRs `#146`, `#147` (testes), `#151` (testes importação) e `#84` (riscos).
+
+Lucas:
+
+1. Como Engenheiro de Qualidade e merge master da RC, como você garante que a rastreabilidade entre requisito, issue, PR, teste e funcionalidade entregue seja auditável no repositório?
+   - Resposta esperada: deve explicar que cada PR referencia issues (ex.: `#200`, `#214`, `#221`, `#224`, `#225`, `#226`), que os commits têm mensagens descritivas, e que as tags (`v0.1.0` a `v1.0.0`) marcam marcos. A rastreabilidade também se apoia nos relatórios de sprint (`sprint4.md`), métricas e revisões de PR. Deve reconhecer que nem sempre a vinculação é perfeita, mas que o repositório tem evidências suficientes para auditoria.
+2. O CI foi atualizado (PR `#221`) para rodar também em `push` na `main`. Considerando o pipeline canônico de Integração Contínua visto em aula, por que essa mudança é importante e o que ainda poderia ser melhorado na esteira?
+   - Resposta esperada: rodar CI em `push` na `main` garante que o código integrado diretamente na branch principal (merges, correções emergenciais) também seja validado, evitando que a `main` acumule código quebrado. Essa é uma prática essencial do pipeline canônico. Melhorias possíveis: análise estática (Checkstyle/PMD), verificação de segurança de dependências (Dependabot/npm audit), bloqueio por cobertura mínima e testes end-to-end.
+3. As métricas indicam 80% do MVP entregue. Considerando o que foi visto em aula sobre métricas de software e indicadores, como esse percentual foi calculado e quais limitações essa métrica apresenta para avaliar a qualidade do produto?
+   - Resposta esperada: o percentual foi calculado como funcionalidades entregues (concluídas + concluídas com ressalva) dividido pelo total de funcionalidades essenciais do MVP (5 listadas no inception). Limitações: métrica binária (funcionalidade está "pronta" ou não) não captura qualidade interna, cobertura de testes, débito técnico ou satisfação do usuário; funcionalidades "com ressalva" contam como entregues parcialmente; e funcionalidades grandes (ex.: importação) são tratadas como unidade, quando poderiam ser subdivididas.
+
+Victor Blum:
+
+1. Como arquiteto, você liderou a refatoração do `TransacaoService` (ADR-0008). Considerando os padrões estruturais e arquiteturais vistos em aula, explique o problema de design identificado, a solução aplicada e como a métrica de comparação antes/depois (304→166 linhas, 14→7 responsabilidades) evidencia a melhoria.
+   - Resposta esperada: o `TransacaoService` violava o Princípio da Responsabilidade Única (SRP), acumulando regras de validação de conta, sugestão de categoria, mapeamento DTO, consultas com filtros e lógica de negócio. A solução foi extrair `ContaUsuarioService`, `SugestaoCategoriaService`, `TransacaoMapper` e `TransacaoSpecs`. A métrica mostra redução objetiva de acoplamento e aumento de coesão, o que melhora manutenibilidade e testabilidade.
+2. O projeto adota Strategy Pattern para os parsers de extrato (CSV, TXT, XML, NF-e). Como a interface `ParserExtrato` e as implementações concretas permitem adicionar novos formatos sem modificar o `ImportacaoService`, e como isso se relaciona com o princípio Open/Closed (OCP)?
+   - Resposta esperada: `ParserExtrato` define o contrato (`parse(InputStream) → ResultadoParser`). Cada formato implementa a interface. O `ImportacaoService` detecta o formato pelo arquivo e delega ao parser correspondente sem conhecer detalhes de implementação. Isso segue o OCP: aberto para extensão (novos parsers) e fechado para modificação (serviço não muda). A ADR-0004 e ADR-0007 documentam essa decisão.
+3. A importação de extratos foi atualizada para formatos reais Nubank. Como você avalia a qualidade dessa implementação usando verificação e validação — os testes confirmam que o parser funciona corretamente (verificação), mas como validar que ele atende a necessidade real do usuário (validação)?
+   - Resposta esperada: a verificação é feita por testes unitários que comparam a saída do parser com dados esperados (ex.: `ParserCSV.test.ts`). A validação exigiria testar com extratos reais de diferentes bancos, layouts e cenários (dados incompletos, encoding variado, linhas mal formatadas). O commit `7015b257` (#200) mostra o esforço de validação com extrato Nubank real, mas ainda há ressalva para layouts não testados. Para validar plenamente, seriam necessários testes de aceitação com usuários reais ou amostragem de extratos reais.
+
+Victor Gabriel:
+
+1. Como Scrum Master, você liderou a documentação da RC e a correção da importação de extratos reais. Como o papel de Scrum Master se reflete nas evidências do repositório e como você equilibrou liderança de processo com contribuição técnica?
+   - Resposta esperada: deve citar evidências: criação do roteiro de apresentação, documentação da RC no README, atualização de métricas/arquitetura/MVP, PR de regularização `#226`. A contribuição técnica também foi significativa: correção da importação Nubank (#200), ajuste axios global, CI em push na main. O equilíbrio veio de planejar a documentação enquanto outros membros (Alexandre, João, Victor Blum) focavam em funcionalidade e testes; no fechamento, concentrou os ajustes finais de integração.
+2. O CI foi atualizado para rodar em `push` na `main` e o lint do frontend foi configurado com `max-warnings 0`. Considerando o pipeline canônico de Integração Contínua, como essa política de tolerância zero a warnings afeta a qualidade e a produtividade da equipe?
+   - Resposta esperada: `max-warnings 0` garante que nenhum warning de lint seja ignorado, forçando código limpo antes do merge. Isso melhora a qualidade (padronização, boas práticas) mas pode reduzir a produtividade imediata. O ideal é manter a regra e tratar warnings como erros, configurando o CI para falhar se houver qualquer warning. Os 3 erros nos arquivos `coverage/` mostram que a regra precisa de ajuste (ignorar diretórios gerados), mas a política em si é correta para a DoD.
+3. A documentação do RC lista funcionalidades concluídas e com ressalva de forma transparente. Pela gestão de riscos (RMMM) vista em aula, como essa transparência ajuda a gerenciar expectativas e quais riscos ela mitiga?
+   - Resposta esperada: transparência sobre o que está e não está pronto mitiga riscos de comunicação e expectativa (stakeholder achar que tudo está funcionando). Pela RMMM, documentar limitações é uma ação de mitigação para R09 (RC não contemplar 100% do MVP). Também reduz o risco de avaliação incorreta (R04 - escopo). A seção "O que não deve ser apresentado como concluído" no roteiro de apresentação é uma boa prática de gestão de riscos para a defesa.
