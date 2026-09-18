@@ -4,7 +4,7 @@ import LayoutAutenticacao from '../components/layout/LayoutAutenticacao';
 import CampoFormulario from '../components/ui/CampoFormulario';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { obterMensagemErroApi } from '../services/api';
+import { obterMensagemErroApi } from '../services/apiError';
 import { useAutenticacao } from '../contexts/ContextoAutenticacao';
 import { useFormulario } from '../hooks/useFormulario';
 

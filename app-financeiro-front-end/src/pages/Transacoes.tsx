@@ -4,20 +4,13 @@ import LayoutPrivado from '../components/layout/LayoutPrivado';
 import EstadoVazio from '../components/ui/EstadoVazio';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
 import ResumoFormaPagamento from '../components/resumo/ResumoFormaPagamento';
-import {
-  categorizarTransacao,
-  excluirTransacao,
-  listarCategorias,
-  listarContas,
-  listarTransacoes,
-  obterMensagemErroApi,
-} from '../services/api';
-import type {
-  CategoriaResponse,
-  ContaResponse,
-  PaginaResponse,
-  TransacaoResponse,
-} from '../services/api';
+import { obterMensagemErroApi } from '../services/apiError';
+import { listarCategorias } from '../services/categoriaService';
+import { listarContas } from '../services/contaService';
+import { categorizarTransacao, excluirTransacao, listarTransacoes } from '../services/transacaoService';
+import type { CategoriaResponse } from '../types/categoria';
+import type { ContaResponse } from '../types/conta';
+import type { PaginaResponse, TransacaoResponse } from '../types/transacao';
 import { formatarData, formatarMoeda } from '../utils/formatacao';
 import { calcularResumoTransacoes } from '../utils/transacoes';
 

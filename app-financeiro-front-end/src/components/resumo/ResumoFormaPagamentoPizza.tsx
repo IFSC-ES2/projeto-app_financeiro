@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import EstadoVazio from '../ui/EstadoVazio';
 import MensagemAlerta from '../ui/MensagemAlerta';
-import { buscarResumoPorPagamento, obterMensagemErroApi } from '../../services/api';
-import type { ResumoPagamentoResponse, TipoPagamento } from '../../services/api';
+import { obterMensagemErroApi } from '../../services/apiError';
+import { buscarResumoPorPagamento } from '../../services/resumoService';
+import type { ResumoPagamentoResponse } from '../../types/resumo';
+import type { TipoPagamento } from '../../types/transacao';
 
 const classesFormaPagamento: Record<TipoPagamento, string> = {
   PIX: 'payment-chart-color-pix',

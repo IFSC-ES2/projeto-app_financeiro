@@ -52,16 +52,12 @@ vi.mock('../contexts/ContextoAutenticacao', () => ({
   useAutenticacao: () => authState,
 }));
 
-vi.mock('../services/api', async () => {
-  const actual = await vi.importActual<typeof import('../services/api')>('../services/api');
+vi.mock('../services/contaService', () => ({ listarContas: mockListarContas }));
 
-  return {
-    ...actual,
-    listarContas: mockListarContas,
-    criarImportacao: mockCriarImportacao,
-    consultarStatusImportacao: mockConsultarStatusImportacao,
-  };
-});
+vi.mock('../services/importacaoService', () => ({
+  criarImportacao: mockCriarImportacao,
+  consultarStatusImportacao: mockConsultarStatusImportacao,
+}));
 
 const criarArquivo = (nome: string, tipo: string, conteudo = 'conteudo') =>
   new File([conteudo], nome, { type: tipo });

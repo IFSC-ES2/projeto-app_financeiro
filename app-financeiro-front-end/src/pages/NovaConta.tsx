@@ -3,8 +3,9 @@ import type { ChangeEvent, FormEvent } from 'react';
 import LayoutPrivado from '../components/layout/LayoutPrivado';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { editarConta, excluirConta, listarContas, obterMensagemErroApi, registrarConta } from '../services/api';
-import type { ContaRequest, ContaResponse, TipoConta } from '../services/api';
+import { obterMensagemErroApi } from '../services/apiError';
+import { editarConta, excluirConta, listarContas, registrarConta } from '../services/contaService';
+import type { ContaRequest, ContaResponse, TipoConta } from '../types/conta';
 import { ehCarteiraAutomaticaDinheiro } from '../utils/contas';
 
 type CamposConta = {
