@@ -14,6 +14,11 @@ Para desenvolvimento local (rodar com `bootRun`/`npm run dev`), veja [`como-roda
 
 O frontend é uma SPA estática que chama a API pelo **navegador**, então a URL da API (`VITE_API_URL`) precisa ser acessível pelo cliente e é **embutida no build** do Vite.
 
+Ambientes publicados atuais:
+
+- Web: `https://smartbudget-web-0sic.onrender.com`
+- API: `https://smartbudget-api-kbze.onrender.com`
+
 ## Pré-requisitos
 
 - **Docker** + **Docker Compose v2** (caminho recomendado), ou
