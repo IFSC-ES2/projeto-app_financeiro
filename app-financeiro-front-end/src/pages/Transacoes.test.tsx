@@ -395,6 +395,10 @@ describe('Tela de listagem de Transações (Issue #155)', () => {
       await waitFor(() => { 
         expect(api.excluirTransacao).toHaveBeenCalledWith('tx-1'); 
       }); 
+
+      await waitFor(() => {
+        expect(api.listarTransacoes).toHaveBeenCalledTimes(2);
+      });
       
       expect( 
         await screen.findByText('Transação excluída com sucesso.'), 
@@ -410,6 +414,48 @@ describe('Tela de listagem de Transações (Issue #155)', () => {
         ).toBeInTheDocument(); 
       }); 
     }); 
+
+    it('deve exibir erro e manter a transação na listagem quando a exclusão falhar', async () => {
+      vi.mocked(api.listarTransacoes).mockResolvedValueOnce(
+        paginaComConteudo([transacaoDespesa]),
+      );
+
+      vi.mocked(api.excluirTransacao).mockRejectedValueOnce(
+        new Error('Falha ao excluir'),
+      );
+
+      vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+      const usuario = userEvent.setup();
+
+      renderTransacoes();
+      await aguardarCarregamento();
+
+      expect(screen.getByText('Supermercado')).toBeInTheDocument();
+
+      await usuario.click(
+        screen.getByRole('button', { name: /^Excluir$/i }),
+      );
+
+      await waitFor(() => {
+        expect(api.excluirTransacao).toHaveBeenCalledWith('tx-1');
+      });
+
+      expect(
+        await screen.findByText('Não foi possível excluir a transação.'),
+      ).toBeInTheDocument();
+
+      expect(api.listarTransacoes).toHaveBeenCalledTimes(1);
+
+      expect(
+        screen.getByText('Supermercado'),
+      ).toBeInTheDocument();
+
+      expect(
+        screen.queryByText('Transação excluída com sucesso.'),
+      ).not.toBeInTheDocument();
+    });
+
     it('deve manter a transação na listagem quando a exclusão for cancelada', async () => { 
       vi.mocked(api.listarTransacoes).mockResolvedValueOnce( 
         paginaComConteudo([transacaoDespesa]), 
