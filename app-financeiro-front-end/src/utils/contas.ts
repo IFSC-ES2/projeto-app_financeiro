@@ -1,4 +1,4 @@
-import type { ContaResponse } from '../services/api';
+import type { ContaResponse } from '../types/conta';
 
 export const ehCarteiraAutomaticaDinheiro = (conta: ContaResponse) => {
   const nome = conta.nome.trim().toLowerCase();

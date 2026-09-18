@@ -1,4 +1,4 @@
-import type { TokenDTO } from '../services/api';
+import type { TokenDTO } from '../types/auth';
 
 const CHAVE_SESSAO = 'smartbudget.auth';
 const CHAVE_LEGADA_TOKEN = 'token';

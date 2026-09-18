@@ -13,11 +13,14 @@ const { mockEditarConta, mockExcluirConta, mockListarContas, mockRegistrarConta,
   mockNavigate: vi.fn(),
 }));
 
-vi.mock('../services/api', () => ({
+vi.mock('../services/contaService', () => ({
   editarConta: mockEditarConta,
   excluirConta: mockExcluirConta,
   listarContas: mockListarContas,
   registrarConta: mockRegistrarConta,
+}));
+
+vi.mock('../services/apiError', () => ({
   obterMensagemErroApi: vi.fn((_err: unknown, fallback: string) => fallback),
 }));
 

@@ -3,18 +3,11 @@ import { Link, Navigate } from 'react-router-dom';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
 import { useAutenticacao } from '../contexts/ContextoAutenticacao';
-import {
-  consultarStatusImportacao,
-  criarImportacao,
-  listarContas,
-  obterMensagemErroApi,
-  obterStatusHttp,
-} from '../services/api';
-import type {
-  ContaResponse,
-  ImportacaoResponse,
-  StatusImportacao,
-} from '../services/api';
+import { obterMensagemErroApi, obterStatusHttp } from '../services/apiError';
+import { listarContas } from '../services/contaService';
+import { consultarStatusImportacao, criarImportacao } from '../services/importacaoService';
+import type { ContaResponse } from '../types/conta';
+import type { ImportacaoResponse, StatusImportacao } from '../types/importacao';
 
 const EXTENSOES_ACEITAS = ['csv', 'xml', 'txt'];
 const ACCEPT_INPUT = '.csv,.xml,.txt';

@@ -19,18 +19,19 @@ vi.mock('../components/resumo/ResumoFormaPagamento', () => ({
   default: () => null,
 }));
 
-vi.mock('../services/api', async (importOriginal) => {
-  const original = await importOriginal<typeof import('../services/api')>();
-  return {
-    ...original,
-    listarContas: vi.fn(),
-    listarCategorias: vi.fn(),
-    listarTransacoes: vi.fn(),
-    categorizarTransacao: vi.fn(),
-    excluirTransacao: vi.fn(),
-    obterMensagemErroApi: vi.fn((_err: unknown, fallback: string) => fallback),
-  };
-});
+vi.mock('../services/contaService', () => ({ listarContas: vi.fn() }));
+
+vi.mock('../services/categoriaService', () => ({ listarCategorias: vi.fn() }));
+
+vi.mock('../services/transacaoService', () => ({
+  listarTransacoes: vi.fn(),
+  categorizarTransacao: vi.fn(),
+  excluirTransacao: vi.fn(),
+}));
+
+vi.mock('../services/apiError', () => ({
+  obterMensagemErroApi: vi.fn((_err: unknown, fallback: string) => fallback),
+}));
 
 vi.mock('react-router-dom', async (importOriginal) => {
   const original = await importOriginal<typeof import('react-router-dom')>();
