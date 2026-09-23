@@ -82,6 +82,7 @@ class ImportacaoControllerTest {
         responseConcluida.setStatus(StatusImportacao.CONCLUIDO);
         responseConcluida.setSucessos(2);
         responseConcluida.setFalhas(1);
+        responseConcluida.setIgnoradasPorDuplicidade(3);
         responseConcluida.setImportadoEm(LocalDateTime.of(2026, 5, 23, 10, 30));
         responseConcluida.setMensagemErro(null);
     }
@@ -105,6 +106,7 @@ class ImportacaoControllerTest {
                     .andExpect(jsonPath("$.status").value("CONCLUIDO"))
                     .andExpect(jsonPath("$.sucessos").value(2))
                     .andExpect(jsonPath("$.falhas").value(1))
+                    .andExpect(jsonPath("$.ignoradasPorDuplicidade").value(3))
                     .andExpect(jsonPath("$.importadoEm").exists())
                     .andExpect(jsonPath("$.mensagemErro").doesNotExist());
         }

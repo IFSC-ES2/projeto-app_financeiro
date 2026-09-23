@@ -484,7 +484,7 @@ const ResultadoImportacao: React.FC<PropsResultado> = ({ importacao, status, onN
 
       {sucesso ? (
         <div className="row g-3 mb-4 justify-content-center">
-          <div className="col-6 col-sm-5">
+          <div className="col-6 col-sm-4">
             <div
               className="p-3 h-100"
               style={{
@@ -502,7 +502,7 @@ const ResultadoImportacao: React.FC<PropsResultado> = ({ importacao, status, onN
               <div className="text-muted small">transações importadas</div>
             </div>
           </div>
-          <div className="col-6 col-sm-5">
+          <div className="col-6 col-sm-4">
             <div
               className="p-3 h-100"
               style={{
@@ -524,6 +524,30 @@ const ResultadoImportacao: React.FC<PropsResultado> = ({ importacao, status, onN
                 {importacao.falhas}
               </div>
               <div className="text-muted small">registros descartados</div>
+            </div>
+          </div>
+          <div className="col-6 col-sm-4">
+            <div
+              className="p-3 h-100"
+              style={{
+                border: '1px solid var(--sb-border)',
+                borderRadius: 12,
+                background: importacao.ignoradasPorDuplicidade > 0 ? 'rgba(13, 110, 253, 0.06)' : 'var(--sb-surface)',
+              }}
+            >
+              <div className="text-muted small text-uppercase fw-semibold" style={{ letterSpacing: '0.04em' }}>
+                Ignoradas
+              </div>
+              <div
+                className="fw-bold mt-1"
+                style={{
+                  fontSize: '1.8rem',
+                  color: importacao.ignoradasPorDuplicidade > 0 ? '#0d6efd' : 'var(--sb-text-muted)',
+                }}
+              >
+                {importacao.ignoradasPorDuplicidade}
+              </div>
+              <div className="text-muted small">por duplicidade</div>
             </div>
           </div>
         </div>
