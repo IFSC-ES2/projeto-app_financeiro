@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { cadastrarUsuario, loginUsuario } from '../services/api';
+import { cadastrarUsuario, loginUsuario } from '../services/authService';
 import { ContextoAutenticacao } from './contextoAutenticacaoBase';
 import type { DadosContextoAutenticacao } from './tiposAutenticacao';
 import { limparSessao, recuperarSessaoValida, salvarSessao } from '../utils/authStorage';

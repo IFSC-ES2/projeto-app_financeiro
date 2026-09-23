@@ -4,19 +4,13 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import LayoutPrivado from '../components/layout/LayoutPrivado';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import {
-  editarTransacao,
-  listarCategorias,
-  listarContas,
-  obterMensagemErroApi,
-} from '../services/api';
-import type {
-  CategoriaResponse,
-  ContaResponse,
-  TipoPagamento,
-  TipoTransacao,
-  TransacaoResponse,
-} from '../services/api';
+import { obterMensagemErroApi } from '../services/apiError';
+import { listarCategorias } from '../services/categoriaService';
+import { listarContas } from '../services/contaService';
+import { editarTransacao } from '../services/transacaoService';
+import type { CategoriaResponse } from '../types/categoria';
+import type { ContaResponse } from '../types/conta';
+import type { TipoPagamento, TipoTransacao, TransacaoResponse } from '../types/transacao';
 import { ehCarteiraAutomaticaDinheiro } from '../utils/contas';
 
 interface CamposTransacao {

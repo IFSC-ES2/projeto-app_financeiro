@@ -5,7 +5,7 @@ import LayoutAutenticacao from '../components/layout/LayoutAutenticacao';
 import CampoFormulario from '../components/ui/CampoFormulario';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { obterMensagemErroApi, obterStatusHttp } from '../services/api';
+import { obterMensagemErroApi, obterStatusHttp } from '../services/apiError';
 import { useFormulario } from '../hooks/useFormulario';
 import { formatarCpf, isCpfValido } from '../utils/cpf';
 

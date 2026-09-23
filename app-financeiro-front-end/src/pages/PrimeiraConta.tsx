@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import LayoutAutenticacao from '../components/layout/LayoutAutenticacao';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { obterMensagemErroApi, registrarConta } from '../services/api';
-import type { ContaRequest, TipoConta } from '../services/api';
+import { obterMensagemErroApi } from '../services/apiError';
+import { registrarConta } from '../services/contaService';
+import type { ContaRequest, TipoConta } from '../types/conta';
 
 type CamposConta = {
   nome: string;
