@@ -6,6 +6,9 @@ export interface ResumoCategoriaMensal {
   nome: string;
   cor: string;
   total: number;
+  entradas: number;
+  gastos: number;
+  saldo: number;
   quantidade: number;
   percentual: number;
   transacoes: TransacaoResponse[];
@@ -76,14 +79,20 @@ export const calcularResumoCategoriasMensal = (
   const categoriasPorId = new Map(categorias.map((categoria) => [categoria.categoriaId, categoria]));
   const grupos = new Map<string, Omit<ResumoCategoriaMensal, 'percentual'>>();
 
-  transacoes.filter(ehGastoTransacao).forEach((transacao) => {
+  transacoes.forEach((transacao) => {
     const categoriaId = obterCategoriaIdTransacao(transacao);
     const id = categoriaId ?? 'nao-informado';
     const categoria = categoriaId ? categoriasPorId.get(categoriaId) : undefined;
     const grupo = grupos.get(id);
+    const valor = normalizarValor(transacao.valor);
+    const gasto = ehGastoTransacao(transacao) ? valor : 0;
+    const entrada = gasto === 0 ? valor : 0;
 
     if (grupo) {
-      grupo.total += normalizarValor(transacao.valor);
+      grupo.total += valor;
+      grupo.entradas += entrada;
+      grupo.gastos += gasto;
+      grupo.saldo += entrada - gasto;
       grupo.quantidade += 1;
       grupo.transacoes.push(transacao);
       return;
@@ -93,7 +102,10 @@ export const calcularResumoCategoriasMensal = (
       id,
       nome: categoria?.nome ?? (categoriaId ? 'Categoria não encontrada' : 'Não informado'),
       cor: gerarCorCategoria(categoria, id),
-      total: normalizarValor(transacao.valor),
+      total: valor,
+      entradas: entrada,
+      gastos: gasto,
+      saldo: entrada - gasto,
       quantidade: 1,
       transacoes: [transacao],
     });
@@ -106,6 +118,9 @@ export const calcularResumoCategoriasMensal = (
         nome: categoria.nome,
         cor: gerarCorCategoria(categoria, categoria.categoriaId),
         total: 0,
+        entradas: 0,
+        gastos: 0,
+        saldo: 0,
         quantidade: 0,
         transacoes: [],
       });

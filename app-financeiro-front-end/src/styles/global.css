@@ -1955,6 +1955,7 @@ button:disabled {
 }
 
 .category-expense-progress {
+  display: flex;
   height: 8px;
   overflow: hidden;
   border-radius: 999px;
@@ -1962,9 +1963,15 @@ button:disabled {
 }
 
 .category-expense-progress span {
-  display: block;
   height: 100%;
-  border-radius: inherit;
+}
+
+.category-expense-progress-expense {
+  background: #FF6470;
+}
+
+.category-expense-progress-income {
+  background: #2FA98F;
 }
 
 .category-expense-transactions {

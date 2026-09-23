@@ -4,20 +4,20 @@ interface PropsResumoCategorias {
   gradienteGrafico: string;
   mesSelecionado: string;
   rotuloMes: string;
-  totalGasto: number;
+  totalMovimentado: number;
   onAlterarMes: (deslocamento: number) => void;
   onSelecionarMes: (mes: string) => void;
 }
 
 const ResumoCategorias = ({
-  gradienteGrafico, mesSelecionado, rotuloMes, totalGasto, onAlterarMes, onSelecionarMes,
+  gradienteGrafico, mesSelecionado, rotuloMes, totalMovimentado, onAlterarMes, onSelecionarMes,
 }: PropsResumoCategorias) => (
   <section className="categories-summary-card" aria-label="Resumo mensal por categoria">
     <div className="categories-total-block">
-      <strong>{formatarMoeda(totalGasto)}</strong>
-      <span>gasto em {rotuloMes}</span>
+      <strong>{formatarMoeda(totalMovimentado)}</strong>
+      <span>movimentado em {rotuloMes}</span>
     </div>
-    <div className="categories-donut-chart" style={{ background: gradienteGrafico }} aria-label={`Distribuição dos gastos de ${rotuloMes}`} role="img">
+    <div className="categories-donut-chart" style={{ background: gradienteGrafico }} aria-label={`Distribuição das movimentações de ${rotuloMes}`} role="img">
       <span />
     </div>
     <div className="categories-month-control" aria-label="Selecionar mês">

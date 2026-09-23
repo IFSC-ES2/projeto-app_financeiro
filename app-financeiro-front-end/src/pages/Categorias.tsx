@@ -14,7 +14,6 @@ import type { TransacaoResponse } from '../types/transacao';
 import {
   alterarAnoMes,
   calcularResumoCategoriasMensal,
-  ehGastoTransacao,
   formatarRotuloMes,
   montarGradienteCategorias,
   obterIntervaloMes,
@@ -66,8 +65,7 @@ const Categorias = () => {
         setCategorias(categoriasCarregadas);
         setContas(contasCarregadas);
         setTransacoes(transacoesCarregadas.filter((transacao) =>
-          ehGastoTransacao(transacao)
-          && transacao.data >= intervaloMes.dataInicio
+          transacao.data >= intervaloMes.dataInicio
           && transacao.data <= intervaloMes.dataFim,
         ));
         setCategoriasAbertas(new Set());
@@ -90,7 +88,7 @@ const Categorias = () => {
     () => calcularResumoCategoriasMensal(categorias, transacoes),
     [categorias, transacoes],
   );
-  const totalGasto = useMemo(
+  const totalMovimentado = useMemo(
     () => resumoCategorias.reduce((total, categoria) => total + categoria.total, 0),
     [resumoCategorias],
   );
@@ -107,13 +105,13 @@ const Categorias = () => {
   };
 
   return (
-    <LayoutPrivado titulo="Categorias" subtitulo="Acompanhe os gastos mensais agrupados por categoria.">
+    <LayoutPrivado titulo="Categorias" subtitulo="Acompanhe as movimentações mensais agrupadas por categoria.">
       <MensagemAlerta mensagem={erro} tipo="danger" />
       <ResumoCategorias
         gradienteGrafico={gradienteGrafico}
         mesSelecionado={mesSelecionado}
         rotuloMes={rotuloMes}
-        totalGasto={totalGasto}
+        totalMovimentado={totalMovimentado}
         onAlterarMes={(deslocamento) => setMesSelecionado((mes) => alterarAnoMes(mes, deslocamento))}
         onSelecionarMes={(mes) => setMesSelecionado(mes || obterMesAtual())}
       />
@@ -125,7 +123,7 @@ const Categorias = () => {
       ) : resumoCategorias.length === 0 ? (
         <EstadoVazio
           titulo="Nenhuma categoria encontrada"
-          descricao="Cadastre ou importe transações para visualizar os gastos por categoria."
+          descricao="Cadastre ou importe transações para visualizar as movimentações por categoria."
         />
       ) : (
         <ListaCategorias

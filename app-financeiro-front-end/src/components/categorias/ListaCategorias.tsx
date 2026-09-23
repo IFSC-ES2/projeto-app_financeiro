@@ -22,7 +22,7 @@ const ListaCategorias = ({
     <div className="categories-list-header">
       <div>
         <span>Categorias</span>
-        <h2>Gastos de {rotuloMes}</h2>
+        <h2>Movimentações de {rotuloMes}</h2>
       </div>
       <p>{quantidadeTransacoes} {quantidadeTransacoes === 1 ? 'transação' : 'transações'}</p>
     </div>

@@ -12,7 +12,7 @@ const obterRotuloTipo = (tipo: TransacaoResponse['tipoTransacao']) =>
 
 const ListaTransacoesCategoria = ({ contasPorId, transacoes }: PropsListaTransacoesCategoria) => {
   if (transacoes.length === 0) {
-    return <EstadoVazio titulo="Sem transações neste mês" descricao="Essa categoria não possui gastos no mês selecionado." />;
+    return <EstadoVazio titulo="Sem transações neste mês" descricao="Essa categoria não possui transações no mês selecionado." />;
   }
 
   return (
@@ -34,7 +34,9 @@ const ListaTransacoesCategoria = ({ contasPorId, transacoes }: PropsListaTransac
               <td>{formatarData(transacao.data)}</td>
               <td>{obterRotuloTipo(transacao.tipoTransacao)}</td>
               <td>{(transacao.contaId && contasPorId.get(transacao.contaId)) || 'Conta não informada'}</td>
-              <td className="text-end amount-negative">{formatarMoeda(Math.abs(Number(transacao.valor || 0)))}</td>
+              <td className={`text-end ${transacao.tipoTransacao === 'CREDITO' ? 'amount-positive' : 'amount-negative'}`}>
+                {formatarMoeda(Math.abs(Number(transacao.valor || 0)))}
+              </td>
             </tr>
           ))}
         </tbody>
