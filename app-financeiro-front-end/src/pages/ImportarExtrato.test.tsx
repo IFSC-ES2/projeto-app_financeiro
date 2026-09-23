@@ -34,6 +34,7 @@ const importacaoConcluida: ImportacaoResponse = {
   status: 'CONCLUIDO',
   sucessos: 8,
   falhas: 1,
+  ignoradasPorDuplicidade: 0,
   importadoEm: '2026-06-01T12:00:00Z',
 };
 
@@ -87,6 +88,7 @@ describe('Tela de Importação de Extratos', () => {
   const aguardarContas = async () => {
     await waitFor(() => {
       expect(screen.getByLabelText(/Conta de destino/i)).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: new RegExp(contaPrincipal.nome) })).toBeInTheDocument();
     });
   };
 
@@ -198,6 +200,25 @@ describe('Tela de Importação de Extratos', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('deve informar transações ignoradas por duplicidade', async () => {
+    mockCriarImportacao.mockResolvedValueOnce({
+      ...importacaoConcluida,
+      sucessos: 0,
+      falhas: 0,
+      ignoradasPorDuplicidade: 10,
+    });
+    renderizarComponente();
+    await aguardarContas();
+
+    await preencherEEnviar(criarArquivo('extrato.csv', 'text/csv'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Ignoradas')).toBeInTheDocument();
+      expect(screen.getByText('10')).toBeInTheDocument();
+      expect(screen.getByText('por duplicidade')).toBeInTheDocument();
+    });
+  });
+
   it('deve exibir loading ao enviar enquanto criarImportacao estiver pendente', async () => {
     let resolverImportacao: (valor: ImportacaoResponse) => void = () => undefined;
 
@@ -233,6 +254,7 @@ describe('Tela de Importação de Extratos', () => {
         status: 'PROCESSANDO',
         sucessos: 0,
         falhas: 0,
+        ignoradasPorDuplicidade: 0,
         importadoEm: '2026-06-01T12:00:00Z',
       });
       mockConsultarStatusImportacao
@@ -272,6 +294,7 @@ describe('Tela de Importação de Extratos', () => {
       status: 'ERRO',
       sucessos: 0,
       falhas: 2,
+      ignoradasPorDuplicidade: 0,
       importadoEm: '2026-06-01T12:00:00Z',
       mensagemErro: 'Linha 3 inválida no arquivo.',
     });
@@ -295,6 +318,7 @@ describe('Tela de Importação de Extratos', () => {
         status: 'PROCESSANDO',
         sucessos: 0,
         falhas: 0,
+        ignoradasPorDuplicidade: 0,
         importadoEm: '2026-06-01T12:00:00Z',
       });
       mockConsultarStatusImportacao.mockResolvedValueOnce('ERRO');

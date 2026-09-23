@@ -5,6 +5,7 @@ export interface ImportacaoResponse {
   status: StatusImportacao;
   sucessos: number;
   falhas: number;
+  ignoradasPorDuplicidade: number;
   importadoEm: string;
   mensagemErro?: string | null;
 }
