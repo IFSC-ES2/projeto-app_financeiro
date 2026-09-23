@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
+@Table(name = "cartao_credito")
 @Getter
 @Setter
 public class CartaoCredito {
@@ -17,7 +18,7 @@ public class CartaoCredito {
     private UUID id;
 
     @OneToOne
-    @JoinColumn(name = "conta_id")
+    @JoinColumn(name = "conta_id", nullable = false, unique = true)
     private Conta conta;
 
     @Column(nullable = true)
@@ -28,8 +29,4 @@ public class CartaoCredito {
 
     @Column(nullable = false)
     private int dia_vencimento;
-
-
-
-
 }
