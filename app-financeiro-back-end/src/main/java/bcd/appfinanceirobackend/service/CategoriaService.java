@@ -1,5 +1,6 @@
 package bcd.appfinanceirobackend.service;
 
+import bcd.appfinanceirobackend.dto.categoria.CategoriaRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.CategoriaTransacaoDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
 import bcd.appfinanceirobackend.model.Categoria;
@@ -28,6 +29,19 @@ public class CategoriaService {
                 .toList();
     }
 
+    public CategoriaTransacaoDTO criar(CategoriaRequestDTO dto, Usuario usuario) {
+        String nome = normalizarNome(dto.getNome());
+
+        Categoria categoria = new Categoria();
+        categoria.setNome(nome);
+        categoria.setIcone(dto.getIcone());
+        categoria.setCor(dto.getCor());
+        categoria.setPadrao(false);
+        categoria.setUsuario(usuario);
+
+        return toResponse(categoriaRepository.save(categoria));
+    }
+
     public Categoria buscarCategoriaPermitida(UUID categoriaId, Usuario usuario) {
         Categoria categoria = categoriaRepository.findById(categoriaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
@@ -49,5 +63,18 @@ public class CategoriaService {
         dto.setCor(categoria.getCor());
         dto.setPadrao(categoria.isPadrao());
         return dto;
+    }
+
+    private String normalizarNome(String nome) {
+        if (nome == null || nome.isBlank()) {
+            throw new IllegalArgumentException("O nome da categoria é obrigatório");
+        }
+
+        String nomeNormalizado = nome.trim();
+        if (nomeNormalizado.length() > 60) {
+            throw new IllegalArgumentException("O nome da categoria deve ter no máximo 60 caracteres");
+        }
+
+        return nomeNormalizado;
     }
 }

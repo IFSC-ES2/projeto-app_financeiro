@@ -3,6 +3,7 @@ package bcd.appfinanceirobackend.controller;
 import bcd.appfinanceirobackend.config.JwtAuthFilter;
 import bcd.appfinanceirobackend.config.SecurityConfig;
 import bcd.appfinanceirobackend.dto.transacao.CategoriaTransacaoDTO;
+import bcd.appfinanceirobackend.dto.categoria.CategoriaRequestDTO;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.repository.UsuarioRepository;
 import bcd.appfinanceirobackend.security.JwtUtil;
@@ -28,6 +29,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -74,6 +77,52 @@ class CategoriaControllerTest {
                 "#00AAFF",
                 false
         );
+    }
+
+    @Nested
+    @DisplayName("POST /categorias")
+    class CriarCategoria {
+
+        @Test
+        @DisplayName("Retorna 201 para categoria personalizada")
+        void deveRetornar201ParaCategoriaPersonalizada() throws Exception {
+            when(categoriaService.criar(any(CategoriaRequestDTO.class), any(Usuario.class)))
+                    .thenReturn(categoriaUsuario);
+
+            mockMvc.perform(post("/categorias")
+                            .with(user(usuarioAutenticado))
+                            .contentType(APPLICATION_JSON)
+                            .content("{\"nome\":\"Academia\",\"icone\":\"icone-academia\",\"cor\":\"#00AAFF\"}"))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.nome").value("Academia"))
+                    .andExpect(jsonPath("$.padrao").value(false));
+
+            verify(categoriaService).criar(any(CategoriaRequestDTO.class), org.mockito.ArgumentMatchers.eq(usuarioAutenticado));
+        }
+
+        @Test
+        @DisplayName("Retorna 401 ou 403 sem autenticação")
+        void deveExigirAutenticacao() throws Exception {
+            mockMvc.perform(post("/categorias")
+                            .contentType(APPLICATION_JSON)
+                            .content("{\"nome\":\"Academia\"}"))
+                    .andExpect(status().is4xxClientError());
+
+            verify(categoriaService, never()).criar(any(), any());
+        }
+
+        @Test
+        @DisplayName("Retorna 400 quando o nome da categoria é inválido")
+        void deveRetornar400QuandoNomeInvalido() throws Exception {
+            when(categoriaService.criar(any(CategoriaRequestDTO.class), any(Usuario.class)))
+                    .thenThrow(new IllegalArgumentException("O nome da categoria é obrigatório"));
+
+            mockMvc.perform(post("/categorias")
+                            .with(user(usuarioAutenticado))
+                            .contentType(APPLICATION_JSON)
+                            .content("{\"nome\":\"   \"}"))
+                    .andExpect(status().isBadRequest());
+        }
     }
 
     @Nested
