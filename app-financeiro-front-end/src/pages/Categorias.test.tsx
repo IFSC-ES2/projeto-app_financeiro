@@ -222,6 +222,8 @@ describe('Tela de categorias (Issue #196)', () => {
       dataInicio: '2026-07-01',
       dataFim: '2026-07-31',
     }));
+    expect(listarCategorias).toHaveBeenCalledTimes(1);
+    expect(listarContas).toHaveBeenCalledTimes(1);
   });
 
   it('exibe estado vazio quando não existem categorias nem transações', async () => {
@@ -236,6 +238,6 @@ describe('Tela de categorias (Issue #196)', () => {
     vi.mocked(listarTransacoes).mockRejectedValueOnce(new Error('Falha da API'));
     renderCategorias();
 
-    expect(await screen.findByText('Não foi possível carregar os gastos por categoria.')).toBeInTheDocument();
+    expect(await screen.findByText('Não foi possível carregar as transações por categoria.')).toBeInTheDocument();
   });
 });

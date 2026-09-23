@@ -28,7 +28,8 @@ const Categorias = () => {
   const [contas, setContas] = useState<ContaResponse[]>([]);
   const [transacoes, setTransacoes] = useState<TransacaoResponse[]>([]);
   const [categoriasAbertas, setCategoriasAbertas] = useState<Set<string>>(new Set());
-  const [carregando, setCarregando] = useState(true);
+  const [carregandoDadosBase, setCarregandoDadosBase] = useState(true);
+  const [carregandoTransacoes, setCarregandoTransacoes] = useState(true);
   const [erro, setErro] = useState('');
 
   const intervaloMes = useMemo(() => obterIntervaloMes(mesSelecionado), [mesSelecionado]);
@@ -37,12 +38,38 @@ const Categorias = () => {
   useEffect(() => {
     let ativo = true;
 
-    const carregarDados = async () => {
-      setCarregando(true);
+    const carregarDadosBase = async () => {
+      setCarregandoDadosBase(true);
       setErro('');
 
       try {
         const [categoriasCarregadas, contasCarregadas] = await Promise.all([listarCategorias(), listarContas()]);
+        if (!ativo) return;
+
+        setCategorias(categoriasCarregadas);
+        setContas(contasCarregadas);
+      } catch (erroCapturado) {
+        if (!ativo) return;
+        setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível carregar as categorias e contas.'));
+        setCategorias([]);
+        setContas([]);
+      } finally {
+        if (ativo) setCarregandoDadosBase(false);
+      }
+    };
+
+    carregarDadosBase();
+    return () => { ativo = false; };
+  }, []);
+
+  useEffect(() => {
+    let ativo = true;
+
+    const carregarTransacoes = async () => {
+      setCarregandoTransacoes(true);
+      setErro('');
+
+      try {
         const transacoesCarregadas: TransacaoResponse[] = [];
         let paginaAtual = 0;
         let ultimaPagina = false;
@@ -62,8 +89,6 @@ const Categorias = () => {
 
         if (!ativo) return;
 
-        setCategorias(categoriasCarregadas);
-        setContas(contasCarregadas);
         setTransacoes(transacoesCarregadas.filter((transacao) =>
           transacao.data >= intervaloMes.dataInicio
           && transacao.data <= intervaloMes.dataFim,
@@ -71,18 +96,18 @@ const Categorias = () => {
         setCategoriasAbertas(new Set());
       } catch (erroCapturado) {
         if (!ativo) return;
-        setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível carregar os gastos por categoria.'));
-        setCategorias([]);
-        setContas([]);
+        setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível carregar as transações por categoria.'));
         setTransacoes([]);
       } finally {
-        if (ativo) setCarregando(false);
+        if (ativo) setCarregandoTransacoes(false);
       }
     };
 
-    carregarDados();
+    carregarTransacoes();
     return () => { ativo = false; };
   }, [intervaloMes.dataFim, intervaloMes.dataInicio]);
+
+  const carregando = carregandoDadosBase || carregandoTransacoes;
 
   const resumoCategorias = useMemo(
     () => calcularResumoCategoriasMensal(categorias, transacoes),
