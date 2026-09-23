@@ -86,7 +86,7 @@ public class ImportacaoService {
         importacao.setStatusImportacao(StatusImportacao.PROCESSANDO);
         importacaoRepository.save(importacao);
 
-        int sucessos = 0, falhas = 0;
+        int sucessos = 0, falhas = 0, ignoradasPorDuplicidade = 0;
         try {
             ResultadoParser resultado = parser.parsear(arquivo, conta);
             if(resultado.getTransacoes().isEmpty()){
@@ -102,6 +102,12 @@ public class ImportacaoService {
             falhas = resultado.getLinhasInvalidas();
             for (Transacao t: resultado.getTransacoes()){
                 try {
+                    if (transacaoRepository.existsByContaIdAndDataAndDescricaoAndValorAndTipo(
+                            conta.getId(), t.getData(), t.getDescricao(), t.getValor(), t.getTipo())) {
+                        ignoradasPorDuplicidade++;
+                        continue;
+                    }
+
                     Categoria categoria = sugestaoCategoriaService.sugerirCategoria(t.getDescricao());
                     if(categoria != null){
                         t.setCategoria(categoria);
@@ -123,6 +129,7 @@ public class ImportacaoService {
 
         importacao.setSucessos(sucessos);
         importacao.setFalhas(falhas);
+        importacao.setIgnoradasPorDuplicidade(ignoradasPorDuplicidade);
         importacaoRepository.save(importacao);
 
         return toResponse(importacao);
@@ -162,6 +169,7 @@ public class ImportacaoService {
         dto.setStatus(importacao.getStatusImportacao());
         dto.setSucessos(importacao.getSucessos());
         dto.setFalhas(importacao.getFalhas());
+        dto.setIgnoradasPorDuplicidade(importacao.getIgnoradasPorDuplicidade());
         dto.setImportadoEm(importacao.getImportado_em());
         dto.setMensagemErro(importacao.getMensagemErro());
         return dto;
