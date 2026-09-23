@@ -88,6 +88,7 @@ describe('Tela de Importação de Extratos', () => {
   const aguardarContas = async () => {
     await waitFor(() => {
       expect(screen.getByLabelText(/Conta de destino/i)).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: new RegExp(contaPrincipal.nome) })).toBeInTheDocument();
     });
   };
 
