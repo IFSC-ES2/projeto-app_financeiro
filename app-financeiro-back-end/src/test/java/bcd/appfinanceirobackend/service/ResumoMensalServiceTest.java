@@ -259,6 +259,35 @@ class ResumoMensalServiceTest {
         }
 
         @Test
+        @DisplayName("mês só com receitas marca possuiTransacoes e zera gastos/categoria maior")
+        void deveMarcarPossuiTransacoesQuandoSoHaCreditos() {
+            LocalDate inicio = LocalDate.of(2026, 7, 1);
+            LocalDate fim = LocalDate.of(2026, 7, 31);
+            LocalDate inicioAnterior = LocalDate.of(2026, 6, 1);
+            LocalDate fimAnterior = LocalDate.of(2026, 6, 30);
+
+            when(transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
+                    eq(usuario.getId()), eq(inicio), eq(fim)))
+                    .thenReturn(List.of(
+                            transacao(TipoTransacao.CREDITO, "1800.00", LocalDate.of(2026, 7, 5), null),
+                            transacao(TipoTransacao.CREDITO, "200.00", LocalDate.of(2026, 7, 20), null)
+                    ));
+            when(transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
+                    eq(usuario.getId()), eq(inicioAnterior), eq(fimAnterior)))
+                    .thenReturn(List.of());
+
+            ResumoMensalDTO resumo = resumoService.gerarResumoMensal(usuario, 2026, 7);
+
+            assertThat(resumo.getTotalRecebido()).isEqualByComparingTo(new BigDecimal("2000.00"));
+            assertThat(resumo.getTotalGasto()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(resumo.getSaldo()).isEqualByComparingTo(new BigDecimal("2000.00"));
+            assertThat(resumo.getPossuiTransacoes()).isTrue();
+            assertThat(resumo.getCategoriaMaiorGastoId()).isNull();
+            assertThat(resumo.getCategoriaMaiorGastoNome()).isNull();
+            assertThat(resumo.getCategoriaMaiorGastoTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+        }
+
+        @Test
         @DisplayName("consulta o repositório apenas com o ID do usuário autenticado")
         void deveConsultarApenasUsuarioAutenticado() {
             LocalDate inicio = LocalDate.of(2026, 6, 1);
