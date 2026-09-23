@@ -5,6 +5,7 @@ import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
 import bcd.appfinanceirobackend.model.*;
 import bcd.appfinanceirobackend.model.enums.FormatoArquivo;
 import bcd.appfinanceirobackend.model.enums.StatusImportacao;
+import bcd.appfinanceirobackend.model.enums.TipoTransacao;
 import bcd.appfinanceirobackend.parser.ParserExtrato;
 import bcd.appfinanceirobackend.parser.ResultadoParser;
 import bcd.appfinanceirobackend.repository.ContaRepository;
@@ -109,6 +110,7 @@ class ImportacaoServiceTest {
             transacao.setData(LocalDate.of(2024, 1, 15));
             transacao.setDescricao("Transação importada " + (i + 1));
             transacao.setConta(conta);
+            transacao.setTipo(TipoTransacao.DEBITO);
             transacoes.add(transacao);
         }
 
@@ -419,6 +421,101 @@ class ImportacaoServiceTest {
                     () -> assertSame(conta, transacao.getConta()),
                     () -> assertFalse(transacao.getCategorizada())
             ));
+        }
+
+        @Test
+        @DisplayName("Reimportação ignora transação equivalente e informa a quantidade ignorada")
+        void reimportacao_comTransacaoEquivalente_ignoraDuplicata() {
+            mockContaDoUsuarioAutenticado();
+            mockParserAceitandoComResultado(resultadoComTransacoes(1, 0));
+            when(importacaoRepository.save(any(Importacao.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(transacaoRepository.existsByContaIdAndDataAndDescricaoAndValorAndTipo(
+                    eq(conta.getId()),
+                    eq(LocalDate.of(2024, 1, 15)),
+                    eq("Transação importada 1"),
+                    eq(BigDecimal.TEN),
+                    eq(TipoTransacao.DEBITO)
+            )).thenReturn(true);
+
+            ImportacaoResponseDTO dto = service.processar(
+                    csvValido("2024-01-15,Transação importada 1,10.00,DEBITO"),
+                    conta.getId(),
+                    usuarioDono
+            );
+
+            assertAll(
+                    () -> assertEquals(StatusImportacao.CONCLUIDO, dto.getStatus()),
+                    () -> assertEquals(0, dto.getSucessos()),
+                    () -> assertEquals(0, dto.getFalhas()),
+                    () -> assertEquals(1, dto.getIgnoradasPorDuplicidade()),
+                    () -> verify(transacaoRepository, never()).save(any(Transacao.class))
+            );
+        }
+
+        @Test
+        @DisplayName("Transação equivalente em outra conta é importada normalmente")
+        void transacaoEquivalenteEmOutraConta_naoETratadaComoDuplicata() {
+            Conta outraConta = new Conta();
+            outraConta.setId(UUID.randomUUID());
+            outraConta.setUsuario(usuarioDono);
+            when(contaRepository.findById(outraConta.getId())).thenReturn(Optional.of(outraConta));
+
+            ResultadoParser resultado = resultadoComTransacoes(1, 0);
+            Transacao transacao = resultado.getTransacoes().getFirst();
+            transacao.setConta(outraConta);
+            when(parserMock.aceita(any())).thenReturn(true);
+            when(parserMock.parsear(any(), eq(outraConta))).thenReturn(resultado);
+            when(importacaoRepository.save(any(Importacao.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            ImportacaoResponseDTO dto = service.processar(
+                    csvValido("2024-01-15,Transação importada 1,10.00,DEBITO"),
+                    outraConta.getId(),
+                    usuarioDono
+            );
+
+            assertAll(
+                    () -> assertEquals(1, dto.getSucessos()),
+                    () -> assertEquals(0, dto.getIgnoradasPorDuplicidade()),
+                    () -> verify(transacaoRepository).existsByContaIdAndDataAndDescricaoAndValorAndTipo(
+                            eq(outraConta.getId()),
+                            eq(LocalDate.of(2024, 1, 15)),
+                            eq("Transação importada 1"),
+                            eq(BigDecimal.TEN),
+                            eq(TipoTransacao.DEBITO)
+                    ),
+                    () -> verify(transacaoRepository).save(transacao)
+            );
+        }
+
+        @Test
+        @DisplayName("Transações com o mesmo valor e descrições diferentes continuam sendo importadas")
+        void transacoesComMesmoValorMasDescricaoDiferente_naoSaoDuplicatas() {
+            mockContaDoUsuarioAutenticado();
+            ResultadoParser resultado = resultadoComTransacoes(2, 0);
+            resultado.getTransacoes().get(0).setDescricao("Mercado A");
+            resultado.getTransacoes().get(1).setDescricao("Mercado B");
+            mockParserAceitandoComResultado(resultado);
+            when(importacaoRepository.save(any(Importacao.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(transacaoRepository.existsByContaIdAndDataAndDescricaoAndValorAndTipo(
+                    eq(conta.getId()),
+                    eq(LocalDate.of(2024, 1, 15)),
+                    eq("Mercado A"),
+                    eq(BigDecimal.TEN),
+                    eq(TipoTransacao.DEBITO)
+            )).thenReturn(true);
+
+            ImportacaoResponseDTO dto = service.processar(
+                    csvValido("2024-01-15,Mercado A,10.00,DEBITO\n2024-01-15,Mercado B,10.00,DEBITO"),
+                    conta.getId(),
+                    usuarioDono
+            );
+
+            assertAll(
+                    () -> assertEquals(1, dto.getSucessos()),
+                    () -> assertEquals(1, dto.getIgnoradasPorDuplicidade()),
+                    () -> verify(transacaoRepository).save(resultado.getTransacoes().get(1)),
+                    () -> verify(transacaoRepository, never()).save(resultado.getTransacoes().get(0))
+            );
         }
 
         @Test
