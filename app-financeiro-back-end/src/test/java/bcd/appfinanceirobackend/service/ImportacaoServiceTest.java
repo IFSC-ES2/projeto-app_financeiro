@@ -453,6 +453,41 @@ class ImportacaoServiceTest {
         }
 
         @Test
+        @DisplayName("Transação equivalente em outra conta é importada normalmente")
+        void transacaoEquivalenteEmOutraConta_naoETratadaComoDuplicata() {
+            Conta outraConta = new Conta();
+            outraConta.setId(UUID.randomUUID());
+            outraConta.setUsuario(usuarioDono);
+            when(contaRepository.findById(outraConta.getId())).thenReturn(Optional.of(outraConta));
+
+            ResultadoParser resultado = resultadoComTransacoes(1, 0);
+            Transacao transacao = resultado.getTransacoes().getFirst();
+            transacao.setConta(outraConta);
+            when(parserMock.aceita(any())).thenReturn(true);
+            when(parserMock.parsear(any(), eq(outraConta))).thenReturn(resultado);
+            when(importacaoRepository.save(any(Importacao.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            ImportacaoResponseDTO dto = service.processar(
+                    csvValido("2024-01-15,Transação importada 1,10.00,DEBITO"),
+                    outraConta.getId(),
+                    usuarioDono
+            );
+
+            assertAll(
+                    () -> assertEquals(1, dto.getSucessos()),
+                    () -> assertEquals(0, dto.getIgnoradasPorDuplicidade()),
+                    () -> verify(transacaoRepository).existsByContaIdAndDataAndDescricaoAndValorAndTipo(
+                            eq(outraConta.getId()),
+                            eq(LocalDate.of(2024, 1, 15)),
+                            eq("Transação importada 1"),
+                            eq(BigDecimal.TEN),
+                            eq(TipoTransacao.DEBITO)
+                    ),
+                    () -> verify(transacaoRepository).save(transacao)
+            );
+        }
+
+        @Test
         @DisplayName("Transações com o mesmo valor e descrições diferentes continuam sendo importadas")
         void transacoesComMesmoValorMasDescricaoDiferente_naoSaoDuplicatas() {
             mockContaDoUsuarioAutenticado();
