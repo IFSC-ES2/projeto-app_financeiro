@@ -119,6 +119,31 @@ export interface ResumoPagamentoResponse {
   percentual: number;
 }
 
+export interface ResumoMensalResponse {
+  ano: number;
+  mes: number;
+  dataInicio: string;
+  dataFim: string;
+  totalRecebido: number;
+  totalGasto: number;
+  saldo: number;
+  categoriaMaiorGastoId?: string | null;
+  categoriaMaiorGastoNome?: string | null;
+  categoriaMaiorGastoTotal?: number;
+  variacaoPercentualGastos: number;
+  possuiTransacoes: boolean;
+}
+
+export interface GrupoCategoriaResponse {
+  categoriaID?: string | null;
+  nome: string;
+  icone?: string | null;
+  cor?: string | null;
+  total: number;
+  quantidade: number;
+  percentual: number;
+}
+
 export type StatusImportacao = 'PENDENTE' | 'PROCESSANDO' | 'CONCLUIDO' | 'ERRO';
 
 export interface ImportacaoResponse {
@@ -203,6 +228,22 @@ export const excluirTransacao = async (transacaoId: string) => {
 export const buscarResumoPorPagamento = async () => {
   const { data } = await api.get<ResumoPagamentoResponse[]>('/resumo/pagamentos', {
     ignorarLogoutAutomatico: true,
+  });
+
+  return data;
+};
+
+export const buscarResumoMensal = async (ano: number, mes: number) => {
+  const { data } = await api.get<ResumoMensalResponse>('/resumo', {
+    params: { ano, mes },
+  });
+
+  return data;
+};
+
+export const buscarResumoPorCategorias = async (ano: number, mes: number) => {
+  const { data } = await api.get<GrupoCategoriaResponse[]>('/resumo/categorias', {
+    params: { ano, mes },
   });
 
   return data;
