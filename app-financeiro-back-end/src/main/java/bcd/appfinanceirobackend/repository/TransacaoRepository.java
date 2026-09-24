@@ -5,6 +5,8 @@ import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -25,4 +27,10 @@ public interface TransacaoRepository
             BigDecimal valor,
             TipoTransacao tipo
     );
+    @Query("""
+        SELECT COALESCE(SUM(t.valor), 0)
+        from Transacao t
+        where t.fatura.id = :faturaId
+    """)
+    BigDecimal somarValorPorFatura(@Param("faturaId") UUID faturaId);
 }
