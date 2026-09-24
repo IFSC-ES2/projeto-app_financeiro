@@ -1,11 +1,14 @@
 package bcd.appfinanceirobackend.service;
 
+import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
 import bcd.appfinanceirobackend.model.CartaoCredito;
 import bcd.appfinanceirobackend.model.Fatura;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.model.enums.StatusFatura;
 import bcd.appfinanceirobackend.repository.FaturaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -60,6 +63,24 @@ public class FaturaService {
 
                     return faturaRepository.save(fatura);
                 });
+    }
+
+    public BigDecimal calcularTotal(UUID faturaId, Usuario usuario) {
+        Fatura fatura = buscarFaturaDoUsuario(faturaId, usuario);
+        BigDecimal total = transacaoRepository.somarValorPorFatura(fatura.getId());
+        fatura.setValorTotal(total);
+        faturaRepository.save(fatura);
+        return total;
+    }
+
+    public Fatura buscarFaturaDoUsuario(UUID faturaId, Usuario usuario) {
+        Fatura fatura = faturaRepository.findById(faturaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Fatura não encontrada"));
+
+        if(!fatura.getConta().getUsuario().getId().equals(usuario.getId())){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Fatura não pertence ao usuário");
+        }
+        return fatura;
     }
 
 }
