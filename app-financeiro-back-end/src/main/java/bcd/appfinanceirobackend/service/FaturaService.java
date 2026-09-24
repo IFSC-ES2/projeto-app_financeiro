@@ -111,5 +111,10 @@ public class FaturaService {
     public FaturaResumoDTO buscarPorId(UUID faturaId, Usuario usuario) {
         return toFaturaResumoDTO(buscarFaturaDoUsuario(faturaId, usuario));
     }
-    
+
+    public void marcarComoPaga(UUID faturaId, Usuario usuario) {
+        Fatura fatura = buscarFaturaDoUsuario(faturaId, usuario);
+        fatura.setStatus(StatusFatura.PAGA);
+        faturaRepository.save(fatura);
+    }
 }
