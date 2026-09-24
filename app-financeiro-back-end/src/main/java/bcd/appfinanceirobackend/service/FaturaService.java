@@ -9,6 +9,7 @@ import bcd.appfinanceirobackend.model.enums.StatusFatura;
 import bcd.appfinanceirobackend.repository.FaturaRepository;
 import bcd.appfinanceirobackend.repository.TransacaoRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
 public class FaturaService {
     private final FaturaRepository faturaRepository;
     private final TransacaoRepository transacaoRepository;
