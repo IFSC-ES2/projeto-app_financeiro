@@ -1,5 +1,6 @@
 package bcd.appfinanceirobackend.service;
 
+import bcd.appfinanceirobackend.dto.categoria.CategoriaRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.CategoriaTransacaoDTO;
 import bcd.appfinanceirobackend.model.Categoria;
 import bcd.appfinanceirobackend.model.Usuario;
@@ -18,6 +19,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CategoriaService - listarParaUsuario")
@@ -117,5 +120,39 @@ class CategoriaServiceTest {
         when(categoriaRepository.findByPadraoTrueOrUsuarioId(usuario.getId())).thenReturn(List.of());
 
         assertThat(categoriaService.listarParaUsuario(usuario)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Cria categoria personalizada vinculada ao usuário autenticado")
+    void deveCriarCategoriaPersonalizadaParaUsuarioAutenticado() {
+        CategoriaRequestDTO dto = new CategoriaRequestDTO();
+        dto.setNome("  Pets  ");
+        dto.setIcone("🐶");
+        dto.setCor("#00AAFF");
+        when(categoriaRepository.save(any(Categoria.class))).thenAnswer(invocation -> {
+            Categoria categoria = invocation.getArgument(0);
+            categoria.setId(UUID.randomUUID());
+            return categoria;
+        });
+
+        CategoriaTransacaoDTO resultado = categoriaService.criar(dto, usuario);
+
+        assertThat(resultado.getNome()).isEqualTo("Pets");
+        assertThat(resultado.getIcone()).isEqualTo("🐶");
+        assertThat(resultado.getCor()).isEqualTo("#00AAFF");
+        assertThat(resultado.isPadrao()).isFalse();
+        verify(categoriaRepository).save(org.mockito.ArgumentMatchers.argThat(categoria ->
+                categoria.getUsuario().equals(usuario) && !categoria.isPadrao()));
+    }
+
+    @Test
+    @DisplayName("Não cria categoria quando o nome está vazio")
+    void naoDeveCriarCategoriaComNomeVazio() {
+        CategoriaRequestDTO dto = new CategoriaRequestDTO();
+        dto.setNome("   ");
+
+        assertThatThrownBy(() -> categoriaService.criar(dto, usuario))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("O nome da categoria é obrigatório");
     }
 }
