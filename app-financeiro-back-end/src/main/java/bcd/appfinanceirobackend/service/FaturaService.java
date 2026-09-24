@@ -108,4 +108,8 @@ public class FaturaService {
         return faturaResumoDTO;
     }
 
+    public FaturaResumoDTO buscarPorId(UUID faturaId, Usuario usuario) {
+        return toFaturaResumoDTO(buscarFaturaDoUsuario(faturaId, usuario));
+    }
+    
 }
