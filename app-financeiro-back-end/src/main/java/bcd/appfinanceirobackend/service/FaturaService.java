@@ -1,5 +1,6 @@
 package bcd.appfinanceirobackend.service;
 
+import bcd.appfinanceirobackend.dto.fatura.FaturaResumoDTO;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
 import bcd.appfinanceirobackend.model.CartaoCredito;
 import bcd.appfinanceirobackend.model.Fatura;
@@ -13,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -81,6 +83,29 @@ public class FaturaService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Fatura não pertence ao usuário");
         }
         return fatura;
+    }
+
+    public List<FaturaResumoDTO> buscarPorConta(UUID contaId, Usuario usuario) {
+        cartaoCreditoService.buscarPorConta(
+                contaId,
+                usuario
+        );
+
+        return faturaRepository
+                .findAllByContaOrderByMesReferenciaDesc(contaId)
+                .stream()
+                .map(this::toFaturaResumoDTO)
+                .toList();
+    }
+
+    public FaturaResumoDTO toFaturaResumoDTO(Fatura fatura){
+        FaturaResumoDTO faturaResumoDTO = new FaturaResumoDTO();
+        faturaResumoDTO.setFaturaId(fatura.getId());
+        faturaResumoDTO.setNomeConta(fatura.getConta().getNome());
+        faturaResumoDTO.setDataVencimento(fatura.getDataVencimento());
+        faturaResumoDTO.setValorTotal(fatura.getValorTotal());
+        faturaResumoDTO.setStatus(fatura.getStatus());
+        return faturaResumoDTO;
     }
 
 }

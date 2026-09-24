@@ -11,6 +11,6 @@ import java.util.UUID;
 
 @Repository
 public interface FaturaRepository extends JpaRepository<Fatura, UUID> {
-    List<Fatura> findByContaOrderByMesReferenciaDesc(UUID contaId);
+    List<Fatura> findAllByContaOrderByMesReferenciaDesc(UUID contaId);
     Optional<Fatura> findByContaIdAndMesReferencia(UUID contaId, YearMonth mesReferencia);
 }
