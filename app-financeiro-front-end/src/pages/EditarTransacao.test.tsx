@@ -2,7 +2,12 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import EditarTransacao from './EditarTransacao';
-import * as api from '../services/api';
+import { listarCategorias } from '../services/categoriaService';
+import { listarContas } from '../services/contaService';
+import { editarTransacao } from '../services/transacaoService';
+import type { CategoriaResponse } from '../types/categoria';
+import type { ContaResponse } from '../types/conta';
+import type { TransacaoResponse } from '../types/transacao';
 
 vi.mock('../hooks/useAutenticacao', () => ({
   useAutenticacao: () => ({
@@ -13,13 +18,8 @@ vi.mock('../hooks/useAutenticacao', () => ({
 }));
 
 vi.mock('../services/contaService', () => ({ listarContas: vi.fn() }));
-
 vi.mock('../services/categoriaService', () => ({ listarCategorias: vi.fn() }));
-
-vi.mock('../services/transacaoService', () => ({
-  editarTransacao: vi.fn(),
-}));
-
+vi.mock('../services/transacaoService', () => ({ editarTransacao: vi.fn() }));
 vi.mock('../services/apiError', () => ({
   obterMensagemErroApi: vi.fn((_err: unknown, fallback: string) => fallback),
 }));
@@ -34,15 +34,17 @@ vi.mock('react-router-dom', async (importOriginal) => {
   };
 });
 
-const mockContas: api.ContaResponse[] = [
+const mockContas: ContaResponse[] = [
   { contaId: 'conta-1', nome: 'NuConta', banco: 'Nubank', tipoConta: 'CORRENTE' },
+  { contaId: 'conta-2', nome: 'Conta Inter', banco: 'Inter', tipoConta: 'CORRENTE' },
 ];
 
-const mockCategorias: api.CategoriaResponse[] = [
+const mockCategorias: CategoriaResponse[] = [
   { categoriaId: 'cat-1', nome: 'Alimentação', padrao: true },
+  { categoriaId: 'cat-2', nome: 'Transporte', padrao: true },
 ];
 
-const transacaoEdicao: api.TransacaoResponse = {
+const transacaoEdicao: TransacaoResponse = {
   transacaoId: 'tx-1',
   valor: 80,
   data: '2026-06-02',
@@ -54,7 +56,7 @@ const transacaoEdicao: api.TransacaoResponse = {
   categorizada: true,
 };
 
-const renderEditarTransacao = (transacao?: api.TransacaoResponse) =>
+const renderEditarTransacao = (transacao?: TransacaoResponse) =>
   render(
     <MemoryRouter
       initialEntries={[
@@ -86,11 +88,11 @@ describe('Tela de Edição de Transações (Issue #149)', () => {
     vi.clearAllMocks();
     vi.clearAllTimers();
     mockNavigate.mockClear();
-    vi.mocked(api.listarContas).mockReset();
-    vi.mocked(api.listarCategorias).mockReset();
-    vi.mocked(api.editarTransacao).mockReset();
-    vi.mocked(api.listarContas).mockResolvedValue(mockContas);
-    vi.mocked(api.listarCategorias).mockResolvedValue(mockCategorias);
+    vi.mocked(listarContas).mockReset();
+    vi.mocked(listarCategorias).mockReset();
+    vi.mocked(editarTransacao).mockReset();
+    vi.mocked(listarContas).mockResolvedValue(mockContas);
+    vi.mocked(listarCategorias).mockResolvedValue(mockCategorias);
   });
 
   afterEach(() => {
@@ -107,7 +109,7 @@ describe('Tela de Edição de Transações (Issue #149)', () => {
       'href',
       '/transacoes',
     );
-    expect(api.editarTransacao).not.toHaveBeenCalled();
+    expect(editarTransacao).not.toHaveBeenCalled();
   });
 
   it('deve carregar os dados da transação nos campos do formulário', async () => {
@@ -124,18 +126,18 @@ describe('Tela de Edição de Transações (Issue #149)', () => {
   });
 
   it('deve exibir loading enquanto carrega contas e categorias', async () => {
-    let resolverContas: (valor: api.ContaResponse[]) => void = () => undefined;
-    let resolverCategorias: (valor: api.CategoriaResponse[]) => void = () => undefined;
+    let resolverContas: (valor: ContaResponse[]) => void = () => undefined;
+    let resolverCategorias: (valor: CategoriaResponse[]) => void = () => undefined;
 
-    vi.mocked(api.listarContas).mockImplementationOnce(
+    vi.mocked(listarContas).mockImplementationOnce(
       () =>
-        new Promise<api.ContaResponse[]>((resolve) => {
+        new Promise<ContaResponse[]>((resolve) => {
           resolverContas = resolve;
         }),
     );
-    vi.mocked(api.listarCategorias).mockImplementationOnce(
+    vi.mocked(listarCategorias).mockImplementationOnce(
       () =>
-        new Promise<api.CategoriaResponse[]>((resolve) => {
+        new Promise<CategoriaResponse[]>((resolve) => {
           resolverCategorias = resolve;
         }),
     );
@@ -167,15 +169,15 @@ describe('Tela de Edição de Transações (Issue #149)', () => {
       ).toBeInTheDocument();
     });
 
-    expect(api.editarTransacao).not.toHaveBeenCalled();
+    expect(editarTransacao).not.toHaveBeenCalled();
   });
 
   it('deve exibir loading enquanto editarTransacao estiver pendente', async () => {
-    let resolver: (valor: api.TransacaoResponse) => void = () => undefined;
+    let resolver: (valor: TransacaoResponse) => void = () => undefined;
 
-    vi.mocked(api.editarTransacao).mockImplementationOnce(
+    vi.mocked(editarTransacao).mockImplementationOnce(
       () =>
-        new Promise<api.TransacaoResponse>((resolve) => {
+        new Promise<TransacaoResponse>((resolve) => {
           resolver = resolve;
         }),
     );
@@ -198,30 +200,39 @@ describe('Tela de Edição de Transações (Issue #149)', () => {
     });
   });
 
-  it('deve enviar alterações com sucesso e redirecionar para a listagem', async () => {
-    vi.mocked(api.editarTransacao).mockResolvedValueOnce(transacaoEdicao);
+  it('deve enviar alterações de todos os campos e redirecionar para a listagem', async () => {
+    vi.mocked(editarTransacao).mockResolvedValueOnce({
+      ...transacaoEdicao,
+      valor: 95.5,
+      data: '2026-06-15',
+      descricao: 'Mercado atualizado',
+      categoriaId: 'cat-2',
+      contaId: 'conta-2',
+    });
 
     renderEditarTransacao(transacaoEdicao);
     await aguardarFormulario();
 
     fireEvent.change(screen.getByLabelText(/Valor \*/i), { target: { value: '95.50' } });
+    fireEvent.change(screen.getByLabelText(/Data \*/i), { target: { value: '2026-06-15' } });
     fireEvent.change(screen.getByLabelText(/Descrição/i), {
       target: { value: 'Mercado atualizado' },
     });
     fireEvent.change(screen.getByRole('combobox', { name: /^categoria$/i }), {
-      target: { value: 'cat-1' },
+      target: { value: 'cat-2' },
     });
+    fireEvent.change(screen.getByLabelText(/Conta \*/i), { target: { value: 'conta-2' } });
     fireEvent.click(screen.getByRole('button', { name: /Salvar alterações/i }));
 
     await waitFor(() => {
-      expect(api.editarTransacao).toHaveBeenCalledWith('tx-1', {
+      expect(editarTransacao).toHaveBeenCalledWith('tx-1', {
         valor: 95.5,
-        data: '2026-06-02',
+        data: '2026-06-15',
         descricao: 'Mercado atualizado',
         tipoTransacao: 'DEBITO',
         formaPagamento: 'PIX',
-        categoriaId: 'cat-1',
-        contaId: 'conta-1',
+        categoriaId: 'cat-2',
+        contaId: 'conta-2',
       });
 
       expect(mockNavigate).toHaveBeenCalledWith('/transacoes', {
@@ -232,7 +243,7 @@ describe('Tela de Edição de Transações (Issue #149)', () => {
   });
 
   it('deve exibir erro quando a atualização falhar', async () => {
-    vi.mocked(api.editarTransacao).mockRejectedValueOnce(new Error('Falha na API'));
+    vi.mocked(editarTransacao).mockRejectedValueOnce(new Error('Falha na API'));
 
     renderEditarTransacao(transacaoEdicao);
     await aguardarFormulario();
@@ -254,6 +265,6 @@ describe('Tela de Edição de Transações (Issue #149)', () => {
     fireEvent.click(screen.getByRole('link', { name: /Cancelar/i }));
 
     expect(await screen.findByText('Lista de transações')).toBeInTheDocument();
-    expect(api.editarTransacao).not.toHaveBeenCalled();
+    expect(editarTransacao).not.toHaveBeenCalled();
   });
 });
