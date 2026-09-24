@@ -4,6 +4,7 @@ import bcd.appfinanceirobackend.dto.categoria.CategoriaRequestDTO;
 import bcd.appfinanceirobackend.dto.transacao.CategoriaTransacaoDTO;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.service.CategoriaService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,7 +33,7 @@ public class CategoriaController {
 
     @PostMapping
     public ResponseEntity<CategoriaTransacaoDTO> criar(
-            @RequestBody CategoriaRequestDTO dto,
+            @Valid @RequestBody CategoriaRequestDTO dto,
             @AuthenticationPrincipal Usuario usuario
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoriaService.criar(dto, usuario));

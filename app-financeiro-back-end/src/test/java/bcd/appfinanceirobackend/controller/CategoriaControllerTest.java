@@ -92,7 +92,7 @@ class CategoriaControllerTest {
             mockMvc.perform(post("/categorias")
                             .with(user(usuarioAutenticado))
                             .contentType(APPLICATION_JSON)
-                            .content("{\"nome\":\"Academia\",\"icone\":\"icone-academia\",\"cor\":\"#00AAFF\"}"))
+                            .content("{\"nome\":\"Academia\",\"icone\":\"🏋️\",\"cor\":\"#00AAFF\"}"))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.nome").value("Academia"))
                     .andExpect(jsonPath("$.padrao").value(false));
@@ -114,14 +114,37 @@ class CategoriaControllerTest {
         @Test
         @DisplayName("Retorna 400 quando o nome da categoria é inválido")
         void deveRetornar400QuandoNomeInvalido() throws Exception {
-            when(categoriaService.criar(any(CategoriaRequestDTO.class), any(Usuario.class)))
-                    .thenThrow(new IllegalArgumentException("O nome da categoria é obrigatório"));
-
             mockMvc.perform(post("/categorias")
                             .with(user(usuarioAutenticado))
                             .contentType(APPLICATION_JSON)
                             .content("{\"nome\":\"   \"}"))
                     .andExpect(status().isBadRequest());
+
+            verify(categoriaService, never()).criar(any(), any());
+        }
+
+        @Test
+        @DisplayName("Retorna 400 quando o ícone excede 10 caracteres")
+        void deveRetornar400QuandoIconeExcedeLimite() throws Exception {
+            mockMvc.perform(post("/categorias")
+                            .with(user(usuarioAutenticado))
+                            .contentType(APPLICATION_JSON)
+                            .content("{\"nome\":\"Academia\",\"icone\":\"12345678901\"}"))
+                    .andExpect(status().isBadRequest());
+
+            verify(categoriaService, never()).criar(any(), any());
+        }
+
+        @Test
+        @DisplayName("Retorna 400 quando a cor não está no formato hexadecimal")
+        void deveRetornar400QuandoCorInvalida() throws Exception {
+            mockMvc.perform(post("/categorias")
+                            .with(user(usuarioAutenticado))
+                            .contentType(APPLICATION_JSON)
+                            .content("{\"nome\":\"Academia\",\"cor\":\"azul\"}"))
+                    .andExpect(status().isBadRequest());
+
+            verify(categoriaService, never()).criar(any(), any());
         }
     }
 
