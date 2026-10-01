@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -94,7 +93,7 @@ public class FaturaService {
         );
 
         return faturaRepository
-                .findAllByContaOrderByMesReferenciaDesc(contaId)
+                .findAllByContaIdOrderByMesReferenciaDesc(contaId)
                 .stream()
                 .map(this::toFaturaResumoDTO)
                 .toList();
