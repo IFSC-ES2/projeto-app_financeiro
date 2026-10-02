@@ -69,11 +69,22 @@ public class FaturaService {
     }
 
     public BigDecimal calcularTotal(UUID faturaId, Usuario usuario) {
-        Fatura fatura = buscarFaturaDoUsuario(faturaId, usuario);
-        BigDecimal total = transacaoRepository.somarValorPorFatura(fatura.getId());
-        fatura.setValorTotal(total);
-        faturaRepository.save(fatura);
-        return total;
+
+    Fatura fatura =
+            buscarFaturaDoUsuario(faturaId, usuario);
+
+    return atualizarTotal(fatura);
+    }
+
+    private BigDecimal atualizarTotal(Fatura fatura) {
+
+    BigDecimal total =
+            transacaoRepository.somarValorPorFatura(fatura.getId());
+
+    fatura.setValorTotal(total);
+    faturaRepository.save(fatura);
+
+    return total;
     }
 
     public Fatura buscarFaturaDoUsuario(UUID faturaId, Usuario usuario) {
@@ -95,7 +106,10 @@ public class FaturaService {
         return faturaRepository
                 .findAllByContaIdOrderByMesReferenciaDesc(contaId)
                 .stream()
-                .map(this::toFaturaResumoDTO)
+                .map(fatura -> {
+                    atualizarTotal(fatura);
+                    return toFaturaResumoDTO(fatura);
+                })
                 .toList();
     }
 
@@ -110,8 +124,11 @@ public class FaturaService {
     }
 
     public FaturaResumoDTO buscarPorId(UUID faturaId, Usuario usuario) {
-        return toFaturaResumoDTO(buscarFaturaDoUsuario(faturaId, usuario));
-    }
+    Fatura fatura =
+            buscarFaturaDoUsuario(faturaId, usuario);
+    atualizarTotal(fatura);
+    return toFaturaResumoDTO(fatura);
+}
 
     public void marcarComoPaga(UUID faturaId, Usuario usuario) {
         Fatura fatura = buscarFaturaDoUsuario(faturaId, usuario);
