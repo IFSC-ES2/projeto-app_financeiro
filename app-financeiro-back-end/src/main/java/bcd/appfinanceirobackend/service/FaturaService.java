@@ -117,6 +117,7 @@ public class FaturaService {
         FaturaResumoDTO faturaResumoDTO = new FaturaResumoDTO();
         faturaResumoDTO.setFaturaId(fatura.getId());
         faturaResumoDTO.setNomeConta(fatura.getConta().getNome());
+        faturaResumoDTO.setMesReferencia(fatura.getMesReferencia());
         faturaResumoDTO.setDataVencimento(fatura.getDataVencimento());
         faturaResumoDTO.setValorTotal(fatura.getValorTotal());
         faturaResumoDTO.setStatus(fatura.getStatus());
