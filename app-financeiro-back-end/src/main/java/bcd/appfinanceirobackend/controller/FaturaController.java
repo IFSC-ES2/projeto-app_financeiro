@@ -1,12 +1,16 @@
 package bcd.appfinanceirobackend.controller;
 
 import bcd.appfinanceirobackend.dto.fatura.FaturaResumoDTO;
+import bcd.appfinanceirobackend.model.Fatura;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.service.FaturaService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.YearMonth;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,4 +52,22 @@ public class FaturaController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/contas/{contaId}/faturas")
+    public ResponseEntity<FaturaResumoDTO> gerarFatura(
+            @PathVariable UUID contaId,
+            @RequestParam YearMonth mesReferencia,
+            @AuthenticationPrincipal Usuario usuario) {
+
+        Fatura fatura = faturaService.gerarFatura(
+                contaId,
+                mesReferencia,
+                usuario
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(faturaService.toFaturaResumoDTO(fatura));
+    }
+    
 }
