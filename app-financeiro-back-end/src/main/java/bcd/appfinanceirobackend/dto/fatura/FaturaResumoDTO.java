@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.UUID;
 
 @Getter
@@ -13,6 +14,7 @@ import java.util.UUID;
 public class FaturaResumoDTO {
     private UUID faturaId;
     private String nomeConta;
+    private YearMonth mesReferencia;
     private LocalDate dataVencimento;
     private BigDecimal valorTotal;
     private StatusFatura status;
