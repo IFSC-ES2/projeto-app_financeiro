@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import bcd.appfinanceirobackend.dto.fatura.FaturaResumoDTO;
+import bcd.appfinanceirobackend.model.Fatura;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.Usuario;
 import bcd.appfinanceirobackend.model.enums.StatusFatura;
@@ -37,19 +38,28 @@ public class ExtratoFuturoService {
             usuario.getId(), inicio, fim);
     }
 
-    public List<FaturaResumoDTO> listarFaturasAbertas(
+    public List<Fatura> listarFaturasAbertas(
         Usuario usuario,
-        LocalDate inicio,
-        LocalDate fim
-    ){
-        return faturaRepository
-                .findAllByContaUsuarioIdAndStatusAndDataVencimentoBetweenOrderByDataVencimentoAsc(
-            usuario.getId(), StatusFatura.ABERTA, inicio, fim)       
-                .stream()
-                .map(fatura -> {
-                    faturaService.calcularTotal(fatura.getId(),usuario);
-                    return faturaService.toFaturaResumoDTO(fatura);
-                })
-                .toList();
+        LocalDate dataInicial,
+        LocalDate dataFinal
+) {
+
+    List<Fatura> faturas =
+            faturaRepository
+                    .findAllByContaUsuarioIdAndStatusAndDataVencimentoBetweenOrderByDataVencimentoAsc(
+                            usuario.getId(),
+                            StatusFatura.ABERTA,
+                            dataInicial,
+                            dataFinal
+                    );
+
+    for (Fatura fatura : faturas) {
+        faturaService.calcularTotal(
+                fatura.getId(),
+                usuario
+        );
     }
+
+    return faturas;
+}
 }
