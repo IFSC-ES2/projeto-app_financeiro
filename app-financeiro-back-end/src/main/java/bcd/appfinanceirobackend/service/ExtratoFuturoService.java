@@ -200,11 +200,11 @@ public class ExtratoFuturoService {
         if (meses == null) {
             meses = 3;
         }
-        if (meses <= 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Quantidade de meses deve ser maior que zero"
-            );
+        if (meses <= 0 || meses > 12) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Quantidade de meses deve estar entre 1 e 12"
+                );
         }
         YearMonth mesInicial =
                 YearMonth.now();
