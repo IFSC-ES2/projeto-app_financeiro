@@ -140,17 +140,21 @@ public class ExtratoFuturoService {
         return totalCreditos.subtract(totalDebitos);
     }
 
-    private int calcularQuantidadeVencimentos(
-        List<Transacao> transacoes,
-        List<Fatura> faturas
-    ) {
-        long quantidadeBoletos = transacoes.stream()
-                .filter(transacao ->
-                        transacao.getFormaPagamento() == TipoPagamento.BOLETO
-                )
-                .count();
-        return (int) quantidadeBoletos + faturas.size();
-    }
+        private int calcularQuantidadeVencimentos(
+                List<Transacao> transacoes,
+                List<Fatura> faturas
+        ) {
+                long quantidadeBoletos = transacoes.stream()
+                        .filter(transacao ->
+                                transacao.getTipo() == TipoTransacao.DEBITO
+                        )
+                        .filter(transacao ->
+                                transacao.getFormaPagamento() == TipoPagamento.BOLETO
+                        )
+                        .count();
+
+                return (int) quantidadeBoletos + faturas.size();
+        }
 
     private ProjecaoMensalDTO montarProjecaoMensal(
         YearMonth mes,
