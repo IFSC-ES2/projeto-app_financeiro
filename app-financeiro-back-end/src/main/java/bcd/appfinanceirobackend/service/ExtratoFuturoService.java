@@ -28,18 +28,15 @@ import bcd.appfinanceirobackend.repository.TransacaoRepository;
 @Service 
 public class ExtratoFuturoService {
     private final TransacaoRepository transacaoRepository;
-    private final FaturaService faturaService;
     private final FaturaRepository faturaRepository;
     private final TransacaoMapper transacaoMapper;
 
     public ExtratoFuturoService(
         TransacaoRepository transacaoRepository,
-        FaturaService faturaService,
         FaturaRepository faturaRepository,
         TransacaoMapper transacaoMapper
     ){
         this.transacaoRepository =transacaoRepository;
-        this.faturaService = faturaService;
         this.faturaRepository = faturaRepository;
         this.transacaoMapper = transacaoMapper;
     }
@@ -53,27 +50,24 @@ public class ExtratoFuturoService {
             usuario.getId(), inicio, fim);
     }
 
-    private  List<Fatura> listarFaturasAbertas(
+   private List<Fatura> listarFaturasAbertas(
         Usuario usuario,
         LocalDate dataInicial,
         LocalDate dataFinal
-    ) {
-    List<Fatura> faturas =
-                faturaRepository
-                            .findAllByContaUsuarioIdAndStatusAndDataVencimentoBetweenOrderByDataVencimentoAsc(
-                                    usuario.getId(),
-                                    StatusFatura.ABERTA,
-                                    dataInicial,
-                                    dataFinal
-                            );
-            for (Fatura fatura : faturas) {
-                faturaService.calcularTotal(
-                        fatura.getId(),
-                        usuario
+        ) {
+        return faturaRepository
+                .findAllByContaUsuarioIdAndStatusAndDataVencimentoBetweenOrderByDataVencimentoAsc(
+                        usuario.getId(),
+                        StatusFatura.ABERTA,
+                        dataInicial,
+                        dataFinal
                 );
-            }
-            return faturas;
         }
+        
+    private BigDecimal calcularTotalFatura(Fatura fatura) {
+                return transacaoRepository
+                        .somarValorPorFatura(fatura.getId());
+    }
 
     private Map<YearMonth, List<Transacao>> agruparTransacoesPorMes(List<Transacao> transacoes) {
         return transacoes.stream()
@@ -105,24 +99,39 @@ public class ExtratoFuturoService {
     private BigDecimal calcularTotalDebitos(
         List<Transacao> transacoes,
         List<Fatura> faturas
-    ) {
+        ) {
+                BigDecimal totalTransacoes = transacoes.stream()
+                        .filter(transacao ->
+                                transacao.getTipo() == TipoTransacao.DEBITO
+                        )
+                        .filter(transacao ->
+                                transacao.getFatura() == null
+                        )
+                        .map(Transacao::getValor)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal totalFaturas = faturas.stream()
+                        .map(this::calcularTotalFatura)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                return totalTransacoes.add(totalFaturas);
+        }
 
-        BigDecimal totalTransacoes = transacoes.stream()
-                .filter(transacao ->
-                        transacao.getTipo() == TipoTransacao.DEBITO
-                )
-                .filter(transacao ->
-                        transacao.getFatura() == null
-                )
-                .map(Transacao::getValor)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        private FaturaResumoDTO toFaturaResumoDTO(Fatura fatura) {
 
-        BigDecimal totalFaturas = faturas.stream()
-                .map(Fatura::getValorTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                FaturaResumoDTO dto = new FaturaResumoDTO();
 
-        return totalTransacoes.add(totalFaturas);
-    }
+                dto.setFaturaId(fatura.getId());
+                dto.setNomeConta(fatura.getConta().getNome());
+                dto.setMesReferencia(fatura.getMesReferencia());
+                dto.setDataVencimento(fatura.getDataVencimento());
+
+                dto.setValorTotal(
+                        calcularTotalFatura(fatura)
+                );
+
+                dto.setStatus(fatura.getStatus());
+
+                return dto;
+        }
 
     private BigDecimal calcularSaldoPrevisto(
             BigDecimal totalCreditos,
@@ -174,7 +183,7 @@ public class ExtratoFuturoService {
 
         List<FaturaResumoDTO> faturasDTO =
                 faturas.stream()
-                        .map(faturaService::toFaturaResumoDTO)
+                        .map(this::toFaturaResumoDTO)
                         .toList();
 
         ProjecaoMensalDTO dto =
