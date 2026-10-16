@@ -38,10 +38,17 @@ export const useAsync = <T>(
     aoErro,
   }: UseAsyncOpcoes<T>,
 ): UseAsyncRetorno<T> => {
-  const [dados, setDados] = useState<T>(valorInicial);
-  const [carregando, setCarregando] = useState(habilitado);
-  const [erro, setErro] = useState('');
-  const [versao, setVersao] = useState(0);
+  const [dados, setDados] =
+    useState<T>(valorInicial);
+
+  const [carregando, setCarregando] =
+    useState(habilitado);
+
+  const [erro, setErro] =
+    useState('');
+
+  const [versao, setVersao] =
+    useState(0);
 
   const recarregar = useCallback(() => {
     setVersao((atual) => atual + 1);
@@ -53,26 +60,37 @@ export const useAsync = <T>(
 
   useEffect(() => {
     if (!habilitado) {
-      setCarregando(false);
       return;
     }
 
     let ativo = true;
 
     const executar = async () => {
+      await Promise.resolve();
+
+      if (!ativo) {
+        return;
+      }
+
       setCarregando(true);
       setErro('');
 
       try {
-        const resultado = await operacao();
+        const resultado =
+          await operacao();
 
-        if (!ativo) return;
+        if (!ativo) {
+          return;
+        }
 
         setDados(resultado);
       } catch (erroCapturado) {
-        if (!ativo) return;
+        if (!ativo) {
+          return;
+        }
 
-        const tratado = aoErro?.(erroCapturado);
+        const tratado =
+          aoErro?.(erroCapturado);
 
         if (tratado === true) {
           return;
@@ -106,7 +124,9 @@ export const useAsync = <T>(
 
   return {
     dados,
-    carregando,
+    carregando:
+      habilitado && carregando,
+
     erro,
     recarregar,
     limparErro,
