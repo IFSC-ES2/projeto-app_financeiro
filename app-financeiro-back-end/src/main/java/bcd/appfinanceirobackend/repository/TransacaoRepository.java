@@ -1,6 +1,5 @@
 package bcd.appfinanceirobackend.repository;
 
-import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,4 +32,5 @@ public interface TransacaoRepository
         where t.fatura.id = :faturaId
     """)
     BigDecimal somarValorPorFatura(@Param("faturaId") UUID faturaId);
+    List<Transacao> findAllByContaUsuarioIdAndFuturaTrueAndDataBetweenOrderByDataAsc(UUID usuarioId, LocalDate dataInicio, LocalDate dataFim);
 }
