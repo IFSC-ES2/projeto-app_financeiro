@@ -104,11 +104,11 @@ const NovaTransacao = () => {
   );
 
   const contaIdSelecionada =
-    campos.formaPagamento === 'DINHEIRO'
-      ? ''
-      : campos.contaId ||
-        contasSelecionaveis[0]?.contaId ||
-        '';
+  campos.formaPagamento === 'DINHEIRO'
+    ? ''
+    : campos.contaId === null
+      ? contasSelecionaveis[0]?.contaId ?? ''
+      : campos.contaId;
 
   const carregandoDados =
     carregandoContas ||
