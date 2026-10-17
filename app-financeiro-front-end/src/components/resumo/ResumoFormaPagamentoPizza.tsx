@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+
 import EstadoVazio from '../ui/EstadoVazio';
 import MensagemAlerta from '../ui/MensagemAlerta';
-import { obterMensagemErroApi } from '../../services/apiError';
-import { buscarResumoPorPagamento } from '../../services/resumoService';
-import type { ResumoPagamentoResponse } from '../../types/resumo';
+import { useResumoFormaPagamento } from '../../hooks/useResumoFormaPagamento';
 import type { TipoPagamento } from '../../types/transacao';
 
-const classesFormaPagamento: Record<TipoPagamento, string> = {
+const classesFormaPagamento: Record<
+  TipoPagamento,
+  string
+> = {
   PIX: 'payment-chart-color-pix',
   CARTAO_DEBITO: 'payment-chart-color-debito',
   CARTAO_CREDITO: 'payment-chart-color-credito',
@@ -15,7 +17,10 @@ const classesFormaPagamento: Record<TipoPagamento, string> = {
   TED_DOC: 'payment-chart-color-ted',
 };
 
-const coresFormaPagamento: Record<TipoPagamento, string> = {
+const coresFormaPagamento: Record<
+  TipoPagamento,
+  string
+> = {
   PIX: 'var(--sb-primary)',
   CARTAO_DEBITO: '#35B779',
   CARTAO_CREDITO: '#F4C542',
@@ -24,14 +29,22 @@ const coresFormaPagamento: Record<TipoPagamento, string> = {
   TED_DOC: '#4D96FF',
 };
 
-const obterCorFormaPagamento = (formaPagamento: TipoPagamento | null) => {
-  if (!formaPagamento) return 'var(--sb-text-muted)';
+const obterCorFormaPagamento = (
+  formaPagamento: TipoPagamento | null,
+) => {
+  if (!formaPagamento) {
+    return 'var(--sb-text-muted)';
+  }
 
   return coresFormaPagamento[formaPagamento];
 };
 
-const obterClasseFormaPagamento = (formaPagamento: TipoPagamento | null) => {
-  if (!formaPagamento) return 'payment-chart-color-nao-informado';
+const obterClasseFormaPagamento = (
+  formaPagamento: TipoPagamento | null,
+) => {
+  if (!formaPagamento) {
+    return 'payment-chart-color-nao-informado';
+  }
 
   return classesFormaPagamento[formaPagamento];
 };
@@ -43,59 +56,38 @@ const formatarPercentual = (percentual: number) =>
   })}%`;
 
 const ResumoFormaPagamentoPizza = () => {
-  const [resumo, setResumo] = useState<ResumoPagamentoResponse[]>([]);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState('');
-
-  useEffect(() => {
-    let ativo = true;
-
-    const carregarResumo = async () => {
-      setCarregando(true);
-      setErro('');
-
-      try {
-        const resumoCarregado = await buscarResumoPorPagamento();
-
-        if (!ativo) return;
-
-        setResumo(resumoCarregado);
-      } catch (erroCapturado) {
-        if (!ativo) return;
-
-        setErro(
-          obterMensagemErroApi(
-            erroCapturado,
-            'Não foi possível carregar o resumo por forma de pagamento.',
-          ),
-        );
-      } finally {
-        if (ativo) setCarregando(false);
-      }
-    };
-
-    carregarResumo();
-
-    return () => {
-      ativo = false;
-    };
-  }, []);
+  const {
+    resumo,
+    carregando,
+    erro,
+  } = useResumoFormaPagamento();
 
   const resumoValido = useMemo(
-    () => resumo.filter((item) => Number(item.percentual) > 0),
+    () =>
+      resumo.filter(
+        (item) => Number(item.percentual) > 0,
+      ),
     [resumo],
   );
 
   const graficoPizza = useMemo(() => {
-    if (resumoValido.length === 0) return 'var(--sb-border) 0deg 360deg';
+    if (resumoValido.length === 0) {
+      return 'var(--sb-border) 0deg 360deg';
+    }
 
     let inicio = 0;
 
     return resumoValido
       .map((item) => {
-        const graus = (Number(item.percentual) / 100) * 360;
+        const graus =
+          (Number(item.percentual) / 100) * 360;
+
         const fim = inicio + graus;
-        const fatia = `${obterCorFormaPagamento(item.formaPagamento)} ${inicio}deg ${fim}deg`;
+
+        const fatia =
+          `${obterCorFormaPagamento(
+            item.formaPagamento,
+          )} ${inicio}deg ${fim}deg`;
 
         inicio = fim;
 
@@ -105,21 +97,34 @@ const ResumoFormaPagamentoPizza = () => {
   }, [resumoValido]);
 
   return (
-    <section className="dashboard-payment-card" aria-label="Resumo por forma de pagamento">
+    <section
+      className="dashboard-payment-card"
+      aria-label="Resumo por forma de pagamento"
+    >
       <div className="dashboard-payment-card-header">
         <div>
           <h2>Formas de pagamento</h2>
-          <p>Distribuição das transações por meio de pagamento.</p>
+
+          <p>
+            Distribuição das transações por meio de
+            pagamento.
+          </p>
         </div>
       </div>
 
       {carregando ? (
-        <div className="loading-inline" aria-live="polite">
+        <div
+          className="loading-inline"
+          aria-live="polite"
+        >
           Carregando resumo por forma de pagamento...
         </div>
       ) : erro ? (
         <div className="dashboard-payment-card-content">
-          <MensagemAlerta mensagem={erro} tipo="danger" />
+          <MensagemAlerta
+            mensagem={erro}
+            tipo="danger"
+          />
         </div>
       ) : resumoValido.length === 0 ? (
         <EstadoVazio
@@ -130,7 +135,10 @@ const ResumoFormaPagamentoPizza = () => {
         <div className="dashboard-payment-chart-area">
           <div
             className="dashboard-payment-chart"
-            style={{ background: `conic-gradient(${graficoPizza})` }}
+            style={{
+              background:
+                `conic-gradient(${graficoPizza})`,
+            }}
             role="img"
             aria-label="Gráfico de pizza do resumo por forma de pagamento"
           >
@@ -139,11 +147,30 @@ const ResumoFormaPagamentoPizza = () => {
 
           <div className="dashboard-payment-legend">
             {resumoValido.map((item) => (
-              <div className="dashboard-payment-legend-item" key={item.formaPagamento ?? 'NAO_INFORMADO'}>
-                <span className={obterClasseFormaPagamento(item.formaPagamento)} />
+              <div
+                className="dashboard-payment-legend-item"
+                key={
+                  item.formaPagamento ??
+                  'NAO_INFORMADO'
+                }
+              >
+                <span
+                  className={obterClasseFormaPagamento(
+                    item.formaPagamento,
+                  )}
+                />
+
                 <div>
-                  <strong>{item.rotulo ?? 'Não informado'}</strong>
-                  <small>{formatarPercentual(item.percentual)}</small>
+                  <strong>
+                    {item.rotulo ??
+                      'Não informado'}
+                  </strong>
+
+                  <small>
+                    {formatarPercentual(
+                      item.percentual,
+                    )}
+                  </small>
                 </div>
               </div>
             ))}
