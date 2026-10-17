@@ -66,48 +66,49 @@ export const useAsync = <T>(
     let ativo = true;
 
     const executar = async () => {
-      await Promise.resolve();
+  const promessa = operacao();
 
-      if (!ativo) {
-        return;
-      }
+  queueMicrotask(() => {
+    if (!ativo) {
+      return;
+    }
 
-      setCarregando(true);
-      setErro('');
+    setCarregando(true);
+    setErro('');
+  });
 
-      try {
-        const resultado =
-          await operacao();
+  try {
+    const resultado = await promessa;
 
-        if (!ativo) {
-          return;
-        }
+    if (!ativo) {
+      return;
+    }
 
-        setDados(resultado);
-      } catch (erroCapturado) {
-        if (!ativo) {
-          return;
-        }
+    setDados(resultado);
+  } catch (erroCapturado) {
+    if (!ativo) {
+      return;
+    }
 
-        const tratado =
-          aoErro?.(erroCapturado);
+    const tratado =
+      aoErro?.(erroCapturado);
 
-        if (tratado === true) {
-          return;
-        }
+    if (tratado === true) {
+      return;
+    }
 
-        setErro(
-          obterMensagemErroApi(
-            erroCapturado,
-            mensagemErro,
-          ),
-        );
-      } finally {
-        if (ativo) {
-          setCarregando(false);
-        }
-      }
-    };
+    setErro(
+      obterMensagemErroApi(
+        erroCapturado,
+        mensagemErro,
+      ),
+    );
+  } finally {
+    if (ativo) {
+      setCarregando(false);
+    }
+  }
+};
 
     void executar();
 

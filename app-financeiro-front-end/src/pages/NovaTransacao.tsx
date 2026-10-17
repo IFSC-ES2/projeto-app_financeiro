@@ -23,7 +23,7 @@ interface CamposTransacao {
   tipoTransacao: TipoTransacao;
   formaPagamento: TipoPagamento;
   categoriaId: string;
-  contaId: string;
+  contaId: string | null;
 }
 
 const valoresIniciais: CamposTransacao = {
@@ -33,7 +33,7 @@ const valoresIniciais: CamposTransacao = {
   tipoTransacao: 'DEBITO',
   formaPagamento: 'PIX',
   categoriaId: '',
-  contaId: '',
+  contaId: null,
 };
 
 const formasPagamento: Array<{
