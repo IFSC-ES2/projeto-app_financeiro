@@ -1,4 +1,13 @@
-export type StatusImportacao = 'PENDENTE' | 'PROCESSANDO' | 'CONCLUIDO' | 'ERRO';
+export type StatusImportacao =
+  | 'PENDENTE'
+  | 'PROCESSANDO'
+  | 'CONCLUIDO'
+  | 'ERRO';
+export interface ErroImportacao {
+  numeroRegistro: number | null;
+  campo: string | null;
+  mensagem: string;
+}
 
 export interface ImportacaoResponse {
   id: string;
@@ -8,4 +17,5 @@ export interface ImportacaoResponse {
   ignoradasPorDuplicidade: number;
   importadoEm: string;
   mensagemErro?: string | null;
+  erros: ErroImportacao[];
 }
