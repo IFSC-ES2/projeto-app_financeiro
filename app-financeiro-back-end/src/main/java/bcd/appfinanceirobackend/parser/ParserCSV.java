@@ -251,21 +251,34 @@ public class ParserCSV implements ParserExtrato {
      * Valor negativo -> DEBITO
      * Valor salvo    -> sempre positivo
      */
-    private ResultadoParser processarCsvNubankConta(List<String[]> registros, Conta conta) {
+   private ResultadoParser processarCsvNubankConta(
+            List<String[]> registros,
+            Conta conta
+    ) {
         ResultadoParser resultado = new ResultadoParser();
-
         List<Transacao> transacoes = new ArrayList<>();
+
         int totalLinhas = 0;
-        int linhasInvalidas = 0;
 
         String[] cabecalho = registros.getFirst();
 
-        int indiceData = encontrarIndiceDaColuna(cabecalho, "data");
-        int indiceValor = encontrarIndiceDaColuna(cabecalho, "valor");
-        int indiceDescricao = encontrarIndiceDaColuna(cabecalho, "descricao");
+        int indiceData =
+                encontrarIndiceDaColuna(cabecalho, "data");
 
-        if (indiceData < 0 || indiceValor < 0 || indiceDescricao < 0) {
-            throw new IllegalArgumentException("Cabeçalho Nubank Conta inválido");
+        int indiceValor =
+                encontrarIndiceDaColuna(cabecalho, "valor");
+
+        int indiceDescricao =
+                encontrarIndiceDaColuna(cabecalho, "descricao");
+
+        if (
+                indiceData < 0 ||
+                indiceValor < 0 ||
+                indiceDescricao < 0
+        ) {
+            throw new IllegalArgumentException(
+                    "Cabeçalho Nubank Conta inválido"
+            );
         }
 
         for (int i = 1; i < registros.size(); i++) {
@@ -273,36 +286,81 @@ public class ParserCSV implements ParserExtrato {
 
             totalLinhas++;
 
-            if (!possuiIndicesObrigatorios(linha, indiceData, indiceValor, indiceDescricao)) {
-                linhasInvalidas++;
+            int numeroRegistro = i + 1;
+
+            if (!possuiIndicesObrigatorios(
+                    linha,
+                    indiceData,
+                    indiceValor,
+                    indiceDescricao
+            )) {
+                resultado.adicionarErro(
+                        numeroRegistro,
+                        "estrutura",
+                        "Registro não possui todas as colunas obrigatórias."
+                );
+
                 continue;
             }
 
-            LocalDate data = parsearData(linha[indiceData]);
-            BigDecimal valor = parsearValor(linha[indiceValor]);
-            String descricao = limparDescricao(linha[indiceDescricao]);
+            LocalDate data =
+                    parsearData(linha[indiceData]);
 
-            if (data == null || valor == null || valor.compareTo(BigDecimal.ZERO) == 0) {
-                linhasInvalidas++;
+            if (data == null) {
+                resultado.adicionarErro(
+                        numeroRegistro,
+                        "data",
+                        "Data inválida. Verifique o formato informado."
+                );
+
                 continue;
             }
 
-            TipoTransacao tipo = resolverTipoNubankConta(valor);
+            BigDecimal valor =
+                    parsearValor(linha[indiceValor]);
 
-            Transacao transacao = criarTransacao(
-                    conta,
-                    data,
-                    descricao,
-                    valor.abs(),
-                    tipo
-            );
+            if (valor == null) {
+                resultado.adicionarErro(
+                        numeroRegistro,
+                        "valor",
+                        "Valor monetário inválido."
+                );
+
+                continue;
+            }
+
+            if (valor.compareTo(BigDecimal.ZERO) == 0) {
+                resultado.adicionarErro(
+                        numeroRegistro,
+                        "valor",
+                        "O valor da transação não pode ser zero."
+                );
+
+                continue;
+            }
+
+            String descricao =
+                    limparDescricao(
+                            linha[indiceDescricao]
+                    );
+
+            TipoTransacao tipo =
+                    resolverTipoNubankConta(valor);
+
+            Transacao transacao =
+                    criarTransacao(
+                            conta,
+                            data,
+                            descricao,
+                            valor.abs(),
+                            tipo
+                    );
 
             transacoes.add(transacao);
         }
 
         resultado.setTransacoes(transacoes);
         resultado.setTotalLinhas(totalLinhas);
-        resultado.setLinhasInvalidas(linhasInvalidas);
 
         return resultado;
     }
@@ -315,47 +373,77 @@ public class ParserCSV implements ParserExtrato {
      *
      * A manutenção desse fallback evita quebrar testes e arquivos antigos.
      */
-    private ResultadoParser processarCsvLegado(List<String[]> registros, Conta conta) {
+    private ResultadoParser processarCsvLegado(
+        List<String[]> registros,
+        Conta conta
+    ) {
         ResultadoParser resultado = new ResultadoParser();
-
         List<Transacao> transacoes = new ArrayList<>();
         int totalLinhas = 0;
-        int linhasInvalidas = 0;
 
-        for (String[] linha : registros) {
+        for (int i = 0; i < registros.size(); i++) {
+            String[] linha = registros.get(i);
             totalLinhas++;
-
+            int numeroRegistro = i + 1;
             if (linha.length != 4) {
-                linhasInvalidas++;
+                resultado.adicionarErro(
+                        numeroRegistro,
+                        "estrutura",
+                        "Registro deve possuir data, descrição, valor e tipo."
+                );
                 continue;
             }
+            LocalDate data =
+                    parsearData(linha[0]);
 
-            LocalDate data = parsearData(linha[0]);
-            BigDecimal valor = parsearValor(linha[2]);
+            if (data == null) {
+                resultado.adicionarErro(
+                        numeroRegistro,
+                        "data",
+                        "Data inválida. Verifique o formato informado."
+                );
 
-            if (data == null || valor == null || valor.compareTo(BigDecimal.ZERO) == 0) {
-                linhasInvalidas++;
                 continue;
             }
+            BigDecimal valor =
+                    parsearValor(linha[2]);
+            if (valor == null) {
+                resultado.adicionarErro(
+                        numeroRegistro,
+                        "valor",
+                        "Valor monetário inválido."
+                );
 
-            String descricao = limparDescricao(linha[1]);
-            TipoTransacao tipo = parsearTipoLegado(linha[3], valor);
+                continue;
+            }
+            if (valor.compareTo(BigDecimal.ZERO) == 0) {
+                resultado.adicionarErro(
+                        numeroRegistro,
+                        "valor",
+                        "O valor da transação não pode ser zero."
+                );
 
-            Transacao transacao = criarTransacao(
-                    conta,
-                    data,
-                    descricao,
-                    valor.abs(),
-                    tipo
-            );
-
+                continue;
+            }
+            String descricao =
+                    limparDescricao(linha[1]);
+            TipoTransacao tipo =
+                    parsearTipoLegado(
+                            linha[3],
+                            valor
+                    );
+            Transacao transacao =
+                    criarTransacao(
+                            conta,
+                            data,
+                            descricao,
+                            valor.abs(),
+                            tipo
+                    );
             transacoes.add(transacao);
         }
-
         resultado.setTransacoes(transacoes);
         resultado.setTotalLinhas(totalLinhas);
-        resultado.setLinhasInvalidas(linhasInvalidas);
-
         return resultado;
     }
 
