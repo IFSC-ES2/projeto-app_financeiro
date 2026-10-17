@@ -48,86 +48,198 @@ import java.util.List;
 @Order(2)
 public class ParserXML implements ParserExtrato {
 
-    private static final List<String> TAGS_TRANSACAO = List.of(
-            "transacao", "lancamento", "movimento", "entry"
-    );
+    private static final List<String> TAGS_TRANSACAO =
+            List.of(
+                    "transacao",
+                    "lancamento",
+                    "movimento",
+                    "entry"
+            );
 
-    private static final List<DateTimeFormatter> FORMATADORES = List.of(
-            DateTimeFormatter.ofPattern("yyyy-MM-dd"),
-            DateTimeFormatter.ofPattern("dd/MM/yyyy"),
-            DateTimeFormatter.ofPattern("dd-MM-yyyy")
-    );
+    private static final List<DateTimeFormatter> FORMATADORES =
+            List.of(
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+                    DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+                    DateTimeFormatter.ofPattern("dd-MM-yyyy")
+            );
 
     @Override
     public boolean aceita(MultipartFile arquivo) {
-        String nome = arquivo.getOriginalFilename();
-        if (nome == null || !nome.toLowerCase().endsWith(".xml")) return false;
+        String nome =
+                arquivo.getOriginalFilename();
 
-        // Lê os primeiros bytes para verificar se NÃO é uma NF-e
-        try (InputStream is = arquivo.getInputStream()) {
-            byte[] preview = is.readNBytes(2000);
-            String inicio = new String(preview).toLowerCase();
-            // NF-e é tratada pelo ParserNFe — este parser rejeita
-            return !inicio.contains("nfeproc") && !inicio.contains("<nfe");
+        if (
+                nome == null ||
+                !nome.toLowerCase().endsWith(".xml")
+        ) {
+            return false;
+        }
+
+        try (InputStream is =
+                     arquivo.getInputStream()) {
+
+            byte[] preview =
+                    is.readNBytes(2000);
+
+            String inicio =
+                    new String(preview)
+                            .toLowerCase();
+
+            return !inicio.contains("nfeproc")
+                    && !inicio.contains("<nfe");
+
         } catch (Exception e) {
             return false;
         }
     }
 
     @Override
-    public ResultadoParser parsear(MultipartFile arquivo, Conta conta) {
-        List<Transacao> transacoes = new ArrayList<>();
-        int linhasInvalidas = 0;
+    public ResultadoParser parsear(
+            MultipartFile arquivo,
+            Conta conta
+    ) {
+        ResultadoParser resultado =
+                new ResultadoParser();
+
+        List<Transacao> transacoes =
+                new ArrayList<>();
+
         int totalLinhas = 0;
 
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            // Desativa DTD externo para evitar XXE
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setNamespaceAware(true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(arquivo.getInputStream());
-            doc.getDocumentElement().normalize();
+            DocumentBuilderFactory factory =
+                    DocumentBuilderFactory
+                            .newInstance();
 
-            // Tenta cada tag conhecida até encontrar elementos
-            List<Element> elementos = new ArrayList<>();
+            factory.setFeature(
+                    "http://apache.org/xml/features/disallow-doctype-decl",
+                    true
+            );
+
+            factory.setNamespaceAware(true);
+
+            DocumentBuilder builder =
+                    factory.newDocumentBuilder();
+
+            Document doc =
+                    builder.parse(
+                            arquivo.getInputStream()
+                    );
+
+            doc.getDocumentElement()
+                    .normalize();
+
+            List<Element> elementos =
+                    new ArrayList<>();
+
             for (String tag : TAGS_TRANSACAO) {
-                // tenta minúsculo com namespace
-                NodeList nos = doc.getElementsByTagNameNS("*", tag);
-                for (int i = 0; i < nos.getLength(); i++) {
-                    elementos.add((Element) nos.item(i));
+                NodeList nos =
+                        doc.getElementsByTagNameNS(
+                                "*",
+                                tag
+                        );
+
+                for (
+                        int i = 0;
+                        i < nos.getLength();
+                        i++
+                ) {
+                    elementos.add(
+                            (Element) nos.item(i)
+                    );
                 }
-                // tenta maiúsculo com namespace
-                nos = doc.getElementsByTagNameNS("*", tag.toUpperCase());
-                for (int i = 0; i < nos.getLength(); i++) {
-                    elementos.add((Element) nos.item(i));
+
+                nos =
+                        doc.getElementsByTagNameNS(
+                                "*",
+                                tag.toUpperCase()
+                        );
+
+                for (
+                        int i = 0;
+                        i < nos.getLength();
+                        i++
+                ) {
+                    elementos.add(
+                            (Element) nos.item(i)
+                    );
                 }
             }
 
             if (elementos.isEmpty()) {
-                throw new RuntimeException("Nenhuma tag de transação reconhecida no XML. " +
-                        "Tags suportadas: " + TAGS_TRANSACAO);
+                throw new RuntimeException(
+                        "Nenhuma estrutura de transação reconhecida no XML."
+                );
             }
 
-            for (Element el: elementos) {
+            for (
+                    int i = 0;
+                    i < elementos.size();
+                    i++
+            ) {
+                Element elemento =
+                        elementos.get(i);
+
                 totalLinhas++;
 
-                LocalDate data = parsearData(texto(el, "data"));
+                int numeroRegistro = i + 1;
+
+                String dataTexto =
+                        texto(
+                                elemento,
+                                "data"
+                        );
+
+                LocalDate data =
+                        parsearData(dataTexto);
+
                 if (data == null) {
-                    linhasInvalidas++;
+                    resultado.adicionarErro(
+                            numeroRegistro,
+                            "data",
+                            "Campo data ausente ou em formato inválido."
+                    );
+
                     continue;
                 }
 
-                BigDecimal valor = parsearValor(texto(el, "valor"));
+                String valorTexto =
+                        texto(
+                                elemento,
+                                "valor"
+                        );
+
+                BigDecimal valor =
+                        parsearValor(valorTexto);
+
                 if (valor == null) {
-                    linhasInvalidas++;
+                    resultado.adicionarErro(
+                            numeroRegistro,
+                            "valor",
+                            "Campo valor ausente ou inválido."
+                    );
+
                     continue;
                 }
 
-                String descricao = texto(el, "descricao");
-                TipoTransacao tipo = parsearTipo(texto(el, "tipo"), valor);
+                String descricao =
+                        texto(
+                                elemento,
+                                "descricao"
+                        );
 
-                Transacao transacao = new Transacao();
+                TipoTransacao tipo =
+                        parsearTipo(
+                                texto(
+                                        elemento,
+                                        "tipo"
+                                ),
+                                valor
+                        );
+
+                Transacao transacao =
+                        new Transacao();
+
                 transacao.setConta(conta);
                 transacao.setData(data);
                 transacao.setDescricao(descricao);
@@ -140,33 +252,65 @@ public class ParserXML implements ParserExtrato {
 
         } catch (RuntimeException e) {
             throw e;
+
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao processar arquivo XML: " + e.getMessage(), e);
+            throw new RuntimeException(
+                    "Erro ao processar arquivo XML",
+                    e
+            );
         }
-        ResultadoParser resultado = new ResultadoParser();
-        resultado.setLinhasInvalidas(linhasInvalidas);
+
         resultado.setTransacoes(transacoes);
         resultado.setTotalLinhas(totalLinhas);
+
         return resultado;
     }
 
-    /** Extrai o texto de uma tag filha pelo nome, retornando "" se ausente. */
-    private String texto(Element elemento, String tag) {
-        // busca case-insensitive nos filhos diretos e descendentes
-        NodeList todos = elemento.getElementsByTagNameNS("*", "*");
-        for (int i = 0; i < todos.getLength(); i++) {
-            if (todos.item(i).getLocalName() != null &&
-                    todos.item(i).getLocalName().equalsIgnoreCase(tag)) {
-                return todos.item(i).getTextContent().trim();
+    private String texto(
+            Element elemento,
+            String tag
+    ) {
+        NodeList todos =
+                elemento.getElementsByTagNameNS(
+                        "*",
+                        "*"
+                );
+
+        for (
+                int i = 0;
+                i < todos.getLength();
+                i++
+        ) {
+            if (
+                    todos.item(i).getLocalName() != null &&
+                    todos.item(i)
+                            .getLocalName()
+                            .equalsIgnoreCase(tag)
+            ) {
+                return todos.item(i)
+                        .getTextContent()
+                        .trim();
             }
         }
 
-        // fallback sem namespace
-        NodeList todos2 = elemento.getElementsByTagName("*");
-        for (int i = 0; i < todos2.getLength(); i++) {
-            todos2.item(i);
-            if (todos2.item(i).getNodeName().equalsIgnoreCase(tag)) {
-                return todos2.item(i).getTextContent().trim();
+        NodeList todosSemNamespace =
+                elemento.getElementsByTagName("*");
+
+        for (
+                int i = 0;
+                i < todosSemNamespace.getLength();
+                i++
+        ) {
+            if (
+                    todosSemNamespace
+                            .item(i)
+                            .getNodeName()
+                            .equalsIgnoreCase(tag)
+            ) {
+                return todosSemNamespace
+                        .item(i)
+                        .getTextContent()
+                        .trim();
             }
         }
 
@@ -174,20 +318,33 @@ public class ParserXML implements ParserExtrato {
     }
 
     private LocalDate parsearData(String valor) {
-        if (valor == null || valor.isBlank()) return null;
+        if (valor == null || valor.isBlank()) {
+            return null;
+        }
 
-        for (DateTimeFormatter fmt : FORMATADORES) {
+        for (
+                DateTimeFormatter formatter :
+                FORMATADORES
+        ) {
             try {
-                return LocalDate.parse(valor, fmt);
-            } catch (DateTimeParseException ignored) {
+                return LocalDate.parse(
+                        valor,
+                        formatter
+                );
+            } catch (
+                    DateTimeParseException ignored
+            ) {
             }
         }
 
-        // fallback: tenta extrair só a parte da data (yyyy-MM-dd)
         if (valor.length() >= 10) {
             try {
-                return LocalDate.parse(valor.substring(0, 10));
-            } catch (DateTimeParseException ignored) {
+                return LocalDate.parse(
+                        valor.substring(0, 10)
+                );
+            } catch (
+                    DateTimeParseException ignored
+            ) {
             }
         }
 
@@ -195,13 +352,28 @@ public class ParserXML implements ParserExtrato {
     }
 
     private BigDecimal parsearValor(String valor) {
-        if (valor == null || valor.isBlank()) return null;
+        if (valor == null || valor.isBlank()) {
+            return null;
+        }
+
         try {
-            String normalizado = valor.replace("R$", "").replace(" ", "").trim();
-            if (normalizado.contains(",") && normalizado.contains(".")) {
-                normalizado = normalizado.replace(".", "").replace(",", ".");
+            String normalizado =
+                    valor
+                            .replace("R$", "")
+                            .replace(" ", "")
+                            .trim();
+
+            if (
+                    normalizado.contains(",") &&
+                    normalizado.contains(".")
+            ) {
+                normalizado =
+                        normalizado
+                                .replace(".", "")
+                                .replace(",", ".");
             } else {
-                normalizado = normalizado.replace(",", ".");
+                normalizado =
+                        normalizado.replace(",", ".");
             }
             return new BigDecimal(normalizado);
         } catch (NumberFormatException e) {
@@ -209,11 +381,23 @@ public class ParserXML implements ParserExtrato {
         }
     }
 
-    private TipoTransacao parsearTipo(String tipoStr, BigDecimal valor) {
-        if (valor.compareTo(BigDecimal.ZERO) < 0) return TipoTransacao.DEBITO;
+    private TipoTransacao parsearTipo(
+            String tipoStr,
+            BigDecimal valor
+    ) {
+        if (
+                valor.compareTo(BigDecimal.ZERO) < 0
+        ) {
+            return TipoTransacao.DEBITO;
+        }
+
         try {
-            return TipoTransacao.valueOf(tipoStr.toUpperCase());
-        } catch (IllegalArgumentException e) {
+            return TipoTransacao.valueOf(
+                    tipoStr.toUpperCase()
+            );
+        } catch (
+                IllegalArgumentException e
+        ) {
             return TipoTransacao.CREDITO;
         }
     }

@@ -45,81 +45,182 @@ import java.util.List;
 public class ParserNFe implements ParserExtrato {
 
     private static final DateTimeFormatter FORMATO_NFE =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
+            DateTimeFormatter.ofPattern(
+                    "yyyy-MM-dd'T'HH:mm:ssXXX"
+            );
+
     private static final DateTimeFormatter FORMATO_NFE_SEM_TZ =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+            DateTimeFormatter.ofPattern(
+                    "yyyy-MM-dd'T'HH:mm:ss"
+            );
 
     @Override
     public boolean aceita(MultipartFile arquivo) {
-        String nome = arquivo.getOriginalFilename();
-        if (nome == null) return false;
+        String nome =
+                arquivo.getOriginalFilename();
 
-        String nomeLower = nome.toLowerCase();
-        // Aceita .xml e .nfe
-        if (!nomeLower.endsWith(".xml") && !nomeLower.endsWith(".nfe")) return false;
+        if (nome == null) {
+            return false;
+        }
 
-        // Confirma pelo conteúdo que é uma NF-e
-        try (InputStream is = arquivo.getInputStream()) {
-            byte[] preview = is.readNBytes(500);
-            String inicio = new String(preview).toLowerCase();
-            return inicio.contains("nfeproc") || inicio.contains("<nfe");
+        String nomeLower =
+                nome.toLowerCase();
+
+        if (
+                !nomeLower.endsWith(".xml") &&
+                !nomeLower.endsWith(".nfe")
+        ) {
+            return false;
+        }
+
+        try (InputStream is =
+                     arquivo.getInputStream()) {
+
+            byte[] preview =
+                    is.readNBytes(500);
+
+            String inicio =
+                    new String(preview)
+                            .toLowerCase();
+
+            return inicio.contains("nfeproc")
+                    || inicio.contains("<nfe");
+
         } catch (Exception e) {
             return false;
         }
     }
 
     @Override
-    public ResultadoParser parsear(MultipartFile arquivo, Conta conta) {
-        List<Transacao> transacoes = new ArrayList<>();
-        int linhasInvalidas = 0;
+    public ResultadoParser parsear(
+            MultipartFile arquivo,
+            Conta conta
+    ) {
+        ResultadoParser resultado =
+                new ResultadoParser();
+
+        List<Transacao> transacoes =
+                new ArrayList<>();
+
         int totalLinhas = 0;
 
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            // Namespace-aware para processar NF-e corretamente
-            factory.setNamespaceAware(true);
-            // Proteção contra XXE
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(arquivo.getInputStream());
-            doc.getDocumentElement().normalize();
+            DocumentBuilderFactory factory =
+                    DocumentBuilderFactory
+                            .newInstance();
 
-            // Extrai data de emissão
-            LocalDate dataEmissao = extrairDataEmissao(doc);
+            factory.setNamespaceAware(true);
+
+            factory.setFeature(
+                    "http://apache.org/xml/features/disallow-doctype-decl",
+                    true
+            );
+
+            DocumentBuilder builder =
+                    factory.newDocumentBuilder();
+
+            Document doc =
+                    builder.parse(
+                            arquivo.getInputStream()
+                    );
+
+            doc.getDocumentElement()
+                    .normalize();
+
+            LocalDate dataEmissao =
+                    extrairDataEmissao(doc);
+
             if (dataEmissao == null) {
-                throw new RuntimeException("Campo <dhEmi> não encontrado ou em formato inválido na NF-e.");
+                throw new RuntimeException(
+                        "Data de emissão da NF-e não encontrada ou inválida."
+                );
             }
 
-            // Extrai emitente
-            String nomeEmitente = primeiroTexto(doc, "xNome");
-            String cnpjEmitente = primeiroTexto(doc, "CNPJ");
-            String descricao = montarDescricao(nomeEmitente, cnpjEmitente);
-
-            // Itera sobre os itens da nota (<det>) gerando uma transação por produto
-            NodeList itens = doc.getElementsByTagName("det");
+            NodeList itens =
+                    doc.getElementsByTagName(
+                            "det"
+                    );
 
             if (itens.getLength() == 0) {
-                throw new RuntimeException("Nenhum item <det> encontrado na NF-e.");
+                throw new RuntimeException(
+                        "Nenhum item foi encontrado na NF-e."
+                );
             }
 
-            for (int i = 0; i < itens.getLength(); i++) {
-                Element item = (Element) itens.item(i);
+            for (
+                    int i = 0;
+                    i < itens.getLength();
+                    i++
+            ) {
+                Element item =
+                        (Element) itens.item(i);
+
                 totalLinhas++;
 
-                String descricaoProduto = primeiroTextoElemento(item, "xProd");
-                BigDecimal valorProduto = parsearBigDecimal(primeiroTextoElemento(item, "vProd"));
+                int numeroRegistro = i + 1;
 
-                if (valorProduto == null || valorProduto.compareTo(BigDecimal.ZERO) <= 0) {
-                    linhasInvalidas++;
+                String descricaoProduto =
+                        primeiroTextoElemento(
+                                item,
+                                "xProd"
+                        );
+
+                String valorTexto =
+                        primeiroTextoElemento(
+                                item,
+                                "vProd"
+                        );
+
+                BigDecimal valorProduto =
+                        parsearBigDecimal(
+                                valorTexto
+                        );
+
+                if (valorProduto == null) {
+                    resultado.adicionarErro(
+                            numeroRegistro,
+                            "vProd",
+                            "Valor do produto ausente ou inválido."
+                    );
+
                     continue;
                 }
 
-                Transacao transacao = new Transacao();
+                if (
+                        valorProduto.compareTo(
+                                BigDecimal.ZERO
+                        ) <= 0
+                ) {
+                    resultado.adicionarErro(
+                            numeroRegistro,
+                            "vProd",
+                            "O valor do produto deve ser maior que zero."
+                    );
+
+                    continue;
+                }
+
+                Transacao transacao =
+                        new Transacao();
+
                 transacao.setConta(conta);
                 transacao.setData(dataEmissao);
-                transacao.setDescricao(descricaoProduto.isBlank() ? "Item NF-e #" + (i + 1) : descricaoProduto);
-                transacao.setValor(valorProduto);
-                transacao.setTipo(TipoTransacao.DEBITO);
+
+                transacao.setDescricao(
+                        descricaoProduto.isBlank()
+                                ? "Item NF-e #" +
+                                numeroRegistro
+                                : descricaoProduto
+                );
+
+                transacao.setValor(
+                        valorProduto
+                );
+
+                transacao.setTipo(
+                        TipoTransacao.DEBITO
+                );
+
                 transacao.setCategorizada(false);
 
                 transacoes.add(transacao);
@@ -127,35 +228,58 @@ public class ParserNFe implements ParserExtrato {
 
         } catch (RuntimeException e) {
             throw e;
+
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao processar NF-e: " + e.getMessage(), e);
+            throw new RuntimeException(
+                    "Erro ao processar NF-e",
+                    e
+            );
         }
 
-        ResultadoParser resultado = new ResultadoParser();
         resultado.setTotalLinhas(totalLinhas);
         resultado.setTransacoes(transacoes);
-        resultado.setLinhasInvalidas(linhasInvalidas);
+
         return resultado;
     }
 
-    /**
-     * Extrai a data de emissão do campo <dhEmi>.
-     * O padrão SEFAZ usa ISO 8601 com timezone (2024-01-15T10:30:00-03:00).
-     * Fallback para formato sem timezone para NF-e malformadas.
-     */
-    private LocalDate extrairDataEmissao(Document doc) {
-        String dhEmi = primeiroTexto(doc, "dhEmi");
-        if (dhEmi == null || dhEmi.isBlank()) return null;
+    private LocalDate extrairDataEmissao(
+            Document doc
+    ) {
+        String dhEmi =
+                primeiroTexto(
+                        doc,
+                        "dhEmi"
+                );
+
+        if (
+                dhEmi == null ||
+                dhEmi.isBlank()
+        ) {
+            return null;
+        }
 
         try {
-            return LocalDate.parse(dhEmi, FORMATO_NFE);
+            return LocalDate.parse(
+                    dhEmi,
+                    FORMATO_NFE
+            );
+
         } catch (Exception e1) {
             try {
-                return LocalDate.parse(dhEmi, FORMATO_NFE_SEM_TZ);
+                return LocalDate.parse(
+                        dhEmi,
+                        FORMATO_NFE_SEM_TZ
+                );
+
             } catch (Exception e2) {
-                // Último fallback: tenta extrair só a data (primeiros 10 chars)
                 try {
-                    return LocalDate.parse(dhEmi.substring(0, 10));
+                    return LocalDate.parse(
+                            dhEmi.substring(
+                                    0,
+                                    10
+                            )
+                    );
+
                 } catch (Exception e3) {
                     return null;
                 }
@@ -163,32 +287,57 @@ public class ParserNFe implements ParserExtrato {
         }
     }
 
-    /** Extrai o texto de uma tag filha dentro de um Element específico. */
-    private String primeiroTextoElemento(Element elemento, String tag) {
-        NodeList nos = elemento.getElementsByTagName(tag);
-        if (nos.getLength() == 0) return "";
-        return nos.item(0).getTextContent().trim();
-    }
-    
-    /** Busca o texto do primeiro elemento com a tag informada no documento. */
-    private String primeiroTexto(Document doc, String tag) {
-        NodeList nos = doc.getElementsByTagName(tag);
-        if (nos.getLength() == 0) return "";
-        return nos.item(0).getTextContent().trim();
+    private String primeiroTextoElemento(
+            Element elemento,
+            String tag
+    ) {
+        NodeList nos =
+                elemento.getElementsByTagName(tag);
+
+        if (nos.getLength() == 0) {
+            return "";
+        }
+
+        return nos.item(0)
+                .getTextContent()
+                .trim();
     }
 
-    private BigDecimal parsearBigDecimal(String valor) {
-        if (valor == null || valor.isBlank()) return null;
-        try {
-            return new BigDecimal(valor.replace(",", "."));
-        } catch (NumberFormatException e) {
+    private String primeiroTexto(
+            Document doc,
+            String tag
+    ) {
+        NodeList nos =
+                doc.getElementsByTagName(tag);
+
+        if (nos.getLength() == 0) {
+            return "";
+        }
+
+        return nos.item(0)
+                .getTextContent()
+                .trim();
+    }
+
+    private BigDecimal parsearBigDecimal(
+            String valor
+    ) {
+        if (
+                valor == null ||
+                valor.isBlank()
+        ) {
             return null;
         }
-    }
 
-    private String montarDescricao(String nome, String cnpj) {
-        if (nome == null || nome.isBlank()) return "NF-e importada";
-        if (cnpj == null || cnpj.isBlank()) return nome;
-        return nome + " (CNPJ: " + cnpj + ")";
+        try {
+            return new BigDecimal(
+                    valor.replace(",", ".")
+            );
+
+        } catch (
+                NumberFormatException e
+        ) {
+            return null;
+        }
     }
 }
