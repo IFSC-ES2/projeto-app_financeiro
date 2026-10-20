@@ -169,6 +169,14 @@ class CartaoFaturaExtratoFuturoIntegrationTests {
         }
 
         @Test
+        @DisplayName("GET em conta de outro usuario retorna 403")
+        void deveImpedirBuscarCartaoDeOutroUsuario() throws Exception {
+            mockMvc.perform(get("/contas/{contaId}/cartao", contaCartaoB.getId())
+                            .header("Authorization", "Bearer " + tokenA))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
         @DisplayName("POST em conta que nao e CARTAO_CREDITO retorna 400")
         void deveImpedirCartaoEmContaCorrente() throws Exception {
             CartaoCreditoRequestDTO dto = new CartaoCreditoRequestDTO();
@@ -210,6 +218,15 @@ class CartaoFaturaExtratoFuturoIntegrationTests {
                     .andExpect(jsonPath("$.dataVencimento").value(mesNovo.atDay(10).toString()))
                     .andExpect(jsonPath("$.status").value("ABERTA"))
                     .andExpect(jsonPath("$.nomeConta").value("Cartao A"));
+        }
+
+        @Test
+        @DisplayName("POST em conta cartao de outro usuario retorna 403")
+        void deveImpedirGerarFaturaEmContaDeOutroUsuario() throws Exception {
+            mockMvc.perform(post("/contas/{contaId}/faturas", contaCartaoB.getId())
+                            .param("mesReferencia", mesAtual.plusMonths(3).toString())
+                            .header("Authorization", "Bearer " + tokenA))
+                    .andExpect(status().isForbidden());
         }
 
         @Test
@@ -290,6 +307,18 @@ class CartaoFaturaExtratoFuturoIntegrationTests {
                     .andExpect(jsonPath("$[1].faturas.length()").value(1))
                     .andExpect(jsonPath("$[1].faturas[0].valorTotal", closeTo(350.00, 0.001)))
                     .andExpect(jsonPath("$[1].transacoes.length()").value(1));
+        }
+
+        @Test
+        @DisplayName("retorna apenas um mes quando meses=1 e informado")
+        void deveRetornarApenasUmMesQuandoMesesIgualUm() throws Exception {
+            mockMvc.perform(get("/extrato-futuro")
+                            .param("meses", "1")
+                            .header("Authorization", "Bearer " + tokenA))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(1))
+                    .andExpect(jsonPath("$[0].mes").value(mesAtual.toString()))
+                    .andExpect(jsonPath("$[0].totalCreditos", closeTo(1000.00, 0.001)));
         }
 
         @Test
