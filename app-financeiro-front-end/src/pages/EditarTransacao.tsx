@@ -1,17 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import {
+  useMemo,
+  useState,
+} from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import LayoutPrivado from '../components/layout/LayoutPrivado';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
 import { obterMensagemErroApi } from '../services/apiError';
-import { listarCategorias } from '../services/categoriaService';
-import { listarContas } from '../services/contaService';
 import { editarTransacao } from '../services/transacaoService';
-import type { CategoriaResponse } from '../types/categoria';
-import type { ContaResponse } from '../types/conta';
 import type { TipoPagamento, TipoTransacao, TransacaoResponse } from '../types/transacao';
 import { ehCarteiraAutomaticaDinheiro } from '../utils/contas';
+import { useCategorias } from '../hooks/useCategorias';
+import { useContas } from '../hooks/useContas';
 
 interface CamposTransacao {
   valor: string;
@@ -63,47 +64,43 @@ const EditarTransacao = () => {
     'Não foi possível carregar os dados diretamente por esta URL. No momento a API não possui busca de transação por ID, então acesse a edição pela lista de transações.';
 
   const [campos, setCampos] = useState<CamposTransacao | null>(() => (transacao ? montarCampos(transacao) : null));
-  const [contas, setContas] = useState<ContaResponse[]>([]);
-  const [categorias, setCategorias] = useState<CategoriaResponse[]>([]);
   const [erros, setErros] = useState<Partial<Record<keyof CamposTransacao, string>>>({});
   const [erroGeral, setErroGeral] = useState(transacao ? '' : mensagemTransacaoAusente);
-  const [carregandoDados, setCarregandoDados] = useState(Boolean(transacao));
   const [salvando, setSalvando] = useState(false);
 
-  const contasSelecionaveis = useMemo(
+  
+
+  const {
+  contas,
+  carregando: carregandoContas,
+  erro: erroContas,
+} = useContas({
+  habilitado: Boolean(transacao),
+  mensagemErro:
+    'Não foi possível carregar contas e categorias.',
+});
+
+const {
+  categorias,
+  carregando: carregandoCategorias,
+  erro: erroCategorias,
+} = useCategorias({
+  habilitado: Boolean(transacao),
+  mensagemErro:
+    'Não foi possível carregar contas e categorias.',
+});
+
+const contasSelecionaveis = useMemo(
     () => contas.filter((conta) => !ehCarteiraAutomaticaDinheiro(conta)),
     [contas]
   );
 
-  useEffect(() => {
-    if (!transacao) return;
+const carregandoDados =
+  Boolean(transacao) &&
+  (carregandoContas || carregandoCategorias);
 
-    let ativo = true;
-
-    const carregarDados = async () => {
-      setCarregandoDados(true);
-      setErroGeral('');
-
-      try {
-        const [contasCarregadas, categoriasCarregadas] = await Promise.all([listarContas(), listarCategorias()]);
-
-        if (!ativo) return;
-        setContas(contasCarregadas);
-        setCategorias(categoriasCarregadas);
-      } catch (err) {
-        if (!ativo) return;
-        setErroGeral(obterMensagemErroApi(err, 'Não foi possível carregar contas e categorias.'));
-      } finally {
-        if (ativo) setCarregandoDados(false);
-      }
-    };
-
-    carregarDados();
-
-    return () => {
-      ativo = false;
-    };
-  }, [transacao]);
+const erroCarregamento =
+  erroContas || erroCategorias;
 
   const permiteSalvar = useMemo(() => {
     if (!campos) return false;
@@ -207,7 +204,7 @@ const EditarTransacao = () => {
         </Link>
       }
     >
-      <MensagemAlerta mensagem={erroGeral} tipo="danger" />
+      <MensagemAlerta mensagem={erroGeral ||  erroCarregamento} tipo="danger" />
 
       <section className="form-panel">
         <div className="form-panel-header">
