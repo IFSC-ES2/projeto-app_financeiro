@@ -59,4 +59,12 @@ describe('contaService', () => {
 
     await expect(listarContas()).rejects.toBe(erro);
   });
+
+  it('propaga o erro da API em operacao de escrita (excluirConta)', async () => {
+    const erro = new Error('Falha na API');
+    vi.mocked(httpClient.delete).mockRejectedValue(erro);
+
+    await expect(excluirConta('conta-1')).rejects.toBe(erro);
+    expect(httpClient.delete).toHaveBeenCalledWith('/contas/conta-1');
+  });
 });
