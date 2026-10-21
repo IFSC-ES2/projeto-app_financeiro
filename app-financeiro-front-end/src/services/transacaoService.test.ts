@@ -104,6 +104,9 @@ describe('transacaoService', () => {
       page: 0,
       size: 20,
       dataInicio: '2026-06-01',
+      dataFim: '2026-06-30',
+      categoriaId: 'cat-1',
+      contaId: 'conta-1',
       tipo: 'DEBITO',
     });
 
@@ -112,6 +115,9 @@ describe('transacaoService', () => {
         page: '0',
         size: '20',
         dataInicio: '2026-06-01',
+        dataFim: '2026-06-30',
+        categoriaId: 'cat-1',
+        contaId: 'conta-1',
         tipo: 'DEBITO',
       },
     });
