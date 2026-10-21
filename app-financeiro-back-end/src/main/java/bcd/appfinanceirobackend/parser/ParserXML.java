@@ -48,25 +48,22 @@ import java.util.List;
 @Order(2)
 public class ParserXML implements ParserExtrato {
 
-    private static final List<String> TAGS_TRANSACAO =
-            List.of(
-                    "transacao",
-                    "lancamento",
-                    "movimento",
-                    "entry"
-            );
+    private static final List<String> TAGS_TRANSACAO = List.of(
+            "transacao",
+            "lancamento",
+            "movimento",
+            "entry"
+    );
 
-    private static final List<DateTimeFormatter> FORMATADORES =
-            List.of(
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd"),
-                    DateTimeFormatter.ofPattern("dd/MM/yyyy"),
-                    DateTimeFormatter.ofPattern("dd-MM-yyyy")
-            );
+    private static final List<DateTimeFormatter> FORMATADORES = List.of(
+            DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+            DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+            DateTimeFormatter.ofPattern("dd-MM-yyyy")
+    );
 
     @Override
     public boolean aceita(MultipartFile arquivo) {
-        String nome =
-                arquivo.getOriginalFilename();
+        String nome = arquivo.getOriginalFilename();
 
         if (
                 nome == null ||
@@ -75,15 +72,11 @@ public class ParserXML implements ParserExtrato {
             return false;
         }
 
-        try (InputStream is =
-                     arquivo.getInputStream()) {
+        try (InputStream is = arquivo.getInputStream()) {
+            byte[] preview = is.readNBytes(2000);
 
-            byte[] preview =
-                    is.readNBytes(2000);
-
-            String inicio =
-                    new String(preview)
-                            .toLowerCase();
+            String inicio = new String(preview)
+                    .toLowerCase();
 
             return !inicio.contains("nfeproc")
                     && !inicio.contains("<nfe");
@@ -98,8 +91,7 @@ public class ParserXML implements ParserExtrato {
             MultipartFile arquivo,
             Conta conta
     ) {
-        ResultadoParser resultado =
-                new ResultadoParser();
+        ResultadoParser resultado = new ResultadoParser();
 
         List<Transacao> transacoes =
                 new ArrayList<>();
@@ -108,8 +100,7 @@ public class ParserXML implements ParserExtrato {
 
         try {
             DocumentBuilderFactory factory =
-                    DocumentBuilderFactory
-                            .newInstance();
+                    DocumentBuilderFactory.newInstance();
 
             factory.setFeature(
                     "http://apache.org/xml/features/disallow-doctype-decl",
@@ -168,7 +159,9 @@ public class ParserXML implements ParserExtrato {
 
             if (elementos.isEmpty()) {
                 throw new RuntimeException(
-                        "Nenhuma estrutura de transação reconhecida no XML."
+                        "Nenhuma tag de transação reconhecida no XML. " +
+                                "Tags suportadas: " +
+                                TAGS_TRANSACAO
                 );
             }
 
@@ -182,16 +175,16 @@ public class ParserXML implements ParserExtrato {
 
                 totalLinhas++;
 
-                int numeroRegistro = i + 1;
-
-                String dataTexto =
-                        texto(
-                                elemento,
-                                "data"
-                        );
+                int numeroRegistro =
+                        i + 1;
 
                 LocalDate data =
-                        parsearData(dataTexto);
+                        parsearData(
+                                texto(
+                                        elemento,
+                                        "data"
+                                )
+                        );
 
                 if (data == null) {
                     resultado.adicionarErro(
@@ -203,14 +196,13 @@ public class ParserXML implements ParserExtrato {
                     continue;
                 }
 
-                String valorTexto =
-                        texto(
-                                elemento,
-                                "valor"
-                        );
-
                 BigDecimal valor =
-                        parsearValor(valorTexto);
+                        parsearValor(
+                                texto(
+                                        elemento,
+                                        "valor"
+                                )
+                        );
 
                 if (valor == null) {
                     resultado.adicionarErro(
@@ -255,7 +247,8 @@ public class ParserXML implements ParserExtrato {
 
         } catch (Exception e) {
             throw new RuntimeException(
-                    "Erro ao processar arquivo XML",
+                    "Erro ao processar arquivo XML: " +
+                            e.getMessage(),
                     e
             );
         }
@@ -317,8 +310,13 @@ public class ParserXML implements ParserExtrato {
         return "";
     }
 
-    private LocalDate parsearData(String valor) {
-        if (valor == null || valor.isBlank()) {
+    private LocalDate parsearData(
+            String valor
+    ) {
+        if (
+                valor == null ||
+                valor.isBlank()
+        ) {
             return null;
         }
 
@@ -331,6 +329,7 @@ public class ParserXML implements ParserExtrato {
                         valor,
                         formatter
                 );
+
             } catch (
                     DateTimeParseException ignored
             ) {
@@ -340,8 +339,12 @@ public class ParserXML implements ParserExtrato {
         if (valor.length() >= 10) {
             try {
                 return LocalDate.parse(
-                        valor.substring(0, 10)
+                        valor.substring(
+                                0,
+                                10
+                        )
                 );
+
             } catch (
                     DateTimeParseException ignored
             ) {
@@ -351,8 +354,13 @@ public class ParserXML implements ParserExtrato {
         return null;
     }
 
-    private BigDecimal parsearValor(String valor) {
-        if (valor == null || valor.isBlank()) {
+    private BigDecimal parsearValor(
+            String valor
+    ) {
+        if (
+                valor == null ||
+                valor.isBlank()
+        ) {
             return null;
         }
 
@@ -373,10 +381,19 @@ public class ParserXML implements ParserExtrato {
                                 .replace(",", ".");
             } else {
                 normalizado =
-                        normalizado.replace(",", ".");
+                        normalizado.replace(
+                                ",",
+                                "."
+                        );
             }
-            return new BigDecimal(normalizado);
-        } catch (NumberFormatException e) {
+
+            return new BigDecimal(
+                    normalizado
+            );
+
+        } catch (
+                NumberFormatException e
+        ) {
             return null;
         }
     }
@@ -386,7 +403,9 @@ public class ParserXML implements ParserExtrato {
             BigDecimal valor
     ) {
         if (
-                valor.compareTo(BigDecimal.ZERO) < 0
+                valor.compareTo(
+                        BigDecimal.ZERO
+                ) < 0
         ) {
             return TipoTransacao.DEBITO;
         }
@@ -395,6 +414,7 @@ public class ParserXML implements ParserExtrato {
             return TipoTransacao.valueOf(
                     tipoStr.toUpperCase()
             );
+
         } catch (
                 IllegalArgumentException e
         ) {

@@ -55,7 +55,9 @@ public class ParserNFe implements ParserExtrato {
             );
 
     @Override
-    public boolean aceita(MultipartFile arquivo) {
+    public boolean aceita(
+            MultipartFile arquivo
+    ) {
         String nome =
                 arquivo.getOriginalFilename();
 
@@ -73,9 +75,10 @@ public class ParserNFe implements ParserExtrato {
             return false;
         }
 
-        try (InputStream is =
-                     arquivo.getInputStream()) {
-
+        try (
+                InputStream is =
+                        arquivo.getInputStream()
+        ) {
             byte[] preview =
                     is.readNBytes(500);
 
@@ -83,8 +86,11 @@ public class ParserNFe implements ParserExtrato {
                     new String(preview)
                             .toLowerCase();
 
-            return inicio.contains("nfeproc")
-                    || inicio.contains("<nfe");
+            return inicio.contains(
+                    "nfeproc"
+            ) || inicio.contains(
+                    "<nfe"
+            );
 
         } catch (Exception e) {
             return false;
@@ -132,7 +138,7 @@ public class ParserNFe implements ParserExtrato {
 
             if (dataEmissao == null) {
                 throw new RuntimeException(
-                        "Data de emissão da NF-e não encontrada ou inválida."
+                        "Campo <dhEmi> não encontrado ou em formato inválido na NF-e."
                 );
             }
 
@@ -143,7 +149,7 @@ public class ParserNFe implements ParserExtrato {
 
             if (itens.getLength() == 0) {
                 throw new RuntimeException(
-                        "Nenhum item foi encontrado na NF-e."
+                        "Nenhum item <det> encontrado na NF-e."
                 );
             }
 
@@ -157,7 +163,8 @@ public class ParserNFe implements ParserExtrato {
 
                 totalLinhas++;
 
-                int numeroRegistro = i + 1;
+                int numeroRegistro =
+                        i + 1;
 
                 String descricaoProduto =
                         primeiroTextoElemento(
@@ -204,7 +211,9 @@ public class ParserNFe implements ParserExtrato {
                         new Transacao();
 
                 transacao.setConta(conta);
-                transacao.setData(dataEmissao);
+                transacao.setData(
+                        dataEmissao
+                );
 
                 transacao.setDescricao(
                         descricaoProduto.isBlank()
@@ -221,9 +230,13 @@ public class ParserNFe implements ParserExtrato {
                         TipoTransacao.DEBITO
                 );
 
-                transacao.setCategorizada(false);
+                transacao.setCategorizada(
+                        false
+                );
 
-                transacoes.add(transacao);
+                transacoes.add(
+                        transacao
+                );
             }
 
         } catch (RuntimeException e) {
@@ -231,13 +244,19 @@ public class ParserNFe implements ParserExtrato {
 
         } catch (Exception e) {
             throw new RuntimeException(
-                    "Erro ao processar NF-e",
+                    "Erro ao processar NF-e: " +
+                            e.getMessage(),
                     e
             );
         }
 
-        resultado.setTotalLinhas(totalLinhas);
-        resultado.setTransacoes(transacoes);
+        resultado.setTotalLinhas(
+                totalLinhas
+        );
+
+        resultado.setTransacoes(
+                transacoes
+        );
 
         return resultado;
     }
@@ -292,9 +311,13 @@ public class ParserNFe implements ParserExtrato {
             String tag
     ) {
         NodeList nos =
-                elemento.getElementsByTagName(tag);
+                elemento.getElementsByTagName(
+                        tag
+                );
 
-        if (nos.getLength() == 0) {
+        if (
+                nos.getLength() == 0
+        ) {
             return "";
         }
 
@@ -308,9 +331,13 @@ public class ParserNFe implements ParserExtrato {
             String tag
     ) {
         NodeList nos =
-                doc.getElementsByTagName(tag);
+                doc.getElementsByTagName(
+                        tag
+                );
 
-        if (nos.getLength() == 0) {
+        if (
+                nos.getLength() == 0
+        ) {
             return "";
         }
 
@@ -331,7 +358,10 @@ public class ParserNFe implements ParserExtrato {
 
         try {
             return new BigDecimal(
-                    valor.replace(",", ".")
+                    valor.replace(
+                            ",",
+                            "."
+                    )
             );
 
         } catch (
