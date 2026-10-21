@@ -4,7 +4,10 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import {
+  Link,
+  Navigate,
+} from 'react-router-dom';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
 import { useAutenticacao } from '../contexts/ContextoAutenticacao';
@@ -28,19 +31,28 @@ const EXTENSOES_ACEITAS = [
   'txt',
 ];
 
-const ACCEPT_INPUT = '.csv,.xml,.txt';
-
-const INTERVALO_POLLING_MS = 1500;
-const TIMEOUT_POLLING_MS = 60_000;
+const ACCEPT_INPUT =
+  '.csv,.xml,.txt';
+const INTERVALO_POLLING_MS =
+  1500;
+const TIMEOUT_POLLING_MS =
+  60_000;
 
 const ROTULOS_STATUS: Record<
   StatusImportacao,
   string
 > = {
-  PENDENTE: 'Aguardando processamento',
-  PROCESSANDO: 'Processando arquivo',
-  CONCLUIDO: 'Importação concluída',
-  ERRO: 'Falha na importação',
+  PENDENTE:
+    'Aguardando processamento',
+
+  PROCESSANDO:
+    'Processando arquivo',
+
+  CONCLUIDO:
+    'Importação concluída',
+
+  ERRO:
+    'Falha na importação',
 };
 
 const formatarTamanho = (
@@ -50,8 +62,13 @@ const formatarTamanho = (
     return `${bytes} B`;
   }
 
-  if (bytes < 1024 * 1024) {
-    return `${(bytes / 1024).toFixed(1)} KB`;
+  if (
+    bytes <
+    1024 * 1024
+  ) {
+    return `${(
+      bytes / 1024
+    ).toFixed(1)} KB`;
   }
 
   return `${(
@@ -75,17 +92,21 @@ type ErrosFormulario = {
   contaId?: string;
 };
 
-const ImportarExtrato: React.FC =
-  () => {
+const ImportarExtrato:
+  React.FC = () => {
     const {
       estaAutenticado,
       sair,
-    } = useAutenticacao();
+    } =
+      useAutenticacao();
 
     const [
       arquivo,
       setArquivo,
-    ] = useState<File | null>(null);
+    ] =
+      useState<File | null>(
+        null,
+      );
 
     const [
       contaId,
@@ -95,7 +116,10 @@ const ImportarExtrato: React.FC =
     const [
       erros,
       setErros,
-    ] = useState<ErrosFormulario>({});
+    ] =
+      useState<ErrosFormulario>(
+        {},
+      );
 
     const [
       erroGeral,
@@ -129,22 +153,33 @@ const ImportarExtrato: React.FC =
     ] = useState(false);
 
     const inputArquivoRef =
-      useRef<HTMLInputElement>(null);
+      useRef<HTMLInputElement>(
+        null,
+      );
 
     const finalizada =
-      statusAtual === 'CONCLUIDO' ||
-      statusAtual === 'ERRO';
+      statusAtual ===
+        'CONCLUIDO' ||
+      statusAtual ===
+        'ERRO';
 
     const processando =
-      !!importacao && !finalizada;
+      !!importacao &&
+      !finalizada;
 
     const tratarErroContas =
       useCallback(
-        (erro: unknown) => {
+        (
+          erro: unknown,
+        ) => {
           const status =
-            obterStatusHttp(erro);
+            obterStatusHttp(
+              erro,
+            );
 
-          if (status === 401) {
+          if (
+            status === 401
+          ) {
             sair();
 
             return true;
@@ -157,7 +192,8 @@ const ImportarExtrato: React.FC =
 
     const {
       contas,
-      carregando: carregandoContas,
+      carregando:
+        carregandoContas,
       erro: erroContas,
     } = useContas({
       habilitado:
@@ -170,14 +206,6 @@ const ImportarExtrato: React.FC =
         tratarErroContas,
     });
 
-    /*
-     * Se existir apenas uma conta e nenhuma
-     * conta tiver sido escolhida manualmente,
-     * ela é usada automaticamente.
-     *
-     * Isso evita precisar chamar setContaId()
-     * dentro de um useEffect.
-     */
     const contaIdSelecionada =
       contaId ||
       (contas.length === 1
@@ -190,15 +218,20 @@ const ImportarExtrato: React.FC =
       }
 
       if (
-        statusAtual === 'CONCLUIDO' ||
-        statusAtual === 'ERRO'
+        statusAtual ===
+          'CONCLUIDO' ||
+        statusAtual ===
+          'ERRO'
       ) {
         return;
       }
 
-      const inicio = Date.now();
+      const inicio =
+        Date.now();
 
-      let cancelado = false;
+      let cancelado =
+        false;
+
       let timeoutId = 0;
 
       const verificar =
@@ -217,11 +250,15 @@ const ImportarExtrato: React.FC =
               return;
             }
 
-            setStatusAtual(status);
+            setStatusAtual(
+              status,
+            );
 
             if (
-              status === 'CONCLUIDO' ||
-              status === 'ERRO'
+              status ===
+                'CONCLUIDO' ||
+              status ===
+                'ERRO'
             ) {
               return;
             }
@@ -231,15 +268,21 @@ const ImportarExtrato: React.FC =
             }
 
             const status =
-              obterStatusHttp(err);
+              obterStatusHttp(
+                err,
+              );
 
-            if (status === 401) {
+            if (
+              status === 401
+            ) {
               sair();
 
               return;
             }
 
-            if (status === 403) {
+            if (
+              status === 403
+            ) {
               setErroGeral(
                 obterMensagemErroApi(
                   err,
@@ -247,26 +290,26 @@ const ImportarExtrato: React.FC =
                 ),
               );
 
-              setStatusAtual('ERRO');
+              setStatusAtual(
+                'ERRO',
+              );
 
               return;
             }
-
-            /*
-             * Erro pontual no polling não
-             * interrompe o processo.
-             */
           }
 
           if (
-            Date.now() - inicio >=
+            Date.now() -
+              inicio >=
             TIMEOUT_POLLING_MS
           ) {
             setErroGeral(
               'Tempo limite excedido aguardando o processamento. Verifique mais tarde.',
             );
 
-            setStatusAtual('ERRO');
+            setStatusAtual(
+              'ERRO',
+            );
 
             return;
           }
@@ -297,7 +340,9 @@ const ImportarExtrato: React.FC =
       sair,
     ]);
 
-    if (!estaAutenticado) {
+    if (
+      !estaAutenticado
+    ) {
       return (
         <Navigate
           to="/login"
@@ -308,9 +353,13 @@ const ImportarExtrato: React.FC =
 
     const validarArquivo = (
       file: File,
-    ): string | undefined => {
+    ):
+      | string
+      | undefined => {
       const ext =
-        obterExtensao(file.name);
+        obterExtensao(
+          file.name,
+        );
 
       if (
         !EXTENSOES_ACEITAS.includes(
@@ -320,7 +369,9 @@ const ImportarExtrato: React.FC =
         return 'Formato não suportado. Use arquivos .csv, .xml ou .txt.';
       }
 
-      if (file.size === 0) {
+      if (
+        file.size === 0
+      ) {
         return 'O arquivo está vazio.';
       }
 
@@ -340,20 +391,25 @@ const ImportarExtrato: React.FC =
         validarArquivo(file);
 
       if (erro) {
-        setErros((prev) => ({
-          ...prev,
-          arquivo: erro,
-        }));
+        setErros(
+          (prev) => ({
+            ...prev,
+            arquivo: erro,
+          }),
+        );
 
         setArquivo(null);
 
         return;
       }
 
-      setErros((prev) => ({
-        ...prev,
-        arquivo: undefined,
-      }));
+      setErros(
+        (prev) => ({
+          ...prev,
+          arquivo:
+            undefined,
+        }),
+      );
 
       setArquivo(file);
     };
@@ -366,34 +422,50 @@ const ImportarExtrato: React.FC =
       setArrastando(false);
 
       const file =
-        e.dataTransfer.files?.[0];
+        e.dataTransfer
+          .files?.[0];
 
       if (file) {
-        definirArquivo(file);
+        definirArquivo(
+          file,
+        );
       }
     };
 
-    const limparArquivo = () => {
-      setArquivo(null);
+    const limparArquivo =
+      () => {
+        setArquivo(null);
 
-      setErros((prev) => ({
-        ...prev,
-        arquivo: undefined,
-      }));
+        setErros(
+          (prev) => ({
+            ...prev,
+            arquivo:
+              undefined,
+          }),
+        );
 
-      if (inputArquivoRef.current) {
-        inputArquivoRef.current.value =
-          '';
-      }
-    };
+        if (
+          inputArquivoRef.current
+        ) {
+          inputArquivoRef.current.value =
+            '';
+        }
+      };
 
-    const reiniciar = () => {
-      setImportacao(null);
-      setStatusAtual(null);
-      setErroGeral('');
+    const reiniciar =
+      () => {
+        setImportacao(
+          null,
+        );
 
-      limparArquivo();
-    };
+        setStatusAtual(
+          null,
+        );
+
+        setErroGeral('');
+
+        limparArquivo();
+      };
 
     const enviar = async (
       e: React.FormEvent,
@@ -402,10 +474,13 @@ const ImportarExtrato: React.FC =
 
       setErroGeral('');
 
-      const novosErros: ErrosFormulario =
-        {};
+      const novosErros:
+        ErrosFormulario =
+          {};
 
-      if (!contaIdSelecionada) {
+      if (
+        !contaIdSelecionada
+      ) {
         novosErros.contaId =
           'Selecione uma conta de destino.';
       }
@@ -415,11 +490,14 @@ const ImportarExtrato: React.FC =
           'Selecione um arquivo para importar.';
       }
 
-      setErros(novosErros);
+      setErros(
+        novosErros,
+      );
 
       if (
-        Object.keys(novosErros)
-          .length > 0
+        Object.keys(
+          novosErros,
+        ).length > 0
       ) {
         return;
       }
@@ -433,16 +511,22 @@ const ImportarExtrato: React.FC =
             contaIdSelecionada,
           );
 
-        setImportacao(resultado);
+        setImportacao(
+          resultado,
+        );
 
         setStatusAtual(
           resultado.status,
         );
       } catch (err) {
         const status =
-          obterStatusHttp(err);
+          obterStatusHttp(
+            err,
+          );
 
-        if (status === 401) {
+        if (
+          status === 401
+        ) {
           sair();
 
           return;
@@ -455,7 +539,9 @@ const ImportarExtrato: React.FC =
           ),
         );
       } finally {
-        setEnviando(false);
+        setEnviando(
+          false,
+        );
       }
     };
 
@@ -505,14 +591,16 @@ const ImportarExtrato: React.FC =
                     'var(--sb-text)',
                 }}
               >
-                Importar extrato ou NF-e
+                Importar
+                extrato ou NF-e
               </h1>
 
               <p className="text-muted mb-0">
-                Envie um arquivo CSV,
-                XML ou TXT e nós
-                cadastramos suas
-                transações
+                Envie um
+                arquivo CSV,
+                XML ou TXT e
+                nós cadastramos
+                suas transações
                 automaticamente.
               </p>
             </div>
@@ -521,7 +609,8 @@ const ImportarExtrato: React.FC =
               to="/transacoes"
               className="btn btn-outline-secondary align-self-start align-self-md-center"
             >
-              Voltar para transações
+              Voltar para
+              transações
             </Link>
           </div>
 
@@ -542,7 +631,9 @@ const ImportarExtrato: React.FC =
             <div className="card-body p-4 p-md-5">
               {!finalizada && (
                 <form
-                  onSubmit={enviar}
+                  onSubmit={
+                    enviar
+                  }
                   noValidate
                 >
                   <div className="mb-4">
@@ -550,7 +641,8 @@ const ImportarExtrato: React.FC =
                       htmlFor="contaId"
                       className="form-label fw-semibold small mb-1"
                     >
-                      Conta de destino *
+                      Conta de
+                      destino *
                     </label>
 
                     <select
@@ -564,13 +656,18 @@ const ImportarExtrato: React.FC =
                       value={
                         contaIdSelecionada
                       }
-                      onChange={(e) => {
+                      onChange={(
+                        e,
+                      ) => {
                         setContaId(
-                          e.target.value,
+                          e.target
+                            .value,
                         );
 
                         setErros(
-                          (prev) => ({
+                          (
+                            prev,
+                          ) => ({
                             ...prev,
                             contaId:
                               undefined,
@@ -592,7 +689,9 @@ const ImportarExtrato: React.FC =
                       </option>
 
                       {contas.map(
-                        (conta) => (
+                        (
+                          conta,
+                        ) => (
                           <option
                             key={
                               conta.contaId
@@ -601,7 +700,9 @@ const ImportarExtrato: React.FC =
                               conta.contaId
                             }
                           >
-                            {conta.nome}
+                            {
+                              conta.nome
+                            }
 
                             {conta.banco
                               ? ` — ${conta.banco}`
@@ -627,10 +728,12 @@ const ImportarExtrato: React.FC =
                           to="/contas"
                           className="sb-button sb-button-primary"
                         >
-                          Cadastrar conta
+                          Cadastrar
+                          conta
                         </Link>{' '}
 
-                        antes de importar
+                        antes de
+                        importar
                         transações.
                       </p>
                     )}
@@ -671,7 +774,8 @@ const ImportarExtrato: React.FC =
                           if (
                             e.key ===
                               'Enter' ||
-                            e.key === ' '
+                            e.key ===
+                              ' '
                           ) {
                             e.preventDefault();
 
@@ -723,7 +827,9 @@ const ImportarExtrato: React.FC =
                             strokeLinejoin="round"
                           >
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+
                             <polyline points="17 8 12 3 7 8" />
+
                             <line
                               x1="12"
                               y1="3"
@@ -829,7 +935,9 @@ const ImportarExtrato: React.FC =
                         ACCEPT_INPUT
                       }
                       className="d-none"
-                      onChange={(e) =>
+                      onChange={(
+                        e,
+                      ) =>
                         definirArquivo(
                           e.target
                             .files?.[0] ??
@@ -912,11 +1020,15 @@ const ImportarExtrato: React.FC =
                         'var(--sb-gradient)',
                       border: 'none',
                       borderRadius: 10,
-                      fontSize: '1rem',
+                      fontSize:
+                        '1rem',
                     }}
-                    disabled={semContas}
+                    disabled={
+                      semContas
+                    }
                   >
-                    Iniciar importação
+                    Iniciar
+                    importação
                   </BotaoCarregando>
                 </form>
               )}
@@ -948,264 +1060,343 @@ interface PropsResultado {
   onNovaImportacao: () => void;
 }
 
-const ResultadoImportacao: React.FC<
-  PropsResultado
-> = ({
-  importacao,
-  status,
-  onNovaImportacao,
-}) => {
-  const sucesso =
-    status === 'CONCLUIDO';
+const ResultadoImportacao:
+  React.FC<
+    PropsResultado
+  > = ({
+    importacao,
+    status,
+    onNovaImportacao,
+  }) => {
+    const concluida =
+      status ===
+      'CONCLUIDO';
 
-  return (
-    <div className="text-center">
-      <div
-        className="d-inline-flex align-items-center justify-content-center mb-3"
-        style={{
-          width: 72,
-          height: 72,
-          borderRadius: '50%',
-          background: sucesso
-            ? 'rgba(47, 169, 143, 0.15)'
-            : 'rgba(220, 53, 69, 0.12)',
-          color: sucesso
-            ? 'var(--sb-primary)'
-            : '#dc3545',
-        }}
-      >
-        {sucesso ? (
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        ) : (
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle
-              cx="12"
-              cy="12"
-              r="10"
-            />
+    const sucessoParcial =
+      concluida &&
+      importacao.falhas >
+        0;
 
-            <line
-              x1="12"
-              y1="8"
-              x2="12"
-              y2="12"
-            />
+    const errosDetalhados =
+      importacao.erros ??
+      [];
 
-            <line
-              x1="12"
-              y1="16"
-              x2="12.01"
-              y2="16"
-            />
-          </svg>
-        )}
-      </div>
+    const titulo =
+      concluida
+        ? sucessoParcial
+          ? 'Importação concluída com ressalvas'
+          : 'Importação concluída'
+        : 'Importação falhou';
 
-      <h2 className="h4 fw-bold mb-1">
-        {sucesso
-          ? 'Importação concluída'
-          : 'Importação falhou'}
-      </h2>
+    const descricao =
+      concluida
+        ? sucessoParcial
+          ? `${importacao.sucessos} transações foram importadas, mas ${importacao.falhas} registros foram rejeitados.`
+          : 'Seu arquivo foi processado com sucesso.'
+        : 'Não foi possível processar o arquivo enviado.';
 
-      <p className="text-muted mb-4">
-        {sucesso
-          ? 'Seu arquivo foi processado com sucesso.'
-          : 'Não foi possível processar o arquivo enviado.'}
-      </p>
-
-      {sucesso ? (
-        <div className="row g-3 mb-4 justify-content-center">
-          <div className="col-6 col-sm-4">
-            <div
-              className="p-3 h-100"
-              style={{
-                border:
-                  '1px solid var(--sb-border)',
-                borderRadius: 12,
-                background:
-                  'rgba(47, 169, 143, 0.06)',
-              }}
-            >
-              <div
-                className="text-muted small text-uppercase fw-semibold"
-                style={{
-                  letterSpacing:
-                    '0.04em',
-                }}
-              >
-                Sucessos
-              </div>
-
-              <div
-                className="fw-bold mt-1"
-                style={{
-                  fontSize:
-                    '1.8rem',
-                  color:
-                    'var(--sb-primary)',
-                }}
-              >
-                {
-                  importacao.sucessos
-                }
-              </div>
-
-              <div className="text-muted small">
-                transações importadas
-              </div>
-            </div>
-          </div>
-
-          <div className="col-6 col-sm-4">
-            <div
-              className="p-3 h-100"
-              style={{
-                border:
-                  '1px solid var(--sb-border)',
-                borderRadius: 12,
-                background:
-                  importacao.falhas >
-                  0
-                    ? 'rgba(220, 53, 69, 0.06)'
-                    : 'var(--sb-surface)',
-              }}
-            >
-              <div
-                className="text-muted small text-uppercase fw-semibold"
-                style={{
-                  letterSpacing:
-                    '0.04em',
-                }}
-              >
-                Falhas
-              </div>
-
-              <div
-                className="fw-bold mt-1"
-                style={{
-                  fontSize:
-                    '1.8rem',
-                  color:
-                    importacao.falhas >
-                    0
-                      ? '#dc3545'
-                      : 'var(--sb-text-muted)',
-                }}
-              >
-                {
-                  importacao.falhas
-                }
-              </div>
-
-              <div className="text-muted small">
-                registros descartados
-              </div>
-            </div>
-          </div>
-
-          <div className="col-6 col-sm-4">
-            <div
-              className="p-3 h-100"
-              style={{
-                border:
-                  '1px solid var(--sb-border)',
-                borderRadius: 12,
-                background:
-                  importacao.ignoradasPorDuplicidade >
-                  0
-                    ? 'rgba(13, 110, 253, 0.06)'
-                    : 'var(--sb-surface)',
-              }}
-            >
-              <div
-                className="text-muted small text-uppercase fw-semibold"
-                style={{
-                  letterSpacing:
-                    '0.04em',
-                }}
-              >
-                Ignoradas
-              </div>
-
-              <div
-                className="fw-bold mt-1"
-                style={{
-                  fontSize:
-                    '1.8rem',
-                  color:
-                    importacao.ignoradasPorDuplicidade >
-                    0
-                      ? '#0d6efd'
-                      : 'var(--sb-text-muted)',
-                }}
-              >
-                {
-                  importacao.ignoradasPorDuplicidade
-                }
-              </div>
-
-              <div className="text-muted small">
-                por duplicidade
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <MensagemAlerta
-          mensagem={
-            importacao.mensagemErro ||
-            'Ocorreu um erro durante o processamento do arquivo.'
-          }
-          tipo="danger"
-        />
-      )}
-
-      <div className="d-flex flex-column flex-sm-row gap-2 justify-content-center mt-3">
-        <button
-          type="button"
-          className="btn btn-outline-secondary"
-          onClick={
-            onNovaImportacao
-          }
-        >
-          Nova importação
-        </button>
-
-        <Link
-          to="/dashboard"
-          className="btn fw-semibold"
+    return (
+      <div className="text-center">
+        <div
+          className="d-inline-flex align-items-center justify-content-center mb-3"
           style={{
+            width: 72,
+            height: 72,
+            borderRadius:
+              '50%',
             background:
-              'var(--sb-gradient)',
-            color: '#fff',
-            borderRadius: 8,
+              concluida
+                ? sucessoParcial
+                  ? 'rgba(255, 193, 7, 0.15)'
+                  : 'rgba(47, 169, 143, 0.15)'
+                : 'rgba(220, 53, 69, 0.12)',
+            color:
+              concluida
+                ? sucessoParcial
+                  ? '#b58100'
+                  : 'var(--sb-primary)'
+                : '#dc3545',
           }}
         >
-          Ir para o painel
-        </Link>
+          {concluida ? (
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          ) : (
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+              />
+
+              <line
+                x1="12"
+                y1="8"
+                x2="12"
+                y2="12"
+              />
+
+              <line
+                x1="12"
+                y1="16"
+                x2="12.01"
+                y2="16"
+              />
+            </svg>
+          )}
+        </div>
+
+        <h2 className="h4 fw-bold mb-1">
+          {titulo}
+        </h2>
+
+        <p className="text-muted mb-4">
+          {descricao}
+        </p>
+
+        {concluida ? (
+          <div className="row g-3 mb-4 justify-content-center">
+            <div className="col-6 col-sm-4">
+              <div
+                className="p-3 h-100"
+                style={{
+                  border:
+                    '1px solid var(--sb-border)',
+                  borderRadius: 12,
+                  background:
+                    'rgba(47, 169, 143, 0.06)',
+                }}
+              >
+                <div className="text-muted small text-uppercase fw-semibold">
+                  Sucessos
+                </div>
+
+                <div
+                  className="fw-bold mt-1"
+                  style={{
+                    fontSize:
+                      '1.8rem',
+                    color:
+                      'var(--sb-primary)',
+                  }}
+                >
+                  {
+                    importacao.sucessos
+                  }
+                </div>
+
+                <div className="text-muted small">
+                  transações
+                  importadas
+                </div>
+              </div>
+            </div>
+
+            <div className="col-6 col-sm-4">
+              <div
+                className="p-3 h-100"
+                style={{
+                  border:
+                    '1px solid var(--sb-border)',
+                  borderRadius: 12,
+                  background:
+                    importacao.falhas >
+                    0
+                      ? 'rgba(220, 53, 69, 0.06)'
+                      : 'var(--sb-surface)',
+                }}
+              >
+                <div className="text-muted small text-uppercase fw-semibold">
+                  Falhas
+                </div>
+
+                <div
+                  className="fw-bold mt-1"
+                  style={{
+                    fontSize:
+                      '1.8rem',
+                    color:
+                      importacao.falhas >
+                      0
+                        ? '#dc3545'
+                        : 'var(--sb-text-muted)',
+                  }}
+                >
+                  {
+                    importacao.falhas
+                  }
+                </div>
+
+                <div className="text-muted small">
+                  registros
+                  descartados
+                </div>
+              </div>
+            </div>
+
+            <div className="col-6 col-sm-4">
+              <div
+                className="p-3 h-100"
+                style={{
+                  border:
+                    '1px solid var(--sb-border)',
+                  borderRadius: 12,
+                  background:
+                    importacao.ignoradasPorDuplicidade >
+                    0
+                      ? 'rgba(13, 110, 253, 0.06)'
+                      : 'var(--sb-surface)',
+                }}
+              >
+                <div className="text-muted small text-uppercase fw-semibold">
+                  Ignoradas
+                </div>
+
+                <div
+                  className="fw-bold mt-1"
+                  style={{
+                    fontSize:
+                      '1.8rem',
+                    color:
+                      importacao.ignoradasPorDuplicidade >
+                      0
+                        ? '#0d6efd'
+                        : 'var(--sb-text-muted)',
+                  }}
+                >
+                  {
+                    importacao.ignoradasPorDuplicidade
+                  }
+                </div>
+
+                <div className="text-muted small">
+                  por
+                  duplicidade
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <MensagemAlerta
+            mensagem={
+              importacao.mensagemErro ||
+              'Ocorreu um erro durante o processamento do arquivo.'
+            }
+            tipo="danger"
+          />
+        )}
+
+        {errosDetalhados.length >
+          0 && (
+          <div className="mt-4 text-start">
+            <h3 className="h5 mb-2">
+              Registros não
+              importados
+            </h3>
+
+            <p className="text-muted small">
+              Verifique os
+              registros abaixo,
+              corrija o arquivo
+              e tente novamente.
+            </p>
+
+            <div className="table-responsive">
+              <table className="table align-middle">
+                <thead>
+                  <tr>
+                    <th>
+                      Registro
+                    </th>
+
+                    <th>
+                      Campo
+                    </th>
+
+                    <th>
+                      Motivo
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {errosDetalhados.map(
+                    (
+                      erro,
+                      indice,
+                    ) => (
+                      <tr
+                        key={`${erro.numeroRegistro ?? 'geral'}-${erro.campo ?? 'campo'}-${indice}`}
+                      >
+                        <td>
+                          {erro.numeroRegistro ??
+                            '—'}
+                        </td>
+
+                        <td>
+                          {erro.campo ||
+                            'Não informado'}
+                        </td>
+
+                        <td>
+                          {
+                            erro.mensagem
+                          }
+                        </td>
+                      </tr>
+                    ),
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        <div className="d-flex flex-column flex-sm-row gap-2 justify-content-center mt-3">
+          <button
+            type="button"
+            className="btn btn-outline-secondary"
+            onClick={
+              onNovaImportacao
+            }
+          >
+            Nova importação
+          </button>
+
+          <Link
+            to="/dashboard"
+            className="btn fw-semibold"
+            style={{
+              background:
+                'var(--sb-gradient)',
+              color: '#fff',
+              borderRadius: 8,
+            }}
+          >
+            Ir para o painel
+          </Link>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 export default ImportarExtrato;
