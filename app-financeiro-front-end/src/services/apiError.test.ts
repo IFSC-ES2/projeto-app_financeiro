@@ -57,5 +57,11 @@ describe('apiError', () => {
       expect(obterStatusHttp(new Error('falha'))).toBeUndefined();
       expect(obterStatusHttp(undefined)).toBeUndefined();
     });
+
+    it('retorna undefined quando o AxiosError nao tem response', () => {
+      const erro = new AxiosError('sem rede');
+
+      expect(obterStatusHttp(erro)).toBeUndefined();
+    });
   });
 });
