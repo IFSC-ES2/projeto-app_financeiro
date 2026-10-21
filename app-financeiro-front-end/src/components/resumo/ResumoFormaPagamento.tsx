@@ -1,9 +1,6 @@
-import { useEffect, useState } from 'react';
 import EstadoVazio from '../ui/EstadoVazio';
 import MensagemAlerta from '../ui/MensagemAlerta';
-import { obterMensagemErroApi } from '../../services/apiError';
-import { buscarResumoPorPagamento } from '../../services/resumoService';
-import type { ResumoPagamentoResponse } from '../../types/resumo';
+import { useResumoFormaPagamento } from '../../hooks/useResumoFormaPagamento';
 import { formatarMoeda } from '../../utils/formatacao';
 
 type ResumoFormaPagamentoProps = {
@@ -24,54 +21,29 @@ const ResumoFormaPagamento = ({
   limiteItens,
   compacto = false,
 }: ResumoFormaPagamentoProps) => {
-  const [resumo, setResumo] = useState<ResumoPagamentoResponse[]>([]);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState('');
+  const {
+    resumo,
+    carregando,
+    erro,
+  } = useResumoFormaPagamento();
 
-  useEffect(() => {
-    let ativo = true;
-
-    const carregarResumo = async () => {
-      setCarregando(true);
-      setErro('');
-
-      try {
-        const resumoCarregado = await buscarResumoPorPagamento();
-
-        if (!ativo) return;
-
-        setResumo(resumoCarregado);
-      } catch (erroCapturado) {
-        if (!ativo) return;
-
-        setErro(
-          obterMensagemErroApi(
-            erroCapturado,
-            'Não foi possível carregar o resumo por forma de pagamento.',
-          ),
-        );
-      } finally {
-        if (ativo) setCarregando(false);
-      }
-    };
-
-    carregarResumo();
-
-    return () => {
-      ativo = false;
-    };
-  }, []);
-
-  const resumoExibido = limiteItens ? resumo.slice(0, limiteItens) : resumo;
+  const resumoExibido = limiteItens
+    ? resumo.slice(0, limiteItens)
+    : resumo;
 
   return (
     <section
-      className={compacto ? 'payment-summary-panel payment-summary-panel-compact' : 'payment-summary-panel'}
+      className={
+        compacto
+          ? 'payment-summary-panel payment-summary-panel-compact'
+          : 'payment-summary-panel'
+      }
       aria-label="Resumo por forma de pagamento"
     >
       <div className="payment-summary-header">
         <div>
           <h2>Resumo por forma de pagamento</h2>
+
           <p>
             {compacto
               ? 'Principais formas de pagamento utilizadas.'
@@ -81,12 +53,18 @@ const ResumoFormaPagamento = ({
       </div>
 
       {carregando ? (
-        <div className="loading-inline" aria-live="polite">
+        <div
+          className="loading-inline"
+          aria-live="polite"
+        >
           Carregando resumo por forma de pagamento...
         </div>
       ) : erro ? (
         <div className="payment-summary-content">
-          <MensagemAlerta mensagem={erro} tipo="danger" />
+          <MensagemAlerta
+            mensagem={erro}
+            tipo="danger"
+          />
         </div>
       ) : resumo.length === 0 ? (
         <EstadoVazio
@@ -96,27 +74,54 @@ const ResumoFormaPagamento = ({
       ) : (
         <div className="payment-summary-list">
           {resumoExibido.map((item) => {
-            const percentual = limitarPercentual(item.percentual);
-            const chave = item.formaPagamento ?? 'NAO_INFORMADO';
+            const percentual =
+              limitarPercentual(item.percentual);
+
+            const chave =
+              item.formaPagamento ?? 'NAO_INFORMADO';
 
             return (
-              <article className="payment-summary-item" key={chave}>
+              <article
+                className="payment-summary-item"
+                key={chave}
+              >
                 <div className="payment-summary-item-header">
                   <div>
-                    <strong>{item.rotulo ?? 'Não informado'}</strong>
+                    <strong>
+                      {item.rotulo ?? 'Não informado'}
+                    </strong>
+
                     <span>
-                      {item.quantidade} transaç{item.quantidade === 1 ? 'ão' : 'ões'}
+                      {item.quantidade}{' '}
+                      transaç
+                      {item.quantidade === 1
+                        ? 'ão'
+                        : 'ões'}
                     </span>
                   </div>
 
-                  <strong>{formatarMoeda(item.total)}</strong>
+                  <strong>
+                    {formatarMoeda(item.total)}
+                  </strong>
                 </div>
 
-                <div className="payment-summary-progress" aria-hidden="true">
-                  <span style={{ width: `${percentual}%` }} />
+                <div
+                  className="payment-summary-progress"
+                  aria-hidden="true"
+                >
+                  <span
+                    style={{
+                      width: `${percentual}%`,
+                    }}
+                  />
                 </div>
 
-                <p>{formatarPercentual(item.percentual)} do total movimentado</p>
+                <p>
+                  {formatarPercentual(
+                    item.percentual,
+                  )}{' '}
+                  do total movimentado
+                </p>
               </article>
             );
           })}
