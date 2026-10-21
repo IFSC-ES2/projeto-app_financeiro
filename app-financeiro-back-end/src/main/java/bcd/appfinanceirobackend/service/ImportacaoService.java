@@ -44,11 +44,15 @@ public class ImportacaoService {
             ContaRepository contaRepository,
             SugestaoCategoriaService sugestaoCategoriaService
     ) {
-        this.contaRepository = contaRepository;
-        this.transacaoRepository = transacaoRepository;
         this.parsers = parsers;
-        this.importacaoRepository = importacaoRepository;
-        this.sugestaoCategoriaService = sugestaoCategoriaService;
+        this.importacaoRepository =
+                importacaoRepository;
+        this.transacaoRepository =
+                transacaoRepository;
+        this.contaRepository =
+                contaRepository;
+        this.sugestaoCategoriaService =
+                sugestaoCategoriaService;
     }
 
     public ImportacaoResponseDTO processar(
@@ -110,12 +114,13 @@ public class ImportacaoService {
                     new String(preview)
                             .toLowerCase();
 
-            if (
-                    inicio.contains("nfeproc") ||
-                    inicio.contains("<nfe")
-            ) {
-                verificaNFe = true;
-            }
+            verificaNFe =
+                    inicio.contains(
+                            "nfeproc"
+                    ) ||
+                    inicio.contains(
+                            "<nfe"
+                    );
 
         } catch (Exception e) {
             throw new IllegalArgumentException(
@@ -196,12 +201,6 @@ public class ImportacaoService {
                     resultado.getErros()
             );
 
-            /*
-             * Nenhuma transação válida:
-             * o arquivo foi reconhecido pelo parser,
-             * mas todos os registros foram rejeitados
-             * ou não havia registros processáveis.
-             */
             if (
                     resultado
                             .getTransacoes()
@@ -295,7 +294,9 @@ public class ImportacaoService {
                     falhas++;
 
                     erros.add(
-                            criarErroPersistencia()
+                            criarErroPersistencia(
+                                    transacao
+                            )
                     );
 
                     log.error(
@@ -319,10 +320,6 @@ public class ImportacaoService {
                     StatusImportacao.ERRO
             );
 
-            /*
-             * Não enviar e.getMessage() para o frontend.
-             * A exceção completa fica somente no log.
-             */
             importacao.setMensagemErro(
                     "Não foi possível processar o arquivo. " +
                             "Verifique se o formato e os campos obrigatórios " +
@@ -358,7 +355,9 @@ public class ImportacaoService {
         );
     }
 
-    private ErroImportacaoDTO criarErroPersistencia() {
+    private ErroImportacaoDTO criarErroPersistencia(
+            Transacao transacao
+    ) {
         ErroImportacaoDTO erro =
                 new ErroImportacaoDTO();
 
@@ -367,9 +366,35 @@ public class ImportacaoService {
         erro.setCampo(
                 "transacao"
         );
+        String descricao =
+                transacao.getDescricao();
+        StringBuilder mensagem =
+                new StringBuilder(
+                        "Não foi possível salvar a transação"
+                );
 
+        if (
+                descricao != null &&
+                !descricao.isBlank()
+        ) {
+            mensagem
+                    .append(" \"")
+                    .append(descricao)
+                    .append("\"");
+        }
+
+        if (
+                transacao.getData() != null
+        ) {
+            mensagem
+                    .append(" de ")
+                    .append(
+                            transacao.getData()
+                    );
+        }
+        mensagem.append(".");
         erro.setMensagem(
-                "Não foi possível salvar uma das transações processadas."
+                mensagem.toString()
         );
 
         return erro;
@@ -383,19 +408,25 @@ public class ImportacaoService {
                 nomeArquivo.toLowerCase();
 
         if (
-                extensaoArquivo.endsWith(".csv")
+                extensaoArquivo.endsWith(
+                        ".csv"
+                )
         ) {
             return FormatoArquivo.CSV;
         }
 
         if (
-                extensaoArquivo.endsWith(".txt")
+                extensaoArquivo.endsWith(
+                        ".txt"
+                )
         ) {
             return FormatoArquivo.TXT;
         }
 
         if (
-                extensaoArquivo.endsWith(".xml")
+                extensaoArquivo.endsWith(
+                        ".xml"
+                )
         ) {
             return verificaNfe
                     ? FormatoArquivo.NFE
@@ -414,7 +445,9 @@ public class ImportacaoService {
     ) {
         Importacao importacao =
                 importacaoRepository
-                        .findById(importacaoID)
+                        .findById(
+                                importacaoID
+                        )
                         .orElseThrow(
                                 () ->
                                         new ResponseStatusException(
@@ -444,7 +477,9 @@ public class ImportacaoService {
             Importacao importacao,
             List<ErroImportacaoDTO> erros
     ) {
-        ImportacaoResponseDTO dto = new ImportacaoResponseDTO();
+        ImportacaoResponseDTO dto =
+                new ImportacaoResponseDTO();
+
         dto.setId(
                 importacao.getId()
         );
@@ -467,7 +502,9 @@ public class ImportacaoService {
                 importacao.getMensagemErro()
         );
         dto.setErros(
-                new ArrayList<>(erros)
+                new ArrayList<>(
+                        erros
+                )
         );
         return dto;
     }
