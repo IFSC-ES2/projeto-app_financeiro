@@ -32,6 +32,7 @@ const falharComStatus = (status: number) =>
 
 describe('httpClient', () => {
   const aoUnauthorized = vi.fn();
+  const adapterOriginal = httpClient.defaults.adapter;
 
   beforeEach(() => {
     sessionStorage.clear();
@@ -41,6 +42,7 @@ describe('httpClient', () => {
   });
 
   afterEach(() => {
+    httpClient.defaults.adapter = adapterOriginal;
     window.removeEventListener('smartbudget:unauthorized', aoUnauthorized);
   });
 
