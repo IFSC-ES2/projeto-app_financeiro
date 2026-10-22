@@ -1,5 +1,6 @@
 package bcd.appfinanceirobackend.parser;
 
+import bcd.appfinanceirobackend.exception.ErroEstruturalImportacaoException;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
@@ -16,30 +17,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
-/**
- * Parser para Nota Fiscal Eletrônica (NF-e) no padrão SEFAZ (XML).
- *
- * Detecta arquivos NF-e pela presença das tags <nfeProc> ou <NFe> no início
- * do conteúdo. Suporta NF-e com ou sem o envelope <nfeProc>.
- *
- * Estratégia de extração:
- * - Cada item da NF-e, representado por <det>, é convertido em uma transação
- *   do tipo DEBITO, usando o valor do produto em <vProd>.
- * - A descrição é composta pelo CNPJ do emitente + razão social (xNome)
- * - A data é extraída do campo <dhEmi> (data de emissão)
- * - Os itens individuais (<det>) são considerados registros processáveis.
- *   Itens com valor ausente, inválido ou menor/igual a zero são ignorados e
- *   contabilizados como linhas inválidas.
- *
- * Tags SEFAZ utilizadas:
- *   <ide>/<dhEmi>     → data de emissão
- *   <emit>/<xNome>    → razão social do emitente
- *   <emit>/<CNPJ>     → CNPJ do emitente
- *   <total>/<ICMSTot>/<vNF> → valor total da nota
- */
 @Component
 @Order(1)
 public class ParserNFe implements ParserExtrato {
@@ -55,18 +33,14 @@ public class ParserNFe implements ParserExtrato {
             );
 
     @Override
-    public boolean aceita(
-            MultipartFile arquivo
-    ) {
-        String nome =
-                arquivo.getOriginalFilename();
+    public boolean aceita(MultipartFile arquivo) {
+        String nome = arquivo.getOriginalFilename();
 
         if (nome == null) {
             return false;
         }
 
-        String nomeLower =
-                nome.toLowerCase();
+        String nomeLower = nome.toLowerCase();
 
         if (
                 !nomeLower.endsWith(".xml") &&
@@ -75,22 +49,14 @@ public class ParserNFe implements ParserExtrato {
             return false;
         }
 
-        try (
-                InputStream is =
-                        arquivo.getInputStream()
-        ) {
-            byte[] preview =
-                    is.readNBytes(500);
+        try (InputStream is = arquivo.getInputStream()) {
+            byte[] preview = is.readNBytes(500);
 
-            String inicio =
-                    new String(preview)
-                            .toLowerCase();
+            String inicio = new String(preview)
+                    .toLowerCase();
 
-            return inicio.contains(
-                    "nfeproc"
-            ) || inicio.contains(
-                    "<nfe"
-            );
+            return inicio.contains("nfeproc")
+                    || inicio.contains("<nfe");
 
         } catch (Exception e) {
             return false;
@@ -102,18 +68,13 @@ public class ParserNFe implements ParserExtrato {
             MultipartFile arquivo,
             Conta conta
     ) {
-        ResultadoParser resultado =
-                new ResultadoParser();
-
-        List<Transacao> transacoes =
-                new ArrayList<>();
+        ResultadoParser resultado = new ResultadoParser();
 
         int totalLinhas = 0;
 
         try {
             DocumentBuilderFactory factory =
-                    DocumentBuilderFactory
-                            .newInstance();
+                    DocumentBuilderFactory.newInstance();
 
             factory.setNamespaceAware(true);
 
@@ -137,34 +98,31 @@ public class ParserNFe implements ParserExtrato {
                     extrairDataEmissao(doc);
 
             if (dataEmissao == null) {
-                throw new RuntimeException(
+                throw new ErroEstruturalImportacaoException(
+                        null,
+                        "dhEmi",
                         "Campo <dhEmi> não encontrado ou em formato inválido na NF-e."
                 );
             }
 
             NodeList itens =
-                    doc.getElementsByTagName(
-                            "det"
-                    );
+                    doc.getElementsByTagName("det");
 
             if (itens.getLength() == 0) {
-                throw new RuntimeException(
+                throw new ErroEstruturalImportacaoException(
+                        null,
+                        "det",
                         "Nenhum item <det> encontrado na NF-e."
                 );
             }
 
-            for (
-                    int i = 0;
-                    i < itens.getLength();
-                    i++
-            ) {
+            for (int i = 0; i < itens.getLength(); i++) {
                 Element item =
                         (Element) itens.item(i);
 
-                totalLinhas++;
+                int numeroRegistro = i + 1;
 
-                int numeroRegistro =
-                        i + 1;
+                totalLinhas++;
 
                 String descricaoProduto =
                         primeiroTextoElemento(
@@ -172,15 +130,12 @@ public class ParserNFe implements ParserExtrato {
                                 "xProd"
                         );
 
-                String valorTexto =
-                        primeiroTextoElemento(
-                                item,
-                                "vProd"
-                        );
-
                 BigDecimal valorProduto =
                         parsearBigDecimal(
-                                valorTexto
+                                primeiroTextoElemento(
+                                        item,
+                                        "vProd"
+                                )
                         );
 
                 if (valorProduto == null) {
@@ -211,52 +166,35 @@ public class ParserNFe implements ParserExtrato {
                         new Transacao();
 
                 transacao.setConta(conta);
-                transacao.setData(
-                        dataEmissao
-                );
+                transacao.setData(dataEmissao);
 
                 transacao.setDescricao(
                         descricaoProduto.isBlank()
-                                ? "Item NF-e #" +
-                                numeroRegistro
+                                ? "Item NF-e #" + numeroRegistro
                                 : descricaoProduto
                 );
 
-                transacao.setValor(
-                        valorProduto
-                );
+                transacao.setValor(valorProduto);
+                transacao.setTipo(TipoTransacao.DEBITO);
+                transacao.setCategorizada(false);
 
-                transacao.setTipo(
-                        TipoTransacao.DEBITO
-                );
-
-                transacao.setCategorizada(
-                        false
-                );
-
-                transacoes.add(
-                        transacao
+                resultado.adicionarTransacao(
+                        transacao,
+                        numeroRegistro
                 );
             }
 
-        } catch (RuntimeException e) {
+        } catch (ErroEstruturalImportacaoException e) {
             throw e;
 
         } catch (Exception e) {
             throw new RuntimeException(
-                    "Erro ao processar NF-e: " +
-                            e.getMessage(),
+                    "Erro ao processar NF-e",
                     e
             );
         }
 
-        resultado.setTotalLinhas(
-                totalLinhas
-        );
-
-        resultado.setTransacoes(
-                transacoes
-        );
+        resultado.setTotalLinhas(totalLinhas);
 
         return resultado;
     }
@@ -293,10 +231,7 @@ public class ParserNFe implements ParserExtrato {
             } catch (Exception e2) {
                 try {
                     return LocalDate.parse(
-                            dhEmi.substring(
-                                    0,
-                                    10
-                            )
+                            dhEmi.substring(0, 10)
                     );
 
                 } catch (Exception e3) {
@@ -311,13 +246,9 @@ public class ParserNFe implements ParserExtrato {
             String tag
     ) {
         NodeList nos =
-                elemento.getElementsByTagName(
-                        tag
-                );
+                elemento.getElementsByTagName(tag);
 
-        if (
-                nos.getLength() == 0
-        ) {
+        if (nos.getLength() == 0) {
             return "";
         }
 
@@ -331,13 +262,9 @@ public class ParserNFe implements ParserExtrato {
             String tag
     ) {
         NodeList nos =
-                doc.getElementsByTagName(
-                        tag
-                );
+                doc.getElementsByTagName(tag);
 
-        if (
-                nos.getLength() == 0
-        ) {
+        if (nos.getLength() == 0) {
             return "";
         }
 
@@ -358,15 +285,10 @@ public class ParserNFe implements ParserExtrato {
 
         try {
             return new BigDecimal(
-                    valor.replace(
-                            ",",
-                            "."
-                    )
+                    valor.replace(",", ".")
             );
 
-        } catch (
-                NumberFormatException e
-        ) {
+        } catch (NumberFormatException e) {
             return null;
         }
     }
