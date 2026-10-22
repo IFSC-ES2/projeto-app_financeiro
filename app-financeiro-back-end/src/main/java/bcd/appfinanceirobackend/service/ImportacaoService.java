@@ -2,6 +2,7 @@ package bcd.appfinanceirobackend.service;
 
 import bcd.appfinanceirobackend.dto.importacao.ErroImportacaoDTO;
 import bcd.appfinanceirobackend.dto.importacao.ImportacaoResponseDTO;
+import bcd.appfinanceirobackend.exception.ErroEstruturalImportacaoException;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
 import bcd.appfinanceirobackend.model.Categoria;
 import bcd.appfinanceirobackend.model.Conta;
@@ -31,6 +32,14 @@ import java.util.UUID;
 @Service
 public class ImportacaoService {
 
+    private static final String MENSAGEM_SEM_TRANSACOES_VALIDAS =
+            "Nenhuma transação válida foi encontrada no arquivo. " +
+            "Revise os registros rejeitados e verifique os campos obrigatórios de data, descrição e valor.";
+
+    private static final String MENSAGEM_ERRO_PROCESSAMENTO =
+            "Não foi possível processar o arquivo. " +
+            "Verifique se o formato e os campos obrigatórios estão corretos e tente novamente.";
+
     private final List<ParserExtrato> parsers;
     private final ImportacaoRepository importacaoRepository;
     private final TransacaoRepository transacaoRepository;
@@ -45,14 +54,10 @@ public class ImportacaoService {
             SugestaoCategoriaService sugestaoCategoriaService
     ) {
         this.parsers = parsers;
-        this.importacaoRepository =
-                importacaoRepository;
-        this.transacaoRepository =
-                transacaoRepository;
-        this.contaRepository =
-                contaRepository;
-        this.sugestaoCategoriaService =
-                sugestaoCategoriaService;
+        this.importacaoRepository = importacaoRepository;
+        this.transacaoRepository = transacaoRepository;
+        this.contaRepository = contaRepository;
+        this.sugestaoCategoriaService = sugestaoCategoriaService;
     }
 
     public ImportacaoResponseDTO processar(
@@ -60,22 +65,18 @@ public class ImportacaoService {
             UUID contaId,
             Usuario usuarioAutenticado
     ) {
-        Conta conta =
-                contaRepository
-                        .findById(contaId)
-                        .orElseThrow(
-                                () ->
-                                        new ResourceNotFoundException(
-                                                "Conta não encontrada"
-                                        )
-                        );
+        Conta conta = contaRepository
+                .findById(contaId)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException(
+                                "Conta não encontrada"
+                        )
+                );
 
         if (
                 !conta.getUsuario()
                         .getId()
-                        .equals(
-                                usuarioAutenticado.getId()
-                        )
+                        .equals(usuarioAutenticado.getId())
         ) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
@@ -83,8 +84,7 @@ public class ImportacaoService {
             );
         }
 
-        String nome =
-                arquivo.getOriginalFilename();
+        String nome = arquivo.getOriginalFilename();
 
         if (
                 nome == null ||
@@ -101,39 +101,13 @@ public class ImportacaoService {
             );
         }
 
-        boolean verificaNFe = false;
-
-        try (
-                InputStream is =
-                        arquivo.getInputStream()
-        ) {
-            byte[] preview =
-                    is.readNBytes(500);
-
-            String inicio =
-                    new String(preview)
-                            .toLowerCase();
-
-            verificaNFe =
-                    inicio.contains(
-                            "nfeproc"
-                    ) ||
-                    inicio.contains(
-                            "<nfe"
-                    );
-
-        } catch (Exception e) {
-            throw new IllegalArgumentException(
-                    "Conteúdo do arquivo inválido"
-            );
-        }
-
-        Importacao importacao =
-                new Importacao();
-
-        importacao.setNome_arquivo(
-                arquivo.getOriginalFilename()
+        boolean verificaNFe = verificarSeNFe(
+                arquivo
         );
+
+        Importacao importacao = new Importacao();
+
+        importacao.setNome_arquivo(nome);
 
         importacao.setFormatoArquivo(
                 detectarFormato(
@@ -158,22 +132,17 @@ public class ImportacaoService {
                 importacao
         );
 
-        ParserExtrato parser =
-                parsers.stream()
-                        .filter(
-                                p ->
-                                        p.aceita(
-                                                arquivo
-                                        )
+        ParserExtrato parser = parsers.stream()
+                .filter(
+                        p -> p.aceita(arquivo)
+                )
+                .findFirst()
+                .orElseThrow(
+                        () -> new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST,
+                                "Formato de arquivo não suportado"
                         )
-                        .findFirst()
-                        .orElseThrow(
-                                () ->
-                                        new ResponseStatusException(
-                                                HttpStatus.BAD_REQUEST,
-                                                "Formato de arquivo não suportado"
-                                        )
-                        );
+                );
 
         importacao.setStatusImportacao(
                 StatusImportacao.PROCESSANDO
@@ -185,6 +154,7 @@ public class ImportacaoService {
 
         int sucessos = 0;
         int falhas = 0;
+        int falhasPersistencia = 0;
         int ignoradasPorDuplicidade = 0;
 
         List<ErroImportacaoDTO> erros =
@@ -220,14 +190,10 @@ public class ImportacaoService {
                         resultado.getLinhasInvalidas()
                 );
 
-                importacao.setIgnoradasPorDuplicidade(
-                        0
-                );
+                importacao.setIgnoradasPorDuplicidade(0);
 
                 importacao.setMensagemErro(
-                        "Nenhuma transação válida foi encontrada no arquivo. " +
-                                "Revise os registros rejeitados e verifique os campos " +
-                                "obrigatórios de data, descrição e valor."
+                        MENSAGEM_SEM_TRANSACOES_VALIDAS
                 );
 
                 importacaoRepository.save(
@@ -243,10 +209,16 @@ public class ImportacaoService {
             falhas =
                     resultado.getLinhasInvalidas();
 
-            for (
-                    Transacao transacao :
-                    resultado.getTransacoes()
-            ) {
+            List<Transacao> transacoes =
+                    resultado.getTransacoes();
+
+            for (int i = 0; i < transacoes.size(); i++) {
+                Transacao transacao =
+                        transacoes.get(i);
+
+                Integer numeroRegistro =
+                        resultado.getNumeroRegistroTransacao(i);
+
                 try {
                     boolean duplicada =
                             transacaoRepository
@@ -260,7 +232,6 @@ public class ImportacaoService {
 
                     if (duplicada) {
                         ignoradasPorDuplicidade++;
-
                         continue;
                     }
 
@@ -292,10 +263,12 @@ public class ImportacaoService {
 
                 } catch (Exception e) {
                     falhas++;
+                    falhasPersistencia++;
 
                     erros.add(
                             criarErroPersistencia(
-                                    transacao
+                                    transacao,
+                                    numeroRegistro
                             )
                     );
 
@@ -311,8 +284,44 @@ public class ImportacaoService {
                     resultado.getTotalLinhas()
             );
 
+            /*
+             * Duplicidade não é falha técnica.
+             *
+             * Porém, se havia transações válidas para persistir,
+             * todas falharam e nenhuma foi salva, a importação não
+             * pode ser considerada concluída.
+             */
+            if (
+                    sucessos == 0 &&
+                    falhasPersistencia > 0
+            ) {
+                importacao.setStatusImportacao(
+                        StatusImportacao.ERRO
+                );
+
+                importacao.setMensagemErro(
+                        MENSAGEM_SEM_TRANSACOES_VALIDAS
+                );
+
+            } else {
+                importacao.setStatusImportacao(
+                        StatusImportacao.CONCLUIDO
+                );
+            }
+
+        } catch (ErroEstruturalImportacaoException e) {
+            falhas++;
+
+            erros.add(
+                    e.toErroImportacaoDTO()
+            );
+
             importacao.setStatusImportacao(
-                    StatusImportacao.CONCLUIDO
+                    StatusImportacao.ERRO
+            );
+
+            importacao.setMensagemErro(
+                    MENSAGEM_SEM_TRANSACOES_VALIDAS
             );
 
         } catch (Exception e) {
@@ -321,13 +330,11 @@ public class ImportacaoService {
             );
 
             importacao.setMensagemErro(
-                    "Não foi possível processar o arquivo. " +
-                            "Verifique se o formato e os campos obrigatórios " +
-                            "estão corretos e tente novamente."
+                    MENSAGEM_ERRO_PROCESSAMENTO
             );
 
             log.error(
-                    "Erro ao processar importação {}",
+                    "Erro inesperado ao processar importação {}",
                     importacao.getId(),
                     e
             );
@@ -355,44 +362,72 @@ public class ImportacaoService {
         );
     }
 
+    private boolean verificarSeNFe(
+            MultipartFile arquivo
+    ) {
+        try (
+                InputStream is =
+                        arquivo.getInputStream()
+        ) {
+            byte[] preview =
+                    is.readNBytes(500);
+
+            String inicio =
+                    new String(preview)
+                            .toLowerCase();
+
+            return inicio.contains("nfeproc")
+                    || inicio.contains("<nfe");
+
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Conteúdo do arquivo inválido"
+            );
+        }
+    }
+
     private ErroImportacaoDTO criarErroPersistencia(
-            Transacao transacao
+            Transacao transacao,
+            Integer numeroRegistro
     ) {
         ErroImportacaoDTO erro =
                 new ErroImportacaoDTO();
 
-        erro.setNumeroRegistro(null);
+        erro.setNumeroRegistro(
+                numeroRegistro
+        );
 
         erro.setCampo(
                 "transacao"
         );
-        String descricao =
-                transacao.getDescricao();
+
         StringBuilder mensagem =
                 new StringBuilder(
                         "Não foi possível salvar a transação"
                 );
 
         if (
-                descricao != null &&
-                !descricao.isBlank()
+                transacao.getDescricao() != null &&
+                !transacao.getDescricao().isBlank()
         ) {
             mensagem
                     .append(" \"")
-                    .append(descricao)
+                    .append(
+                            transacao.getDescricao()
+                    )
                     .append("\"");
         }
 
-        if (
-                transacao.getData() != null
-        ) {
+        if (transacao.getData() != null) {
             mensagem
                     .append(" de ")
                     .append(
                             transacao.getData()
                     );
         }
+
         mensagem.append(".");
+
         erro.setMensagem(
                 mensagem.toString()
         );
@@ -402,33 +437,21 @@ public class ImportacaoService {
 
     private FormatoArquivo detectarFormato(
             String nomeArquivo,
-            boolean verificaNfe
+            boolean verificaNFe
     ) {
         String extensaoArquivo =
                 nomeArquivo.toLowerCase();
 
-        if (
-                extensaoArquivo.endsWith(
-                        ".csv"
-                )
-        ) {
+        if (extensaoArquivo.endsWith(".csv")) {
             return FormatoArquivo.CSV;
         }
 
-        if (
-                extensaoArquivo.endsWith(
-                        ".txt"
-                )
-        ) {
+        if (extensaoArquivo.endsWith(".txt")) {
             return FormatoArquivo.TXT;
         }
 
-        if (
-                extensaoArquivo.endsWith(
-                        ".xml"
-                )
-        ) {
-            return verificaNfe
+        if (extensaoArquivo.endsWith(".xml")) {
+            return verificaNFe
                     ? FormatoArquivo.NFE
                     : FormatoArquivo.XML;
         }
@@ -445,24 +468,19 @@ public class ImportacaoService {
     ) {
         Importacao importacao =
                 importacaoRepository
-                        .findById(
-                                importacaoID
-                        )
+                        .findById(importacaoID)
                         .orElseThrow(
-                                () ->
-                                        new ResponseStatusException(
-                                                HttpStatus.NOT_FOUND,
-                                                "Importação não encontrada"
-                                        )
+                                () -> new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "Importação não encontrada"
+                                )
                         );
 
         if (
                 !importacao
                         .getUsuario()
                         .getId()
-                        .equals(
-                                usuarioAutenticado.getId()
-                        )
+                        .equals(usuarioAutenticado.getId())
         ) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
@@ -473,6 +491,7 @@ public class ImportacaoService {
         return importacao
                 .getStatusImportacao();
     }
+
     private ImportacaoResponseDTO toResponse(
             Importacao importacao,
             List<ErroImportacaoDTO> erros
@@ -483,29 +502,35 @@ public class ImportacaoService {
         dto.setId(
                 importacao.getId()
         );
+
         dto.setStatus(
                 importacao.getStatusImportacao()
         );
+
         dto.setSucessos(
                 importacao.getSucessos()
         );
+
         dto.setFalhas(
                 importacao.getFalhas()
         );
+
         dto.setIgnoradasPorDuplicidade(
                 importacao.getIgnoradasPorDuplicidade()
         );
+
         dto.setImportadoEm(
                 importacao.getImportado_em()
         );
+
         dto.setMensagemErro(
                 importacao.getMensagemErro()
         );
+
         dto.setErros(
-                new ArrayList<>(
-                        erros
-                )
+                new ArrayList<>(erros)
         );
+
         return dto;
     }
 }
