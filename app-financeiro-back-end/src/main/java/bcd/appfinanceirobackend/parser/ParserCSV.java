@@ -37,9 +37,6 @@ public class ParserCSV implements ParserExtrato {
             DateTimeFormatter.ofPattern("dd-MM-yyyy")
     );
 
-    /**
-     * Mantém a linha física original mesmo que linhas vazias sejam ignoradas.
-     */
     private record LinhaFisica(
             int numeroLinha,
             String conteudo
@@ -55,66 +52,44 @@ public class ParserCSV implements ParserExtrato {
     @Override
     public boolean aceita(MultipartFile arquivo) {
         String nome = arquivo.getOriginalFilename();
-
-        return nome != null &&
-                nome.toLowerCase().endsWith(".csv");
+        return nome != null && nome.toLowerCase().endsWith(".csv");
     }
 
     @Override
-    public ResultadoParser parsear(
-            MultipartFile arquivo,
-            Conta conta
-    ) {
+    public ResultadoParser parsear(MultipartFile arquivo, Conta conta) {
         try {
             String conteudo = removerBom(
                     lerConteudoDoArquivo(arquivo)
             );
 
-            List<LinhaFisica> linhas =
-                    quebrarEmLinhasUteis(conteudo);
+            List<LinhaFisica> linhas = quebrarEmLinhasUteis(conteudo);
 
+            /*
+             * Mantém o contrato anterior do parser:
+             * arquivo completamente vazio produz resultado zerado.
+             *
+             * O ImportacaoService já bloqueia MultipartFile vazio antes
+             * de chegar ao parser.
+             */
             if (linhas.isEmpty()) {
-                ResultadoParser resultado =
-                        new ResultadoParser();
-
-                resultado.adicionarErro(
-                        null,
-                        "estrutura",
-                        "O arquivo CSV não possui registros para importação."
-                );
-
-                return resultado;
+                return new ResultadoParser();
             }
 
-            char delimitador =
-                    detectarDelimitador(
-                            linhas.getFirst().conteudo()
-                    );
+            char delimitador = detectarDelimitador(
+                    linhas.getFirst().conteudo()
+            );
 
-            List<RegistroCsv> registros =
-                    lerRegistrosCsv(
-                            linhas,
-                            delimitador
-                    );
+            List<RegistroCsv> registros = lerRegistrosCsv(
+                    linhas,
+                    delimitador
+            );
 
             if (registros.isEmpty()) {
-                ResultadoParser resultado =
-                        new ResultadoParser();
-
-                resultado.adicionarErro(
-                        null,
-                        "estrutura",
-                        "Não foi possível identificar registros no arquivo CSV."
-                );
-
-                return resultado;
+                return new ResultadoParser();
             }
 
-            RegistroCsv primeiroRegistro =
-                    registros.getFirst();
-
-            String[] cabecalho =
-                    primeiroRegistro.colunas();
+            RegistroCsv primeiroRegistro = registros.getFirst();
+            String[] cabecalho = primeiroRegistro.colunas();
 
             if (ehCabecalhoNubankConta(cabecalho)) {
                 return processarCsvNubankConta(
@@ -123,14 +98,6 @@ public class ParserCSV implements ParserExtrato {
                 );
             }
 
-            /*
-             * O campo Identificador é específico do layout Nubank.
-             * Se ele aparece, mas as demais colunas obrigatórias não,
-             * tratamos como cabeçalho Nubank estruturalmente inválido.
-             *
-             * Isso não interfere com o cabeçalho legado:
-             * data,descricao,valor,tipo
-             */
             if (pareceCabecalhoNubankConta(cabecalho)) {
                 throw new ErroEstruturalImportacaoException(
                         primeiroRegistro.numeroLinha(),
@@ -160,23 +127,19 @@ public class ParserCSV implements ParserExtrato {
     ) throws IOException {
         byte[] bytes = arquivo.getBytes();
 
-        String textoUtf8 =
-                tentarConverter(
-                        bytes,
-                        StandardCharsets.UTF_8
-                );
+        String textoUtf8 = tentarConverter(
+                bytes,
+                StandardCharsets.UTF_8
+        );
 
         if (textoUtf8 != null) {
             return textoUtf8;
         }
 
-        String textoWindows1252 =
-                tentarConverter(
-                        bytes,
-                        Charset.forName(
-                                "Windows-1252"
-                        )
-                );
+        String textoWindows1252 = tentarConverter(
+                bytes,
+                Charset.forName("Windows-1252")
+        );
 
         if (textoWindows1252 != null) {
             return textoWindows1252;
@@ -192,20 +155,13 @@ public class ParserCSV implements ParserExtrato {
             byte[] bytes,
             Charset charset
     ) {
-        CharsetDecoder decoder =
-                charset.newDecoder()
-                        .onMalformedInput(
-                                CodingErrorAction.REPORT
-                        )
-                        .onUnmappableCharacter(
-                                CodingErrorAction.REPORT
-                        );
+        CharsetDecoder decoder = charset.newDecoder()
+                .onMalformedInput(CodingErrorAction.REPORT)
+                .onUnmappableCharacter(CodingErrorAction.REPORT);
 
         try {
             return decoder
-                    .decode(
-                            ByteBuffer.wrap(bytes)
-                    )
+                    .decode(ByteBuffer.wrap(bytes))
                     .toString();
 
         } catch (CharacterCodingException e) {
@@ -226,30 +182,22 @@ public class ParserCSV implements ParserExtrato {
     }
 
     /**
-     * Linhas vazias continuam sendo ignoradas como registros,
-     * mas o numeroLinha preserva a posição física original.
+     * Linhas vazias não são registros, mas sua posição física
+     * continua influenciando o número das linhas seguintes.
      */
     private List<LinhaFisica> quebrarEmLinhasUteis(
             String conteudo
     ) {
-        List<LinhaFisica> linhas =
-                new ArrayList<>();
+        List<LinhaFisica> linhas = new ArrayList<>();
 
-        String normalizado =
-                conteudo
-                        .replace("\r\n", "\n")
-                        .replace("\r", "\n");
+        String normalizado = conteudo
+                .replace("\r\n", "\n")
+                .replace("\r", "\n");
 
-        String[] linhasFisicas =
-                normalizado.split("\n", -1);
+        String[] linhasFisicas = normalizado.split("\n", -1);
 
-        for (
-                int i = 0;
-                i < linhasFisicas.length;
-                i++
-        ) {
-            String linha =
-                    linhasFisicas[i].trim();
+        for (int i = 0; i < linhasFisicas.length; i++) {
+            String linha = linhasFisicas[i].trim();
 
             if (linha.isBlank()) {
                 continue;
@@ -272,29 +220,25 @@ public class ParserCSV implements ParserExtrato {
         char melhorDelimitador = ',';
         int maiorQuantidadeColunas = 1;
 
-        char[] candidatos =
-                new char[]{',', ';', '\t'};
+        char[] candidatos = new char[]{
+                ',',
+                ';',
+                '\t'
+        };
 
         for (char candidato : candidatos) {
-            String[] registro =
-                    lerRegistroCsv(
-                            primeiraLinha,
-                            candidato
-                    );
+            String[] registro = lerRegistroCsv(
+                    primeiraLinha,
+                    candidato
+            );
 
             if (registro == null) {
                 continue;
             }
 
-            if (
-                    registro.length >
-                            maiorQuantidadeColunas
-            ) {
-                maiorQuantidadeColunas =
-                        registro.length;
-
-                melhorDelimitador =
-                        candidato;
+            if (registro.length > maiorQuantidadeColunas) {
+                maiorQuantidadeColunas = registro.length;
+                melhorDelimitador = candidato;
             }
         }
 
@@ -305,15 +249,13 @@ public class ParserCSV implements ParserExtrato {
             List<LinhaFisica> linhas,
             char delimitador
     ) throws Exception {
-        List<RegistroCsv> registros =
-                new ArrayList<>();
+        List<RegistroCsv> registros = new ArrayList<>();
 
         for (LinhaFisica linha : linhas) {
-            String[] colunas =
-                    lerRegistroCsv(
-                            linha.conteudo(),
-                            delimitador
-                    );
+            String[] colunas = lerRegistroCsv(
+                    linha.conteudo(),
+                    delimitador
+            );
 
             if (colunas == null) {
                 continue;
@@ -330,27 +272,20 @@ public class ParserCSV implements ParserExtrato {
         return registros;
     }
 
-    /**
-     * Usa OpenCSV para preservar campos entre aspas e descrições
-     * contendo o próprio delimitador.
-     */
     private String[] lerRegistroCsv(
             String linha,
             char delimitador
     ) throws Exception {
         try (
-                CSVReader reader =
-                        new CSVReaderBuilder(
-                                new StringReader(linha)
+                CSVReader reader = new CSVReaderBuilder(
+                        new StringReader(linha)
+                )
+                        .withCSVParser(
+                                new CSVParserBuilder()
+                                        .withSeparator(delimitador)
+                                        .build()
                         )
-                                .withCSVParser(
-                                        new CSVParserBuilder()
-                                                .withSeparator(
-                                                        delimitador
-                                                )
-                                                .build()
-                                )
-                                .build()
+                        .build()
         ) {
             return reader.readNext();
         }
@@ -359,63 +294,68 @@ public class ParserCSV implements ParserExtrato {
     private boolean ehCabecalhoNubankConta(
             String[] cabecalho
     ) {
-        return encontrarIndiceDaColuna(
-                cabecalho,
-                "data"
-        ) >= 0
-                && encontrarIndiceDaColuna(
-                cabecalho,
-                "valor"
-        ) >= 0
-                && encontrarIndiceDaColuna(
-                cabecalho,
-                "identificador"
-        ) >= 0
-                && encontrarIndiceDaColuna(
-                cabecalho,
-                "descricao"
-        ) >= 0;
+        return encontrarIndiceDaColuna(cabecalho, "data") >= 0
+                && encontrarIndiceDaColuna(cabecalho, "valor") >= 0
+                && encontrarIndiceDaColuna(cabecalho, "identificador") >= 0
+                && encontrarIndiceDaColuna(cabecalho, "descricao") >= 0;
     }
 
+    /**
+     * Detecta cabeçalho que aparenta ser Nubank, mas está incompleto.
+     *
+     * O cabeçalho legado possui "tipo", então é excluído dessa detecção.
+     */
     private boolean pareceCabecalhoNubankConta(
             String[] cabecalho
     ) {
-        return encontrarIndiceDaColuna(
-                cabecalho,
-                "identificador"
-        ) >= 0;
+        if (encontrarIndiceDaColuna(cabecalho, "tipo") >= 0) {
+            return false;
+        }
+
+        int marcadores = 0;
+
+        if (encontrarIndiceDaColuna(cabecalho, "data") >= 0) {
+            marcadores++;
+        }
+
+        if (encontrarIndiceDaColuna(cabecalho, "valor") >= 0) {
+            marcadores++;
+        }
+
+        if (encontrarIndiceDaColuna(cabecalho, "identificador") >= 0) {
+            marcadores++;
+        }
+
+        if (encontrarIndiceDaColuna(cabecalho, "descricao") >= 0) {
+            marcadores++;
+        }
+
+        return marcadores >= 2;
     }
 
     private ResultadoParser processarCsvNubankConta(
             List<RegistroCsv> registros,
             Conta conta
     ) {
-        ResultadoParser resultado =
-                new ResultadoParser();
+        ResultadoParser resultado = new ResultadoParser();
 
-        RegistroCsv registroCabecalho =
-                registros.getFirst();
+        RegistroCsv registroCabecalho = registros.getFirst();
+        String[] cabecalho = registroCabecalho.colunas();
 
-        String[] cabecalho =
-                registroCabecalho.colunas();
+        int indiceData = encontrarIndiceDaColuna(
+                cabecalho,
+                "data"
+        );
 
-        int indiceData =
-                encontrarIndiceDaColuna(
-                        cabecalho,
-                        "data"
-                );
+        int indiceValor = encontrarIndiceDaColuna(
+                cabecalho,
+                "valor"
+        );
 
-        int indiceValor =
-                encontrarIndiceDaColuna(
-                        cabecalho,
-                        "valor"
-                );
-
-        int indiceDescricao =
-                encontrarIndiceDaColuna(
-                        cabecalho,
-                        "descricao"
-                );
+        int indiceDescricao = encontrarIndiceDaColuna(
+                cabecalho,
+                "descricao"
+        );
 
         if (
                 indiceData < 0 ||
@@ -431,19 +371,11 @@ public class ParserCSV implements ParserExtrato {
 
         int totalLinhas = 0;
 
-        for (
-                int i = 1;
-                i < registros.size();
-                i++
-        ) {
-            RegistroCsv registro =
-                    registros.get(i);
+        for (int i = 1; i < registros.size(); i++) {
+            RegistroCsv registro = registros.get(i);
 
-            String[] linha =
-                    registro.colunas();
-
-            int numeroRegistro =
-                    registro.numeroLinha();
+            String[] linha = registro.colunas();
+            int numeroRegistro = registro.numeroLinha();
 
             totalLinhas++;
 
@@ -464,10 +396,9 @@ public class ParserCSV implements ParserExtrato {
                 continue;
             }
 
-            LocalDate data =
-                    parsearData(
-                            linha[indiceData]
-                    );
+            LocalDate data = parsearData(
+                    linha[indiceData]
+            );
 
             if (data == null) {
                 resultado.adicionarErro(
@@ -479,10 +410,9 @@ public class ParserCSV implements ParserExtrato {
                 continue;
             }
 
-            BigDecimal valor =
-                    parsearValor(
-                            linha[indiceValor]
-                    );
+            BigDecimal valor = parsearValor(
+                    linha[indiceValor]
+            );
 
             if (valor == null) {
                 resultado.adicionarErro(
@@ -494,11 +424,7 @@ public class ParserCSV implements ParserExtrato {
                 continue;
             }
 
-            if (
-                    valor.compareTo(
-                            BigDecimal.ZERO
-                    ) == 0
-            ) {
+            if (valor.compareTo(BigDecimal.ZERO) == 0) {
                 resultado.adicionarErro(
                         numeroRegistro,
                         "valor",
@@ -508,23 +434,17 @@ public class ParserCSV implements ParserExtrato {
                 continue;
             }
 
-            String descricao =
-                    limparDescricao(
-                            linha[
-                                    indiceDescricao
-                                    ]
-                    );
+            String descricao = limparDescricao(
+                    linha[indiceDescricao]
+            );
 
-            Transacao transacao =
-                    criarTransacao(
-                            conta,
-                            data,
-                            descricao,
-                            valor.abs(),
-                            resolverTipoNubankConta(
-                                    valor
-                            )
-                    );
+            Transacao transacao = criarTransacao(
+                    conta,
+                    data,
+                    descricao,
+                    valor.abs(),
+                    resolverTipoNubankConta(valor)
+            );
 
             resultado.adicionarTransacao(
                     transacao,
@@ -532,9 +452,7 @@ public class ParserCSV implements ParserExtrato {
             );
         }
 
-        resultado.setTotalLinhas(
-                totalLinhas
-        );
+        resultado.setTotalLinhas(totalLinhas);
 
         return resultado;
     }
@@ -543,17 +461,14 @@ public class ParserCSV implements ParserExtrato {
             List<RegistroCsv> registros,
             Conta conta
     ) {
-        ResultadoParser resultado =
-                new ResultadoParser();
+        ResultadoParser resultado = new ResultadoParser();
 
         int totalLinhas = 0;
 
         for (RegistroCsv registro : registros) {
-            String[] linha =
-                    registro.colunas();
+            String[] linha = registro.colunas();
 
-            int numeroRegistro =
-                    registro.numeroLinha();
+            int numeroRegistro = registro.numeroLinha();
 
             totalLinhas++;
 
@@ -567,10 +482,9 @@ public class ParserCSV implements ParserExtrato {
                 continue;
             }
 
-            LocalDate data =
-                    parsearData(
-                            linha[0]
-                    );
+            LocalDate data = parsearData(
+                    linha[0]
+            );
 
             if (data == null) {
                 resultado.adicionarErro(
@@ -582,10 +496,9 @@ public class ParserCSV implements ParserExtrato {
                 continue;
             }
 
-            BigDecimal valor =
-                    parsearValor(
-                            linha[2]
-                    );
+            BigDecimal valor = parsearValor(
+                    linha[2]
+            );
 
             if (valor == null) {
                 resultado.adicionarErro(
@@ -597,11 +510,7 @@ public class ParserCSV implements ParserExtrato {
                 continue;
             }
 
-            if (
-                    valor.compareTo(
-                            BigDecimal.ZERO
-                    ) == 0
-            ) {
+            if (valor.compareTo(BigDecimal.ZERO) == 0) {
                 resultado.adicionarErro(
                         numeroRegistro,
                         "valor",
@@ -611,25 +520,22 @@ public class ParserCSV implements ParserExtrato {
                 continue;
             }
 
-            String descricao =
-                    limparDescricao(
-                            linha[1]
-                    );
+            String descricao = limparDescricao(
+                    linha[1]
+            );
 
-            TipoTransacao tipo =
-                    parsearTipoLegado(
-                            linha[3],
-                            valor
-                    );
+            TipoTransacao tipo = parsearTipoLegado(
+                    linha[3],
+                    valor
+            );
 
-            Transacao transacao =
-                    criarTransacao(
-                            conta,
-                            data,
-                            descricao,
-                            valor.abs(),
-                            tipo
-                    );
+            Transacao transacao = criarTransacao(
+                    conta,
+                    data,
+                    descricao,
+                    valor.abs(),
+                    tipo
+            );
 
             resultado.adicionarTransacao(
                     transacao,
@@ -637,9 +543,7 @@ public class ParserCSV implements ParserExtrato {
             );
         }
 
-        resultado.setTotalLinhas(
-                totalLinhas
-        );
+        resultado.setTotalLinhas(totalLinhas);
 
         return resultado;
     }
@@ -648,21 +552,12 @@ public class ParserCSV implements ParserExtrato {
             String[] cabecalho,
             String nomeProcurado
     ) {
-        for (
-                int i = 0;
-                i < cabecalho.length;
-                i++
-        ) {
-            String normalizado =
-                    normalizarTexto(
-                            cabecalho[i]
-                    );
+        for (int i = 0; i < cabecalho.length; i++) {
+            String colunaNormalizada = normalizarTexto(
+                    cabecalho[i]
+            );
 
-            if (
-                    normalizado.equals(
-                            nomeProcurado
-                    )
-            ) {
+            if (colunaNormalizada.equals(nomeProcurado)) {
                 return i;
             }
         }
@@ -686,94 +581,74 @@ public class ParserCSV implements ParserExtrato {
         return true;
     }
 
-    private String normalizarTexto(
-            String texto
-    ) {
+    private String normalizarTexto(String texto) {
         if (texto == null) {
             return "";
         }
 
-        String normalizado =
-                texto
-                        .replace(BOM, "")
-                        .replace("\"", "")
-                        .trim()
-                        .toLowerCase();
+        String normalizado = texto
+                .replace(BOM, "")
+                .replace("\"", "")
+                .trim()
+                .toLowerCase();
 
         return Normalizer
                 .normalize(
                         normalizado,
                         Normalizer.Form.NFD
                 )
-                .replaceAll(
-                        "\\p{M}",
-                        ""
-                );
+                .replaceAll("\\p{M}", "");
     }
 
-    private String limparDescricao(
-            String descricao
-    ) {
+    private String limparDescricao(String descricao) {
         if (descricao == null) {
             return "Transação importada";
         }
 
-        String descricaoLimpa =
-                descricao
-                        .replace(BOM, "")
-                        .replace("\"", "")
-                        .trim();
+        String descricaoLimpa = descricao
+                .replace(BOM, "")
+                .replace("\"", "")
+                .trim();
 
         return descricaoLimpa.isBlank()
                 ? "Transação importada"
                 : descricaoLimpa;
     }
 
-    private LocalDate parsearData(
-            String valor
-    ) {
+    private LocalDate parsearData(String valor) {
         if (valor == null) {
             return null;
         }
 
-        String valorLimpo =
-                valor
-                        .replace(BOM, "")
-                        .trim();
+        String valorLimpo = valor
+                .replace(BOM, "")
+                .trim();
 
-        for (
-                DateTimeFormatter formatter :
-                FORMATADORES
-        ) {
+        for (DateTimeFormatter formatter : FORMATADORES) {
             try {
                 return LocalDate.parse(
                         valorLimpo,
                         formatter
                 );
 
-            } catch (
-                    DateTimeParseException ignored
-            ) {
+            } catch (DateTimeParseException ignored) {
             }
         }
 
         return null;
     }
 
-    private BigDecimal parsearValor(
-            String valor
-    ) {
+    private BigDecimal parsearValor(String valor) {
         if (valor == null) {
             return null;
         }
 
         try {
-            String normalizado =
-                    valor
-                            .replace(BOM, "")
-                            .replace("\"", "")
-                            .replace("R$", "")
-                            .trim();
+            String normalizado = valor
+                    .replace(BOM, "")
+                    .replace("\"", "")
+                    .replace("R$", "")
+                    .trim();
 
             boolean negativo = false;
 
@@ -783,45 +658,34 @@ public class ParserCSV implements ParserExtrato {
             ) {
                 negativo = true;
 
-                normalizado =
-                        normalizado
-                                .substring(
-                                        1,
-                                        normalizado.length() - 1
-                                )
-                                .trim();
+                normalizado = normalizado
+                        .substring(
+                                1,
+                                normalizado.length() - 1
+                        )
+                        .trim();
             }
 
-            if (
-                    normalizado.startsWith("-")
-            ) {
+            if (normalizado.startsWith("-")) {
                 negativo = true;
 
-                normalizado =
-                        normalizado
-                                .substring(1)
-                                .trim();
+                normalizado = normalizado
+                        .substring(1)
+                        .trim();
             }
 
-            if (
-                    normalizado.endsWith("-")
-            ) {
+            if (normalizado.endsWith("-")) {
                 negativo = true;
 
-                normalizado =
-                        normalizado
-                                .substring(
-                                        0,
-                                        normalizado.length() - 1
-                                )
-                                .trim();
+                normalizado = normalizado
+                        .substring(
+                                0,
+                                normalizado.length() - 1
+                        )
+                        .trim();
             }
 
-            normalizado =
-                    normalizado.replace(
-                            " ",
-                            ""
-                    );
+            normalizado = normalizado.replace(" ", "");
 
             if (normalizado.isBlank()) {
                 return null;
@@ -831,33 +695,21 @@ public class ParserCSV implements ParserExtrato {
                     normalizado.contains(",") &&
                     normalizado.contains(".")
             ) {
-                normalizado =
-                        normalizado
-                                .replace(".", "")
-                                .replace(",", ".");
+                normalizado = normalizado
+                        .replace(".", "")
+                        .replace(",", ".");
 
-            } else if (
-                    normalizado.contains(",")
-            ) {
-                normalizado =
-                        normalizado.replace(
-                                ",",
-                                "."
-                        );
+            } else if (normalizado.contains(",")) {
+                normalizado = normalizado.replace(",", ".");
             }
 
-            BigDecimal resultado =
-                    new BigDecimal(
-                            normalizado
-                    );
+            BigDecimal resultado = new BigDecimal(normalizado);
 
             return negativo
                     ? resultado.negate()
                     : resultado;
 
-        } catch (
-                NumberFormatException e
-        ) {
+        } catch (NumberFormatException e) {
             return null;
         }
     }
@@ -865,9 +717,7 @@ public class ParserCSV implements ParserExtrato {
     private TipoTransacao resolverTipoNubankConta(
             BigDecimal valor
     ) {
-        return valor.compareTo(
-                BigDecimal.ZERO
-        ) > 0
+        return valor.compareTo(BigDecimal.ZERO) > 0
                 ? TipoTransacao.CREDITO
                 : TipoTransacao.DEBITO;
     }
@@ -876,24 +726,17 @@ public class ParserCSV implements ParserExtrato {
             String tipoTexto,
             BigDecimal valor
     ) {
-        if (
-                valor.compareTo(
-                        BigDecimal.ZERO
-                ) < 0
-        ) {
+        if (valor.compareTo(BigDecimal.ZERO) < 0) {
             return TipoTransacao.DEBITO;
         }
 
         try {
             return TipoTransacao.valueOf(
-                    normalizarTexto(
-                            tipoTexto
-                    ).toUpperCase()
+                    normalizarTexto(tipoTexto)
+                            .toUpperCase()
             );
 
-        } catch (
-                IllegalArgumentException e
-        ) {
+        } catch (IllegalArgumentException e) {
             return TipoTransacao.CREDITO;
         }
     }
@@ -905,8 +748,7 @@ public class ParserCSV implements ParserExtrato {
             BigDecimal valor,
             TipoTransacao tipo
     ) {
-        Transacao transacao =
-                new Transacao();
+        Transacao transacao = new Transacao();
 
         transacao.setConta(conta);
         transacao.setData(data);
