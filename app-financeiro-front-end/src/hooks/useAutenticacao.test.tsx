@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useAutenticacao } from './useAutenticacao';
 import { ContextoAutenticacao } from '../contexts/contextoAutenticacaoBase';
 import type { DadosContextoAutenticacao } from '../contexts/tiposAutenticacao';
@@ -15,6 +15,10 @@ const contextoFake: DadosContextoAutenticacao = {
 };
 
 describe('useAutenticacao', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('retorna o contexto quando usado dentro do provedor', () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <ContextoAutenticacao.Provider value={contextoFake}>{children}</ContextoAutenticacao.Provider>
@@ -27,12 +31,10 @@ describe('useAutenticacao', () => {
   });
 
   it('lanca erro quando usado fora do provedor', () => {
-    const erroConsole = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
     expect(() => renderHook(() => useAutenticacao())).toThrow(
       'useAutenticacao deve ser usado dentro de ProvedorAutenticacao.',
     );
-
-    erroConsole.mockRestore();
   });
 });
