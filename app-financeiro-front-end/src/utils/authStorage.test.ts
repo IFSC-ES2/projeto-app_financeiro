@@ -86,8 +86,12 @@ describe('authStorage', () => {
     expect(localStorage.getItem('token')).toBeNull();
 
     salvarSessao({ accessToken: 'token-123', tipo: 'Bearer' });
+    localStorage.setItem('token', 'legado');
+
     descartarSessaoPersistida();
 
+    expect(sessionStorage.getItem('smartbudget.auth')).toBeNull();
+    expect(localStorage.getItem('token')).toBeNull();
     expect(recuperarSessaoValida()).toBeNull();
   });
 });
