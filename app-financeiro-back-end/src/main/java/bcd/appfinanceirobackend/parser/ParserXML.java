@@ -1,5 +1,6 @@
 package bcd.appfinanceirobackend.parser;
 
+import bcd.appfinanceirobackend.exception.ErroEstruturalImportacaoException;
 import bcd.appfinanceirobackend.model.Conta;
 import bcd.appfinanceirobackend.model.Transacao;
 import bcd.appfinanceirobackend.model.enums.TipoTransacao;
@@ -20,30 +21,6 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Parser para extratos bancários no formato XML genérico (não NF-e).
- *
- * Este parser trata extratos exportados por bancos no formato XML próprio,
- * diferenciando-se do ParserNFe que trata o padrão SEFAZ.
- *
- * A detecção é feita pela extensão .xml combinada com a ausência da tag
- * raiz <nfeProc> ou <NFe>, que caracteriza uma NF-e.
- *
- * Estrutura XML esperada:
- * <extrato>
- *   <transacao>
- *     <data>2024-01-15</data>
- *     <descricao>Supermercado</descricao>
- *     <valor>-150.00</valor>
- *     <tipo>DEBITO</tipo>           <!-- opcional -->
- *   </transacao>
- * </extrato>
- *
- * Tags alternativas também aceitas: <lancamento>, <movimento>, <entry>
- * Elementos de transação com data ou valor inválidos são ignorados e
- * contabilizados como linhas inválidas. A ausência completa de tags de
- * transação reconhecidas é tratada como erro estrutural do arquivo.
- */
 @Component
 @Order(2)
 public class ParserXML implements ParserExtrato {
@@ -93,9 +70,6 @@ public class ParserXML implements ParserExtrato {
     ) {
         ResultadoParser resultado = new ResultadoParser();
 
-        List<Transacao> transacoes =
-                new ArrayList<>();
-
         int totalLinhas = 0;
 
         try {
@@ -130,11 +104,7 @@ public class ParserXML implements ParserExtrato {
                                 tag
                         );
 
-                for (
-                        int i = 0;
-                        i < nos.getLength();
-                        i++
-                ) {
+                for (int i = 0; i < nos.getLength(); i++) {
                     elementos.add(
                             (Element) nos.item(i)
                     );
@@ -146,11 +116,7 @@ public class ParserXML implements ParserExtrato {
                                 tag.toUpperCase()
                         );
 
-                for (
-                        int i = 0;
-                        i < nos.getLength();
-                        i++
-                ) {
+                for (int i = 0; i < nos.getLength(); i++) {
                     elementos.add(
                             (Element) nos.item(i)
                     );
@@ -158,33 +124,27 @@ public class ParserXML implements ParserExtrato {
             }
 
             if (elementos.isEmpty()) {
-                throw new RuntimeException(
-                        "Nenhuma tag de transação reconhecida no XML. " +
-                                "Tags suportadas: " +
+                throw new ErroEstruturalImportacaoException(
+                        null,
+                        "estrutura",
+                        "Nenhuma tag de transação reconhecida no XML. Tags suportadas: " +
                                 TAGS_TRANSACAO
                 );
             }
 
-            for (
-                    int i = 0;
-                    i < elementos.size();
-                    i++
-            ) {
-                Element elemento =
-                        elementos.get(i);
+            for (int i = 0; i < elementos.size(); i++) {
+                Element elemento = elementos.get(i);
+
+                int numeroRegistro = i + 1;
 
                 totalLinhas++;
 
-                int numeroRegistro =
-                        i + 1;
-
-                LocalDate data =
-                        parsearData(
-                                texto(
-                                        elemento,
-                                        "data"
-                                )
-                        );
+                LocalDate data = parsearData(
+                        texto(
+                                elemento,
+                                "data"
+                        )
+                );
 
                 if (data == null) {
                     resultado.adicionarErro(
@@ -196,13 +156,12 @@ public class ParserXML implements ParserExtrato {
                     continue;
                 }
 
-                BigDecimal valor =
-                        parsearValor(
-                                texto(
-                                        elemento,
-                                        "valor"
-                                )
-                        );
+                BigDecimal valor = parsearValor(
+                        texto(
+                                elemento,
+                                "valor"
+                        )
+                );
 
                 if (valor == null) {
                     resultado.adicionarErro(
@@ -214,23 +173,20 @@ public class ParserXML implements ParserExtrato {
                     continue;
                 }
 
-                String descricao =
+                String descricao = texto(
+                        elemento,
+                        "descricao"
+                );
+
+                TipoTransacao tipo = parsearTipo(
                         texto(
                                 elemento,
-                                "descricao"
-                        );
+                                "tipo"
+                        ),
+                        valor
+                );
 
-                TipoTransacao tipo =
-                        parsearTipo(
-                                texto(
-                                        elemento,
-                                        "tipo"
-                                ),
-                                valor
-                        );
-
-                Transacao transacao =
-                        new Transacao();
+                Transacao transacao = new Transacao();
 
                 transacao.setConta(conta);
                 transacao.setData(data);
@@ -239,21 +195,22 @@ public class ParserXML implements ParserExtrato {
                 transacao.setTipo(tipo);
                 transacao.setCategorizada(false);
 
-                transacoes.add(transacao);
+                resultado.adicionarTransacao(
+                        transacao,
+                        numeroRegistro
+                );
             }
 
-        } catch (RuntimeException e) {
+        } catch (ErroEstruturalImportacaoException e) {
             throw e;
 
         } catch (Exception e) {
             throw new RuntimeException(
-                    "Erro ao processar arquivo XML: " +
-                            e.getMessage(),
+                    "Erro ao processar arquivo XML",
                     e
             );
         }
 
-        resultado.setTransacoes(transacoes);
         resultado.setTotalLinhas(totalLinhas);
 
         return resultado;
@@ -269,11 +226,7 @@ public class ParserXML implements ParserExtrato {
                         "*"
                 );
 
-        for (
-                int i = 0;
-                i < todos.getLength();
-                i++
-        ) {
+        for (int i = 0; i < todos.getLength(); i++) {
             if (
                     todos.item(i).getLocalName() != null &&
                     todos.item(i)
@@ -310,9 +263,7 @@ public class ParserXML implements ParserExtrato {
         return "";
     }
 
-    private LocalDate parsearData(
-            String valor
-    ) {
+    private LocalDate parsearData(String valor) {
         if (
                 valor == null ||
                 valor.isBlank()
@@ -320,43 +271,31 @@ public class ParserXML implements ParserExtrato {
             return null;
         }
 
-        for (
-                DateTimeFormatter formatter :
-                FORMATADORES
-        ) {
+        for (DateTimeFormatter formatter : FORMATADORES) {
             try {
                 return LocalDate.parse(
                         valor,
                         formatter
                 );
 
-            } catch (
-                    DateTimeParseException ignored
-            ) {
+            } catch (DateTimeParseException ignored) {
             }
         }
 
         if (valor.length() >= 10) {
             try {
                 return LocalDate.parse(
-                        valor.substring(
-                                0,
-                                10
-                        )
+                        valor.substring(0, 10)
                 );
 
-            } catch (
-                    DateTimeParseException ignored
-            ) {
+            } catch (DateTimeParseException ignored) {
             }
         }
 
         return null;
     }
 
-    private BigDecimal parsearValor(
-            String valor
-    ) {
+    private BigDecimal parsearValor(String valor) {
         if (
                 valor == null ||
                 valor.isBlank()
@@ -365,35 +304,26 @@ public class ParserXML implements ParserExtrato {
         }
 
         try {
-            String normalizado =
-                    valor
-                            .replace("R$", "")
-                            .replace(" ", "")
-                            .trim();
+            String normalizado = valor
+                    .replace("R$", "")
+                    .replace(" ", "")
+                    .trim();
 
             if (
                     normalizado.contains(",") &&
                     normalizado.contains(".")
             ) {
-                normalizado =
-                        normalizado
-                                .replace(".", "")
-                                .replace(",", ".");
+                normalizado = normalizado
+                        .replace(".", "")
+                        .replace(",", ".");
+
             } else {
-                normalizado =
-                        normalizado.replace(
-                                ",",
-                                "."
-                        );
+                normalizado = normalizado.replace(",", ".");
             }
 
-            return new BigDecimal(
-                    normalizado
-            );
+            return new BigDecimal(normalizado);
 
-        } catch (
-                NumberFormatException e
-        ) {
+        } catch (NumberFormatException e) {
             return null;
         }
     }
@@ -402,11 +332,7 @@ public class ParserXML implements ParserExtrato {
             String tipoStr,
             BigDecimal valor
     ) {
-        if (
-                valor.compareTo(
-                        BigDecimal.ZERO
-                ) < 0
-        ) {
+        if (valor.compareTo(BigDecimal.ZERO) < 0) {
             return TipoTransacao.DEBITO;
         }
 
@@ -415,9 +341,7 @@ public class ParserXML implements ParserExtrato {
                     tipoStr.toUpperCase()
             );
 
-        } catch (
-                IllegalArgumentException e
-        ) {
+        } catch (IllegalArgumentException e) {
             return TipoTransacao.CREDITO;
         }
     }
