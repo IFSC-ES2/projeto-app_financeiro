@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import httpClient from './httpClient';
-import { buscarResumoPorPagamento } from './resumoService';
+import { buscarResumoMensal, buscarResumoPorCategoria, buscarResumoPorPagamento } from './resumoService';
 import type { ResumoPagamentoResponse } from '../types/resumo';
 
 vi.mock('./httpClient', () => ({
@@ -30,5 +30,27 @@ describe('resumoService', () => {
     vi.mocked(httpClient.get).mockRejectedValue(erro);
 
     await expect(buscarResumoPorPagamento()).rejects.toBe(erro);
+  });
+
+  it('busca o resumo mensal em GET /resumo com ano e mes', async () => {
+    const resumoMensal = { ano: 2026, mes: 10, possuiTransacoes: true };
+    vi.mocked(httpClient.get).mockResolvedValue({ data: resumoMensal });
+
+    await expect(buscarResumoMensal(2026, 10)).resolves.toEqual(resumoMensal);
+    expect(httpClient.get).toHaveBeenCalledWith('/resumo', {
+      ignorarLogoutAutomatico: true,
+      params: { ano: 2026, mes: 10 },
+    });
+  });
+
+  it('busca os gastos por categoria em GET /resumo/categorias', async () => {
+    const categorias = [{ categoriaID: 'cat-1', nome: 'Moradia', total: 80 }];
+    vi.mocked(httpClient.get).mockResolvedValue({ data: categorias });
+
+    await expect(buscarResumoPorCategoria(2026, 10)).resolves.toEqual(categorias);
+    expect(httpClient.get).toHaveBeenCalledWith('/resumo/categorias', {
+      ignorarLogoutAutomatico: true,
+      params: { ano: 2026, mes: 10 },
+    });
   });
 });
