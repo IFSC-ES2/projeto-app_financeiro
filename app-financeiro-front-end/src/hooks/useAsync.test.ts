@@ -106,4 +106,38 @@ describe('useAsync', () => {
 
     expect(result.current.dados).toBe('inicial');
   });
+
+  it('ignora a resposta obsoleta quando a operacao e substituida', async () => {
+    let resolverPrimeira: (valor: string) => void = () => undefined;
+    let resolverSegunda: (valor: string) => void = () => undefined;
+
+    const primeira = vi.fn(
+      () =>
+        new Promise<string>((resolve) => {
+          resolverPrimeira = resolve;
+        }),
+    );
+    const segunda = vi.fn(
+      () =>
+        new Promise<string>((resolve) => {
+          resolverSegunda = resolve;
+        }),
+    );
+
+    const { result, rerender } = renderHook(
+      ({ operacao }: { operacao: () => Promise<string> }) =>
+        useAsync(operacao, { valorInicial: 'inicial', mensagemErro: 'Erro ao carregar' }),
+      { initialProps: { operacao: primeira } },
+    );
+
+    rerender({ operacao: segunda });
+
+    await act(async () => resolverSegunda('segunda'));
+
+    await waitFor(() => expect(result.current.dados).toBe('segunda'));
+
+    await act(async () => resolverPrimeira('primeira'));
+
+    expect(result.current.dados).toBe('segunda');
+  });
 });
