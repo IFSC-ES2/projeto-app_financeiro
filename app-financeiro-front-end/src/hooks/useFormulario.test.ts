@@ -43,6 +43,27 @@ describe('useFormulario', () => {
     expect(result.current.erros.nome).toBeUndefined();
   });
 
+  it('mantem o erro dos outros campos ao alterar apenas um', () => {
+    const validar = (valores: Valores) => {
+      const encontrados: Partial<Valores> = {};
+      if (!valores.nome) encontrados.nome = 'Nome obrigatorio';
+      if (!valores.email) encontrados.email = 'Email obrigatorio';
+      return encontrados;
+    };
+    const { result } = renderHook(() => useFormulario({ valoresIniciais, validar }));
+
+    act(() => result.current.eValido());
+    expect(result.current.erros).toEqual({
+      nome: 'Nome obrigatorio',
+      email: 'Email obrigatorio',
+    });
+
+    act(() => result.current.aoAlterar(alterar('nome', 'Joao')));
+
+    expect(result.current.erros.nome).toBeUndefined();
+    expect(result.current.erros.email).toBe('Email obrigatorio');
+  });
+
   it('marca o campo como tocado ao sair dele', () => {
     const { result } = renderHook(() => useFormulario({ valoresIniciais }));
 
