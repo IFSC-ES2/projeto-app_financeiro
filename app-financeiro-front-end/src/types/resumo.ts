@@ -7,3 +7,18 @@ export interface ResumoPagamentoResponse {
   quantidade: number;
   percentual: number;
 }
+
+export interface ResumoMensalResponse {
+  ano: number;
+  mes: number;
+  dataInicio: string;
+  dataFim: string;
+  totalRecebido: number;
+  totalGasto: number;
+  saldo: number;
+  categoriaMaiorGastoId: string | null;
+  categoriaMaiorGastoNome: string | null;
+  categoriaMaiorGastoTotal: number;
+  variacaoPercentualGastos: number | null;
+  possuiTransacoes: boolean;
+}
