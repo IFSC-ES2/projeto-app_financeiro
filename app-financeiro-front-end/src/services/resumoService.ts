@@ -25,3 +25,11 @@ export const buscarResumoMensal = async ({ ano, mes }: PeriodoResumo) => {
 
   return data;
 };
+
+export const buscarResumoPorCategorias = async ({ ano, mes }: PeriodoResumo) => {
+  const { data } = await httpClient.get<ResumoCategoriaResponse[]>('/resumo/categorias', {
+    params: { ano, mes },
+  });
+
+  return data;
+};
