@@ -15,3 +15,9 @@ export const formatarPercentual = (valor: number | string, casasDecimais = 1) =>
     minimumFractionDigits: casasDecimais,
     maximumFractionDigits: casasDecimais,
   })}%`;
+
+export const formatarVariacaoPercentual = (valor: number | string) => {
+  const numero = Number(valor || 0);
+  const sinal = numero > 0 ? '+' : '';
+  return `${sinal}${formatarPercentual(numero)}`;
+};
