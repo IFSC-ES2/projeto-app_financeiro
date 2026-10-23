@@ -15,7 +15,7 @@ const SeletorMes = ({
   onAlterarMes,
   onSelecionarMes,
 }: PropsSeletorMes) => (
-  <div className="dashboard-month-selector" aria-label="Selecionar mês do resumo">
+  <div className="dashboard-month-selector" role="group" aria-label="Selecionar mês do resumo">
     <button
       type="button"
       className="categories-month-button"
