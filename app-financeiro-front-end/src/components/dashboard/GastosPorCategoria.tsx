@@ -64,10 +64,7 @@ const GastosPorCategoria = ({
           const cor = obterCorCategoria(categoria);
 
           return (
-            <li
-              className="dashboard-category-item"
-              key={categoria.categoriaID ?? 'sem-categoria'}
-            >
+            <li key={categoria.categoriaID ?? 'sem-categoria'}>
               <div className="dashboard-category-item-header">
                 <span
                   className="dashboard-category-dot"
