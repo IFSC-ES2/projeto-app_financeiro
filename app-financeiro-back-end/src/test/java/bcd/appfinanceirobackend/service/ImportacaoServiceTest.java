@@ -1,6 +1,7 @@
 package bcd.appfinanceirobackend.service;
 
 import bcd.appfinanceirobackend.dto.importacao.ImportacaoResponseDTO;
+import bcd.appfinanceirobackend.exception.ErroEstruturalImportacaoException;
 import bcd.appfinanceirobackend.exception.ResourceNotFoundException;
 import bcd.appfinanceirobackend.model.*;
 import bcd.appfinanceirobackend.model.enums.FormatoArquivo;
@@ -699,6 +700,182 @@ class ImportacaoServiceTest {
                                     dto.getErros()
                                             .size()
                             )
+            );
+        }
+
+        @Test
+        @DisplayName(
+                "Arquivo sem transação válida retorna ERRO e preserva os erros detalhados do parser"
+        )
+        void arquivoSemTransacaoValida_retornaErrosDetalhados() {
+            mockContaDoUsuarioAutenticado();
+
+            ResultadoParser resultado =
+                    new ResultadoParser();
+
+            resultado.adicionarErro(
+                    3,
+                    "data",
+                    "Data inválida."
+            );
+
+            resultado.setTotalLinhas(
+                    1
+            );
+
+            mockParserAceitandoComResultado(
+                    resultado
+            );
+
+            ImportacaoResponseDTO dto =
+                    service.processar(
+                            csvValido(
+                                    "registro-invalido"
+                            ),
+                            conta.getId(),
+                            usuarioDono
+                    );
+
+            assertAll(
+                    () ->
+                            assertEquals(
+                                    StatusImportacao.ERRO,
+                                    dto.getStatus()
+                            ),
+                    () ->
+                            assertEquals(
+                                    0,
+                                    dto.getSucessos()
+                            ),
+                    () ->
+                            assertEquals(
+                                    1,
+                                    dto.getFalhas()
+                            ),
+                    () ->
+                            assertEquals(
+                                    1,
+                                    dto.getErros()
+                                            .size()
+                            ),
+                    () ->
+                            assertEquals(
+                                    3,
+                                    dto.getErros()
+                                            .getFirst()
+                                            .getNumeroRegistro()
+                            ),
+                    () ->
+                            assertEquals(
+                                    "data",
+                                    dto.getErros()
+                                            .getFirst()
+                                            .getCampo()
+                            ),
+                    () ->
+                            assertEquals(
+                                    "Data inválida.",
+                                    dto.getErros()
+                                            .getFirst()
+                                            .getMensagem()
+                            ),
+                    () ->
+                            assertNotNull(
+                                    dto.getMensagemErro()
+                            ),
+                    () ->
+                            verify(
+                                    transacaoRepository,
+                                    never()
+                            ).save(any())
+            );
+        }
+
+        @Test
+        @DisplayName(
+                "Erro estrutural do parser é convertido em erro detalhado da importação"
+        )
+        void erroEstruturalParser_apareceNaListaDeErros() {
+            mockContaDoUsuarioAutenticado();
+
+            when(
+                    parserMock.aceita(any())
+            ).thenReturn(true);
+
+            when(
+                    parserMock.parsear(
+                            any(),
+                            eq(conta)
+                    )
+            ).thenThrow(
+                    new ErroEstruturalImportacaoException(
+                            1,
+                            "cabecalho",
+                            "Cabeçalho inválido."
+                    )
+            );
+
+            ImportacaoResponseDTO dto =
+                    service.processar(
+                            csvValido(
+                                    "cabecalho-invalido"
+                            ),
+                            conta.getId(),
+                            usuarioDono
+                    );
+
+            assertAll(
+                    () ->
+                            assertEquals(
+                                    StatusImportacao.ERRO,
+                                    dto.getStatus()
+                            ),
+                    () ->
+                            assertEquals(
+                                    0,
+                                    dto.getSucessos()
+                            ),
+                    () ->
+                            assertEquals(
+                                    1,
+                                    dto.getFalhas()
+                            ),
+                    () ->
+                            assertEquals(
+                                    1,
+                                    dto.getErros()
+                                            .size()
+                            ),
+                    () ->
+                            assertEquals(
+                                    1,
+                                    dto.getErros()
+                                            .getFirst()
+                                            .getNumeroRegistro()
+                            ),
+                    () ->
+                            assertEquals(
+                                    "cabecalho",
+                                    dto.getErros()
+                                            .getFirst()
+                                            .getCampo()
+                            ),
+                    () ->
+                            assertEquals(
+                                    "Cabeçalho inválido.",
+                                    dto.getErros()
+                                            .getFirst()
+                                            .getMensagem()
+                            ),
+                    () ->
+                            assertNotNull(
+                                    dto.getMensagemErro()
+                            ),
+                    () ->
+                            verify(
+                                    transacaoRepository,
+                                    never()
+                            ).save(any())
             );
         }
 
