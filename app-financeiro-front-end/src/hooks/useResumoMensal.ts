@@ -2,13 +2,33 @@ import { useCallback } from 'react';
 
 import { buscarResumoMensal } from '../services/resumoService';
 import type { ResumoMensalResponse } from '../types/resumo';
-import { converterAnoMesParaPeriodo } from '../utils/dashboard';
+import {
+  converterAnoMesParaPeriodo,
+  obterPeriodoAnterior,
+} from '../utils/dashboard';
 
 import { useAsync } from './useAsync';
 
+interface ResumoMensalComparativo {
+  atual: ResumoMensalResponse | null;
+  anterior: ResumoMensalResponse | null;
+}
+
 export const useResumoMensal = (anoMes: string) => {
   const carregarResumo = useCallback(
-    () => buscarResumoMensal(converterAnoMesParaPeriodo(anoMes)),
+    async (): Promise<ResumoMensalComparativo> => {
+      /*
+       * O mês anterior serve apenas para saber se
+       * existe base de comparação. Uma falha nele não
+       * deve impedir a exibição do mês selecionado.
+       */
+      const [atual, anterior] = await Promise.all([
+        buscarResumoMensal(converterAnoMesParaPeriodo(anoMes)),
+        buscarResumoMensal(obterPeriodoAnterior(anoMes)).catch(() => null),
+      ]);
+
+      return { atual, anterior };
+    },
     [anoMes],
   );
 
@@ -17,17 +37,18 @@ export const useResumoMensal = (anoMes: string) => {
     carregando,
     erro,
     recarregar,
-  } = useAsync<ResumoMensalResponse | null>(
+  } = useAsync<ResumoMensalComparativo>(
     carregarResumo,
     {
-      valorInicial: null,
+      valorInicial: { atual: null, anterior: null },
       mensagemErro:
         'Não foi possível carregar o resumo do mês.',
     },
   );
 
   return {
-    resumo: dados,
+    resumo: dados.atual,
+    resumoMesAnterior: dados.anterior,
     carregando,
     erro,
     recarregar,
