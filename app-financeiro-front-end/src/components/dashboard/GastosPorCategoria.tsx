@@ -47,7 +47,7 @@ const GastosPorCategoria = ({
         <MensagemAlerta mensagem={erro} tipo="danger" />
         <button
           type="button"
-          className="btn sb-btn-outline dashboard-retry-button"
+          className="btn btn-outline-secondary dashboard-retry-button"
           onClick={onTentarNovamente}
         >
           Tentar novamente
