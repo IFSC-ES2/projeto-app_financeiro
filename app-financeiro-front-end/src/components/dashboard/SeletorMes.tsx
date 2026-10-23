@@ -2,6 +2,7 @@ import { formatarRotuloMes } from '../../utils/categorias';
 
 interface PropsSeletorMes {
   mesSelecionado: string;
+  mesMaximo?: string;
   desabilitarProximo?: boolean;
   onAlterarMes: (deslocamento: number) => void;
   onSelecionarMes: (mes: string) => void;
@@ -9,6 +10,7 @@ interface PropsSeletorMes {
 
 const SeletorMes = ({
   mesSelecionado,
+  mesMaximo,
   desabilitarProximo = false,
   onAlterarMes,
   onSelecionarMes,
@@ -28,6 +30,7 @@ const SeletorMes = ({
       <input
         type="month"
         value={mesSelecionado}
+        max={mesMaximo}
         aria-label="Mês selecionado"
         onChange={(evento) => {
           if (evento.target.value) onSelecionarMes(evento.target.value);

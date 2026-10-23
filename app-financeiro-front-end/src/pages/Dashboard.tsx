@@ -33,7 +33,8 @@ const Dashboard = () => {
   } = useResumoCategorias(mesSelecionado);
 
   // Formato AAAA-MM permite comparar os meses como texto.
-  const ehMesAtualOuFuturo = mesSelecionado >= obterMesAtual();
+  const mesAtual = obterMesAtual();
+  const ehMesAtualOuFuturo = mesSelecionado >= mesAtual;
   const rotuloMes = formatarRotuloMes(mesSelecionado);
   const temResumo = Boolean(resumo?.possuiTransacoes);
 
@@ -122,10 +123,11 @@ const Dashboard = () => {
 
         <SeletorMes
           mesSelecionado={mesSelecionado}
+          mesMaximo={mesAtual}
           desabilitarProximo={ehMesAtualOuFuturo}
           onAlterarMes={(deslocamento) =>
             setMesSelecionado((mes) => alterarAnoMes(mes, deslocamento))}
-          onSelecionarMes={setMesSelecionado}
+          onSelecionarMes={(mes) => setMesSelecionado(mes > mesAtual ? mesAtual : mes)}
         />
       </section>
 
