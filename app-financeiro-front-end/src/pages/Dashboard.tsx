@@ -37,8 +37,14 @@ const Dashboard = () => {
   const rotuloMes = formatarRotuloMes(mesSelecionado);
   const temResumo = Boolean(resumo?.possuiTransacoes);
 
+  /*
+   * Enquanto o resumo do mês pedido não chega não há dados
+   * para exibir, e a ausência deles não é um erro.
+   */
+  const aguardandoResumo = carregando || (!resumo && !erro);
+
   const renderizarConteudo = () => {
-    if (carregando) {
+    if (aguardandoResumo) {
       return (
         <div className="dashboard-state-card loading-inline" aria-live="polite">
           Carregando resumo do mês...
@@ -108,7 +114,7 @@ const Dashboard = () => {
             <>
               <strong>{rotuloMes}</strong>
               <span>
-                {carregando ? 'Carregando resumo...' : 'Resumo financeiro do mês'}
+                {aguardandoResumo ? 'Carregando resumo...' : 'Resumo financeiro do mês'}
               </span>
             </>
           )}

@@ -46,9 +46,19 @@ export const useResumoMensal = (anoMes: string) => {
     },
   );
 
+  /*
+   * Entre a troca de mês e o início da nova busca existe
+   * um render com os dados do mês anterior. A resposta
+   * informa a que período pertence, então o resumo é
+   * descartado quando não corresponde ao mês pedido.
+   */
+  const { ano, mes } = converterAnoMesParaPeriodo(anoMes);
+  const ehResumoDoMesSelecionado =
+    dados.atual?.ano === ano && dados.atual?.mes === mes;
+
   return {
-    resumo: dados.atual,
-    resumoMesAnterior: dados.anterior,
+    resumo: ehResumoDoMesSelecionado ? dados.atual : null,
+    resumoMesAnterior: ehResumoDoMesSelecionado ? dados.anterior : null,
     carregando,
     erro,
     recarregar,
