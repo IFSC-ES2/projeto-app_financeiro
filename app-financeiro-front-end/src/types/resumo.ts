@@ -22,3 +22,13 @@ export interface ResumoMensalResponse {
   variacaoPercentualGastos: number | null;
   possuiTransacoes: boolean;
 }
+
+export interface ResumoCategoriaResponse {
+  categoriaID: string | null;
+  nome: string;
+  icone: string | null;
+  cor: string | null;
+  total: number;
+  quantidade: number;
+  percentual: number;
+}
