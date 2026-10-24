@@ -2441,6 +2441,46 @@ button:disabled {
   pointer-events: none;
 }
 
+/* Cartões da logo caídos da carteira, saindo pelos cantos da tela */
+.acesso-fundo-cartoes {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.acesso-fundo-cartoes span {
+  position: absolute;
+  width: 380px;
+  height: 230px;
+  border-radius: 28px;
+  opacity: 0.22;
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+.acesso-fundo-cartao-amarelo {
+  top: -90px;
+  right: 22%;
+  background: var(--sb-accent);
+  transform: rotate(16deg);
+}
+
+.acesso-fundo-cartao-verde {
+  bottom: -110px;
+  left: -60px;
+  background: #2E8A5E;
+  transform: rotate(-14deg);
+}
+
+.acesso-fundo-cartao-creme {
+  right: -180px;
+  bottom: 34%;
+  background: #F2EEE5;
+  opacity: 0.12;
+  transform: rotate(-24deg);
+}
+
 .acesso-vitrine,
 .acesso-area {
   position: relative;
