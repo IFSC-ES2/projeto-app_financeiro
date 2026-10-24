@@ -69,7 +69,7 @@ const Cadastro: React.FC = () => {
   };
 
   return (
-    <LayoutAcesso pergunta="Já tem uma conta?" rotuloLink="Entrar" destinoLink="/login">
+    <LayoutAcesso pergunta="Já tem uma conta?" rotuloLink="Entrar" destinoLink="/login" classeCartao="acesso-cartao-largo">
       <h1 className="acesso-titulo">Criar conta</h1>
       <p className="acesso-subtitulo">Preencha seus dados para começar a organizar suas finanças.</p>
 
@@ -90,61 +90,63 @@ const Cadastro: React.FC = () => {
           tocado={tocados.nome}
         />
 
-        <CampoFormulario
-          rotulo="E-mail"
-          id="email"
-          name="email"
-          type="email"
-          value={valores.email}
-          onChange={aoAlterar}
-          onBlur={aoSair}
-          placeholder="seu@email.com"
-          autoComplete="email"
-          erro={erros.email}
-          tocado={tocados.email}
-        />
+        <div className="acesso-campos-duplos">
+          <CampoFormulario
+            rotulo="E-mail"
+            id="email"
+            name="email"
+            type="email"
+            value={valores.email}
+            onChange={aoAlterar}
+            onBlur={aoSair}
+            placeholder="seu@email.com"
+            autoComplete="email"
+            erro={erros.email}
+            tocado={tocados.email}
+          />
+          <CampoFormulario
+            rotulo="CPF"
+            id="cpf"
+            name="cpf"
+            type="text"
+            value={valores.cpf}
+            onChange={aoAlterarCpf}
+            onBlur={aoSair}
+            placeholder="000.000.000-00"
+            inputMode="numeric"
+            erro={erros.cpf}
+            tocado={tocados.cpf}
+          />
+        </div>
 
-        <CampoFormulario
-          rotulo="CPF"
-          id="cpf"
-          name="cpf"
-          type="text"
-          value={valores.cpf}
-          onChange={aoAlterarCpf}
-          onBlur={aoSair}
-          placeholder="000.000.000-00"
-          inputMode="numeric"
-          erro={erros.cpf}
-          tocado={tocados.cpf}
-        />
-
-        <CampoFormulario
-          rotulo="Senha"
-          id="senha"
-          name="senha"
-          type="password"
-          value={valores.senha}
-          onChange={aoAlterar}
-          onBlur={aoSair}
-          placeholder="Mínimo 6 caracteres"
-          autoComplete="new-password"
-          erro={erros.senha}
-          tocado={tocados.senha}
-        />
-
-        <CampoFormulario
-          rotulo="Confirmar senha"
-          id="confirmacao"
-          name="confirmacao"
-          type="password"
-          value={valores.confirmacao}
-          onChange={aoAlterar}
-          onBlur={aoSair}
-          placeholder="Repita a senha"
-          autoComplete="new-password"
-          erro={erros.confirmacao}
-          tocado={tocados.confirmacao}
-        />
+        <div className="acesso-campos-duplos">
+          <CampoFormulario
+            rotulo="Senha"
+            id="senha"
+            name="senha"
+            type="password"
+            value={valores.senha}
+            onChange={aoAlterar}
+            onBlur={aoSair}
+            placeholder="Mínimo 6 caracteres"
+            autoComplete="new-password"
+            erro={erros.senha}
+            tocado={tocados.senha}
+          />
+          <CampoFormulario
+            rotulo="Confirmar senha"
+            id="confirmacao"
+            name="confirmacao"
+            type="password"
+            value={valores.confirmacao}
+            onChange={aoAlterar}
+            onBlur={aoSair}
+            placeholder="Repita a senha"
+            autoComplete="new-password"
+            erro={erros.confirmacao}
+            tocado={tocados.confirmacao}
+          />
+        </div>
 
         <BotaoCarregando
           type="submit"
