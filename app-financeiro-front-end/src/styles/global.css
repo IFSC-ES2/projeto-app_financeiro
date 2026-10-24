@@ -2487,6 +2487,125 @@ button:disabled {
   line-height: 1.55;
 }
 
+/* Carteira desenhada nas cores da logo: cartões empilhados atrás de um bolso */
+.login-carteira {
+  --login-carteira-verde: #2E8A5E;
+  --login-carteira-creme: #F2EEE5;
+  max-width: 360px;
+  padding: clamp(10px, 2vh, 18px) 18px clamp(12px, 2.2vh, 20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 30px;
+  background: #0A111C;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+}
+
+.login-carteira-cartao,
+.login-carteira-faixa {
+  margin-inline: 10px;
+}
+
+.login-carteira-cartao {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: clamp(12px, 2.2vh, 18px) 20px 22px;
+  border-radius: 14px;
+  background: #1F3A57;
+}
+
+.login-carteira-prompt {
+  position: absolute;
+  top: clamp(12px, 2.2vh, 18px);
+  right: 20px;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.login-carteira-rotulo {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+}
+
+.login-carteira-saldo {
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.login-carteira-grafico {
+  display: block;
+  width: 100%;
+  height: clamp(28px, 5vh, 48px);
+  margin-top: clamp(6px, 1.3vh, 10px);
+}
+
+.login-carteira-grafico path {
+  fill: none;
+  stroke: var(--sb-accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.login-carteira-faixa {
+  position: relative;
+  height: 30px;
+  border-radius: 14px 14px 0 0;
+}
+
+.login-carteira-faixa-amarela {
+  margin-top: -10px;
+  background: var(--sb-accent);
+}
+
+.login-carteira-faixa-verde {
+  margin-top: -16px;
+  background: var(--login-carteira-verde);
+}
+
+.login-carteira-bolso {
+  position: relative;
+  margin: -14px 0 0;
+  padding: clamp(16px, 2.6vh, 22px) 20px clamp(4px, 1vh, 8px);
+  list-style: none;
+  border-radius: 8px 8px 20px 20px;
+  background: var(--login-carteira-creme);
+  color: var(--sb-text);
+}
+
+/* Lingueta do cartão verde aparecendo no recorte do bolso */
+.login-carteira-bolso::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 64px;
+  height: 18px;
+  transform: translateX(-50%);
+  border-radius: 0 0 32px 32px;
+  background: var(--login-carteira-verde);
+}
+
+.login-carteira-bolso li {
+  display: flex;
+  justify-content: space-between;
+  padding: clamp(5px, 1vh, 8px) 0;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.login-carteira-bolso li + li {
+  border-top: 1px solid rgba(14, 22, 36, 0.08);
+}
+
+.login-carteira-bolso .login-valor-entrada {
+  color: var(--sb-success);
+  font-weight: 700;
+}
+
 .login-vitrine-rodape,
 .login-area-rodape {
   margin: 0;
@@ -2604,6 +2723,13 @@ button:disabled {
 @media (prefers-reduced-motion: reduce) {
   .login-cartao {
     animation: none;
+  }
+}
+
+/* Janela baixa demais para o cartão caber sem gerar rolagem */
+@media (max-height: 640px) {
+  .login-carteira {
+    display: none;
   }
 }
 
