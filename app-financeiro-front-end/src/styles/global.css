@@ -2407,17 +2407,31 @@ button:disabled {
 .acesso-page {
   --acesso-respiro-x: clamp(24px, 4.5vw, 64px);
   --acesso-respiro-y: clamp(24px, 5vh, 48px);
+  /* Paleta própria das telas de acesso; o resto do app segue os tokens --sb-* */
+  --acesso-noite: #0E1624;
+  --acesso-brilho: #2FA98F;
+  --acesso-destaque: #6CC5B2;
+  --acesso-texto-claro: #FFFFFF;
+  --acesso-tinta: #0E1624;
+  --acesso-cartao-a: #FFC83D;
+  --acesso-cartao-b: #2E8A5E;
+  --acesso-cartao-c: #1F3A57;
+  --acesso-carteira: #0A111C;
+  --acesso-bolso: #F2EEE5;
+  --acesso-positivo: #14835F;
+  --acesso-botao: #0E1624;
+  --acesso-botao-hover: #162A3D;
   min-height: 100vh;
   min-height: 100dvh;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   position: relative;
   overflow: hidden;
-  color: #ffffff;
+  color: var(--acesso-texto-claro);
   background:
-    radial-gradient(circle at 75% 55%, rgba(47, 169, 143, 0.28), transparent 45%),
-    radial-gradient(circle at 15% 115%, rgba(47, 169, 143, 0.35), transparent 50%),
-    var(--sb-primary-dark);
+    radial-gradient(circle at 75% 55%, color-mix(in srgb, var(--acesso-brilho) 28%, transparent), transparent 45%),
+    radial-gradient(circle at 15% 115%, color-mix(in srgb, var(--acesso-brilho) 35%, transparent), transparent 50%),
+    var(--acesso-noite);
 }
 
 .acesso-vitrine,
@@ -2434,8 +2448,8 @@ button:disabled {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    linear-gradient(color-mix(in srgb, var(--acesso-texto-claro) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--acesso-texto-claro) 5%, transparent) 1px, transparent 1px);
   background-size: 32px 32px;
   mask-image: linear-gradient(180deg, #000 30%, transparent 95%);
   pointer-events: none;
@@ -2464,12 +2478,12 @@ button:disabled {
 
 .acesso-fundo-carteira-amarela {
   top: calc(var(--acesso-fundo-bolso) - 52px);
-  background: var(--sb-accent);
+  background: var(--acesso-cartao-a);
 }
 
 .acesso-fundo-carteira-verde {
   top: calc(var(--acesso-fundo-bolso) - 28px);
-  background: #2E8A5E;
+  background: var(--acesso-cartao-b);
 }
 
 .acesso-fundo-carteira-bolso {
@@ -2477,7 +2491,7 @@ button:disabled {
   left: 0;
   right: 0;
   border-radius: 20px 20px 0 0;
-  background: #F2EEE5;
+  background: var(--acesso-bolso);
 }
 
 /* Lingueta do cartão verde no recorte do bolso */
@@ -2490,7 +2504,7 @@ button:disabled {
   height: 46px;
   transform: translateX(-50%);
   border-radius: 0 0 90px 90px;
-  background: #2E8A5E;
+  background: var(--acesso-cartao-b);
 }
 
 .acesso-vitrine,
@@ -2529,25 +2543,23 @@ button:disabled {
 
 .acesso-manchete em {
   font-style: normal;
-  color: var(--sb-primary-light);
+  color: var(--acesso-destaque);
 }
 
 .acesso-vitrine-texto {
   margin: 0 0 clamp(20px, 4.5vh, 40px);
   max-width: 380px;
-  color: rgba(255, 255, 255, 0.7);
+  color: color-mix(in srgb, var(--acesso-texto-claro) 70%, transparent);
   line-height: 1.55;
 }
 
 /* Carteira desenhada nas cores da logo: cartões empilhados atrás de um bolso */
 .acesso-carteira {
-  --acesso-carteira-verde: #2E8A5E;
-  --acesso-carteira-creme: #F2EEE5;
   max-width: 360px;
   padding: clamp(10px, 2vh, 18px) 18px clamp(12px, 2.2vh, 20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid color-mix(in srgb, var(--acesso-texto-claro) 8%, transparent);
   border-radius: 30px;
-  background: #0A111C;
+  background: var(--acesso-carteira);
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
 }
 
@@ -2563,7 +2575,7 @@ button:disabled {
   gap: 2px;
   padding: clamp(12px, 2.2vh, 18px) 20px 22px;
   border-radius: 14px;
-  background: #1F3A57;
+  background: var(--acesso-cartao-c);
 }
 
 .acesso-carteira-prompt {
@@ -2572,11 +2584,11 @@ button:disabled {
   right: 20px;
   font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.55);
+  color: color-mix(in srgb, var(--acesso-texto-claro) 55%, transparent);
 }
 
 .acesso-carteira-rotulo {
-  color: rgba(255, 255, 255, 0.6);
+  color: color-mix(in srgb, var(--acesso-texto-claro) 60%, transparent);
   font-size: 0.8rem;
 }
 
@@ -2595,7 +2607,7 @@ button:disabled {
 
 .acesso-carteira-grafico path {
   fill: none;
-  stroke: var(--sb-accent);
+  stroke: var(--acesso-cartao-a);
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -2610,12 +2622,12 @@ button:disabled {
 
 .acesso-carteira-faixa-amarela {
   margin-top: -10px;
-  background: var(--sb-accent);
+  background: var(--acesso-cartao-a);
 }
 
 .acesso-carteira-faixa-verde {
   margin-top: -16px;
-  background: var(--acesso-carteira-verde);
+  background: var(--acesso-cartao-b);
 }
 
 .acesso-carteira-bolso {
@@ -2624,8 +2636,8 @@ button:disabled {
   padding: clamp(16px, 2.6vh, 22px) 20px clamp(4px, 1vh, 8px);
   list-style: none;
   border-radius: 8px 8px 20px 20px;
-  background: var(--acesso-carteira-creme);
-  color: var(--sb-text);
+  background: var(--acesso-bolso);
+  color: var(--acesso-tinta);
 }
 
 /* Lingueta do cartão verde aparecendo no recorte do bolso */
@@ -2638,7 +2650,7 @@ button:disabled {
   height: 18px;
   transform: translateX(-50%);
   border-radius: 0 0 32px 32px;
-  background: var(--acesso-carteira-verde);
+  background: var(--acesso-cartao-b);
 }
 
 .acesso-carteira-bolso li {
@@ -2650,11 +2662,11 @@ button:disabled {
 }
 
 .acesso-carteira-bolso li + li {
-  border-top: 1px solid rgba(14, 22, 36, 0.08);
+  border-top: 1px solid color-mix(in srgb, var(--acesso-tinta) 8%, transparent);
 }
 
 .acesso-carteira-bolso .acesso-valor-entrada {
-  color: var(--sb-success);
+  color: var(--acesso-positivo);
   font-weight: 700;
 }
 
@@ -2667,7 +2679,7 @@ button:disabled {
 
 .acesso-vitrine-rodape,
 .acesso-area-rodape {
-  color: rgba(14, 22, 36, 0.55);
+  color: color-mix(in srgb, var(--acesso-tinta) 55%, transparent);
 }
 
 .acesso-area-rodape {
@@ -2683,16 +2695,16 @@ button:disabled {
 
 .acesso-alternativa {
   margin: 0;
-  color: rgba(255, 255, 255, 0.65);
+  color: color-mix(in srgb, var(--acesso-texto-claro) 65%, transparent);
   font-size: 0.92rem;
 }
 
 .acesso-alternativa a {
   margin-left: 4px;
   padding: 7px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid color-mix(in srgb, var(--acesso-texto-claro) 25%, transparent);
   border-radius: 999px;
-  color: #ffffff;
+  color: var(--acesso-texto-claro);
   font-weight: 700;
   text-decoration: none;
   transition: border-color 0.18s ease, color 0.18s ease;
@@ -2700,8 +2712,8 @@ button:disabled {
 
 .acesso-alternativa a:hover,
 .acesso-alternativa a:focus-visible {
-  border-color: var(--sb-primary-light);
-  color: var(--sb-primary-light);
+  border-color: var(--acesso-destaque);
+  color: var(--acesso-destaque);
 }
 
 .acesso-cartao {
@@ -2712,7 +2724,7 @@ button:disabled {
   padding: clamp(24px, 5vh, 44px) clamp(24px, 3vw, 40px);
   border-radius: 24px;
   background: var(--sb-surface);
-  color: var(--sb-text);
+  color: var(--acesso-tinta);
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
   animation: acesso-entrada 0.4s ease-out both;
 }
@@ -2736,7 +2748,7 @@ button:disabled {
   font-size: 2rem;
   font-weight: 800;
   letter-spacing: -0.015em;
-  color: var(--sb-text);
+  color: var(--acesso-tinta);
 }
 
 .acesso-subtitulo {
@@ -2745,7 +2757,7 @@ button:disabled {
 }
 
 .acesso-formulario .form-label {
-  color: var(--sb-text) !important;
+  color: var(--acesso-tinta) !important;
 }
 
 .acesso-formulario .form-control {
@@ -2768,15 +2780,15 @@ button:disabled {
   padding: 0.8rem 1rem;
   border: none;
   border-radius: 10px;
-  background: var(--sb-primary-dark);
-  color: #ffffff;
+  background: var(--acesso-botao);
+  color: var(--acesso-texto-claro);
   font-weight: 700;
 }
 
 .acesso-botao:hover:not(:disabled),
 .acesso-botao:focus-visible {
-  background: var(--sb-primary-mid);
-  color: #ffffff;
+  background: var(--acesso-botao-hover);
+  color: var(--acesso-texto-claro);
 }
 
 @keyframes acesso-entrada {
