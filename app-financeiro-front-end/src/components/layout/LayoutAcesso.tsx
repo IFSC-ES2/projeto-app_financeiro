@@ -44,7 +44,6 @@ const LayoutAcesso: React.FC<PropsLayoutAcesso> = ({
           <CarteiraIlustrativa {...carteira} />
         </div>
 
-        <p className="acesso-vitrine-rodape">Projeto acadêmico · IFSC</p>
       </aside>
 
       <main className="acesso-area">
