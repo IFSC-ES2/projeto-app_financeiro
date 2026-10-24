@@ -2808,6 +2808,21 @@ button:disabled {
     display: none;
   }
 
+  .acesso-fundo-carteira {
+    --acesso-fundo-bolso: 80%;
+  }
+
+  .acesso-fundo-carteira-amarela,
+  .acesso-fundo-carteira-verde {
+    left: 16px;
+    right: 16px;
+  }
+
+  .acesso-fundo-carteira-bolso::before {
+    width: 110px;
+    height: 30px;
+  }
+
   .acesso-area {
     grid-template-rows: auto auto 1fr;
   }
