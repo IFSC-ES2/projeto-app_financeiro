@@ -60,6 +60,24 @@ const Login: React.FC = () => {
             Contas, cartões e categorias num só lugar. Você vê para onde vai cada real antes do fim do mês.
           </p>
 
+          {/* Ilustração estática da carteira da logo, sem dados reais */}
+          <div className="login-carteira">
+            <div className="login-carteira-cartao">
+              <span className="login-carteira-prompt">&gt;_</span>
+              <span className="login-carteira-rotulo">Saldo do mês</span>
+              <strong className="login-carteira-saldo">R$ 2.418,90</strong>
+              <svg className="login-carteira-grafico" viewBox="0 0 240 56" preserveAspectRatio="none">
+                <path d="M0 44 L30 38 L60 42 L90 26 L120 30 L150 18 L180 22 L210 10 L240 14" />
+              </svg>
+            </div>
+            <div className="login-carteira-faixa login-carteira-faixa-amarela" />
+            <div className="login-carteira-faixa login-carteira-faixa-verde" />
+            <ul className="login-carteira-bolso">
+              <li><span>Salário</span><span className="login-valor-entrada">+ R$ 4.200,00</span></li>
+              <li><span>Mercado</span><span>− R$ 612,40</span></li>
+              <li><span>Aluguel</span><span>− R$ 1.168,70</span></li>
+            </ul>
+          </div>
         </div>
 
         <p className="login-vitrine-rodape">Projeto acadêmico · IFSC</p>
