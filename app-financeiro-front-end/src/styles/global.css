@@ -2707,6 +2707,10 @@ button:disabled {
   background: var(--sb-surface);
 }
 
+.acesso-formulario .form-control.is-invalid {
+  border-color: var(--sb-danger);
+}
+
 .acesso-botao {
   margin-top: 8px;
   padding: 0.8rem 1rem;
