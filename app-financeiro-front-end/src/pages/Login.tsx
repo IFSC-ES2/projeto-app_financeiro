@@ -4,7 +4,7 @@ import LayoutAcesso from '../components/layout/LayoutAcesso';
 import CampoFormulario from '../components/ui/CampoFormulario';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { obterMensagemErroApi } from '../services/apiError';
+import { obterMensagemErroApi, obterStatusHttp } from '../services/apiError';
 import { useAutenticacao } from '../contexts/ContextoAutenticacao';
 import { useFormulario } from '../hooks/useFormulario';
 
@@ -42,7 +42,11 @@ const Login: React.FC = () => {
       await login(valores.email, valores.senha);
       navigate('/dashboard');
     } catch (err: unknown) {
-      setErro(obterMensagemErroApi(err, 'Credenciais inválidas. Verifique seu e-mail e senha.'));
+      setErro(
+        obterStatusHttp(err) === 401
+          ? 'E-mail ou senha incorretos. Confira os dados e tente de novo.'
+          : obterMensagemErroApi(err, 'Não foi possível entrar. Tente de novo em instantes.'),
+      );
     } finally {
       setCarregando(false);
     }

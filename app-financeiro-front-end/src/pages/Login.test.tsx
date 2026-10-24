@@ -77,9 +77,11 @@ describe('Tela de Login', () => {
 
   it('deve exibir mensagem de alerta na tela caso a API de login retorne erro', async () => {
     mockLogin.mockRejectedValueOnce({
+      isAxiosError: true,
       response: {
+        status: 401,
         data: {
-          erro: 'Credenciais inválidas. Verifique seu e-mail e senha.',
+          erro: 'Credenciais inválidas.',
         },
       },
     });
@@ -93,7 +95,7 @@ describe('Tela de Login', () => {
     await user.click(screen.getByRole('button', { name: /entrar/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('Credenciais inválidas. Verifique seu e-mail e senha.')).toBeInTheDocument();
+      expect(screen.getByText('E-mail ou senha incorretos. Confira os dados e tente de novo.')).toBeInTheDocument();
     });
 
     expect(mockNavigate).not.toHaveBeenCalled();
