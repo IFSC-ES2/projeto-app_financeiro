@@ -2665,6 +2665,16 @@ button:disabled {
   animation: acesso-entrada 0.4s ease-out both;
 }
 
+.acesso-cartao-largo {
+  max-width: 540px;
+}
+
+.acesso-campos-duplos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+}
+
 .acesso-marca-mobile {
   display: none;
 }
@@ -2767,5 +2777,9 @@ button:disabled {
 @media (max-width: 479px) {
   .acesso-alternativa-pergunta {
     display: none;
+  }
+
+  .acesso-campos-duplos {
+    grid-template-columns: 1fr;
   }
 }
