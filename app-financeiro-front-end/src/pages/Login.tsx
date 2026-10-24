@@ -44,7 +44,24 @@ const Login: React.FC = () => {
   };
 
   return (
-    <LayoutAcesso pergunta="Novo aqui?" rotuloLink="Criar uma conta" destinoLink="/cadastro">
+    <LayoutAcesso
+      manchete="Seu dinheiro,"
+      mancheteDestaque="em ordem."
+      textoApresentacao="Contas, cartões e categorias num só lugar. Você vê para onde vai cada real antes do fim do mês."
+      carteira={{
+        rotulo: 'Saldo do mês',
+        saldo: 'R$ 2.418,90',
+        trajetoGrafico: 'M0 44 L30 38 L60 42 L90 26 L120 30 L150 18 L180 22 L210 10 L240 14',
+        itens: [
+          { texto: 'Salário', valor: '+ R$ 4.200,00', destaque: true },
+          { texto: 'Mercado', valor: '− R$ 612,40' },
+          { texto: 'Aluguel', valor: '− R$ 1.168,70' },
+        ],
+      }}
+      pergunta="Novo aqui?"
+      rotuloLink="Criar uma conta"
+      destinoLink="/cadastro"
+    >
       <h1 className="acesso-titulo">Entrar</h1>
       <p className="acesso-subtitulo">Bem-vindo de volta. Acesse com seu e-mail e senha.</p>
 
