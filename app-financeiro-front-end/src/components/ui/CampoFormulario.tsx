@@ -37,10 +37,11 @@ const CampoFormulario: React.FC<PropsCampoFormulario> = ({
           } ${className}`}
           style={{ boxShadow: 'none' }}
           aria-invalid={mostrarErro ? true : undefined}
+          aria-describedby={mostrarErro ? `${id}-erro` : undefined}
           {...rest}
         />
         {mostrarErro && (
-          <div className="invalid-feedback">{erro}</div>
+          <div id={`${id}-erro`} className="invalid-feedback">{erro}</div>
         )}
       </div>
     </div>
