@@ -2421,6 +2421,7 @@ button:disabled {
   --acesso-positivo: #14835F;
   --acesso-botao: #0E1624;
   --acesso-botao-hover: #162A3D;
+  --acesso-foco: #6CC5B2;
   min-height: 100vh;
   min-height: 100dvh;
   display: grid;
@@ -2769,6 +2770,8 @@ button:disabled {
 
 .acesso-formulario .form-control:focus {
   background: var(--sb-surface);
+  border-color: var(--acesso-foco) !important;
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--acesso-brilho) 18%, transparent) !important;
 }
 
 .acesso-formulario .form-control.is-invalid {
