@@ -36,6 +36,7 @@ const CampoFormulario: React.FC<PropsCampoFormulario> = ({
             mostrarErro ? 'is-invalid' : tocado ? 'is-valid' : ''
           } ${className}`}
           style={{ boxShadow: 'none' }}
+          aria-invalid={mostrarErro ? true : undefined}
           {...rest}
         />
         {mostrarErro && (
