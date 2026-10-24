@@ -138,4 +138,18 @@ describe('Tela de Login', () => {
 
     expect(campoSenha).not.toHaveClass('is-valid');
   });
+
+  it('deve exibir mensagem genérica quando a falha não for de credenciais', async () => {
+    mockLogin.mockRejectedValueOnce(new Error('Network Error'));
+
+    renderizarComponente();
+
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText('E-mail'), 'teste@email.com');
+    await user.type(screen.getByLabelText('Senha'), 'senha123');
+    await user.click(screen.getByRole('button', { name: /entrar/i }));
+
+    expect(await screen.findByText('Não foi possível entrar. Tente de novo em instantes.')).toBeInTheDocument();
+  });
 });
