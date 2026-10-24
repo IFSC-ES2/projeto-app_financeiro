@@ -2400,3 +2400,246 @@ button:disabled {
   margin: 0 0 16px;
   color: var(--sb-text-muted);
 }
+
+/* ---------- Tela de login ---------- */
+
+/* Os dois lados repetem as mesmas três faixas (topo, centro, rodapé) para ficarem alinhados */
+.login-page {
+  --login-respiro-x: clamp(24px, 4.5vw, 64px);
+  --login-respiro-y: clamp(24px, 5vh, 48px);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  position: relative;
+  overflow: hidden;
+  color: #ffffff;
+  background:
+    radial-gradient(circle at 75% 55%, rgba(47, 169, 143, 0.28), transparent 45%),
+    radial-gradient(circle at 15% 115%, rgba(47, 169, 143, 0.35), transparent 50%),
+    var(--sb-primary-dark);
+}
+
+.login-vitrine,
+.login-area {
+  display: grid;
+  grid-template-rows: 40px minmax(0, 1fr) 20px;
+  row-gap: clamp(12px, 3vh, 32px);
+  padding: var(--login-respiro-y) var(--login-respiro-x);
+}
+
+/* Malha de papel quadriculado, lembrando um caderno de contas */
+.login-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(180deg, #000 30%, transparent 95%);
+  pointer-events: none;
+}
+
+.login-vitrine,
+.login-area {
+  position: relative;
+}
+
+.login-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--sb-font-titulo);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.login-marca img {
+  border-radius: 10px;
+}
+
+.login-vitrine-conteudo {
+  align-self: center;
+  justify-self: center;
+  width: 100%;
+  max-width: 440px;
+}
+
+.login-manchete {
+  margin: 0 0 clamp(10px, 2vh, 18px);
+  font-family: var(--sb-font-titulo);
+  font-size: clamp(2rem, min(4vw, 6.5vh), 3.4rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+
+.login-manchete em {
+  font-style: normal;
+  color: var(--sb-primary-light);
+}
+
+.login-vitrine-texto {
+  margin: 0 0 clamp(20px, 4.5vh, 40px);
+  max-width: 380px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.55;
+}
+
+.login-vitrine-rodape,
+.login-area-rodape {
+  margin: 0;
+  align-self: end;
+  font-size: 0.8rem;
+}
+
+.login-vitrine-rodape,
+.login-area-rodape {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.login-area-rodape {
+  justify-self: end;
+}
+
+.login-area-topo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.login-cadastro {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.92rem;
+}
+
+.login-cadastro a {
+  margin-left: 4px;
+  padding: 7px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.login-cadastro a:hover,
+.login-cadastro a:focus-visible {
+  border-color: var(--sb-primary-light);
+  color: var(--sb-primary-light);
+}
+
+.login-cartao {
+  align-self: center;
+  justify-self: center;
+  width: 100%;
+  max-width: 440px;
+  padding: clamp(24px, 5vh, 44px) clamp(24px, 3vw, 40px);
+  border-radius: 24px;
+  background: var(--sb-surface);
+  color: var(--sb-text);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+  animation: login-entrada 0.4s ease-out both;
+}
+
+.login-marca-mobile {
+  display: none;
+}
+
+.login-titulo {
+  margin: 0 0 6px;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--sb-text);
+}
+
+.login-subtitulo {
+  margin: 0 0 28px;
+  color: var(--sb-text-muted);
+}
+
+.login-formulario .form-label {
+  color: var(--sb-text) !important;
+}
+
+.login-formulario .form-control {
+  padding: 0.75rem 0.95rem;
+  border-radius: 10px !important;
+  background: var(--sb-surface-soft);
+  border-color: transparent;
+}
+
+.login-formulario .form-control:focus {
+  background: var(--sb-surface);
+}
+
+.login-botao {
+  margin-top: 8px;
+  padding: 0.8rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--sb-primary-dark);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.login-botao:hover:not(:disabled),
+.login-botao:focus-visible {
+  background: var(--sb-primary-mid);
+  color: #ffffff;
+}
+
+@keyframes login-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-cartao {
+    animation: none;
+  }
+}
+
+@media (max-width: 991px) {
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .login-vitrine {
+    display: none;
+  }
+
+  .login-area {
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .login-area-topo {
+    justify-content: space-between;
+  }
+
+  .login-area-rodape {
+    justify-self: center;
+  }
+
+  .login-marca-mobile {
+    display: flex;
+  }
+
+  .login-cartao {
+    align-self: start;
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 479px) {
+  .login-cadastro-pergunta {
+    display: none;
+  }
+}
