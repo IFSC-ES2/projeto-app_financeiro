@@ -2428,22 +2428,15 @@ button:disabled {
   padding: var(--acesso-respiro-y) var(--acesso-respiro-x);
 }
 
-/* Folha de livro-caixa: pauta, margem dupla, cabeçalho duplo e colunas de valores à direita */
+/* Malha de papel quadriculado, lembrando um caderno de contas */
 .acesso-page::before {
-  --acesso-pauta: rgba(255, 255, 255, 0.06);
-  --acesso-coluna: rgba(255, 255, 255, 0.1);
-  --acesso-margem: rgba(255, 120, 120, 0.5);
   content: '';
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(var(--acesso-margem), var(--acesso-margem)) left 36px top 0 / 1px 100% no-repeat,
-    linear-gradient(var(--acesso-margem), var(--acesso-margem)) left 40px top 0 / 1px 100% no-repeat,
-    linear-gradient(var(--acesso-coluna), var(--acesso-coluna)) right 120px top 0 / 1px 100% no-repeat,
-    linear-gradient(var(--acesso-coluna), var(--acesso-coluna)) right 240px top 0 / 1px 100% no-repeat,
-    linear-gradient(var(--acesso-coluna), var(--acesso-coluna)) left 0 top 107px / 100% 1px no-repeat,
-    linear-gradient(var(--acesso-coluna), var(--acesso-coluna)) left 0 top 111px / 100% 1px no-repeat,
-    repeating-linear-gradient(180deg, transparent 0 35px, var(--acesso-pauta) 35px 36px);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
   mask-image: linear-gradient(180deg, #000 30%, transparent 95%);
   pointer-events: none;
 }
