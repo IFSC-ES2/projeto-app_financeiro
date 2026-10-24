@@ -20,6 +20,7 @@ const Dashboard = () => {
   const {
     resumo,
     resumoMesAnterior,
+    carregandoMesAnterior,
     carregando,
     erro,
     recarregar,
@@ -86,7 +87,11 @@ const Dashboard = () => {
 
         <div className="dashboard-insights-grid">
           <DestaqueMaiorGasto resumo={resumo} />
-          <VariacaoGastos resumo={resumo} resumoMesAnterior={resumoMesAnterior} />
+          <VariacaoGastos
+            resumo={resumo}
+            resumoMesAnterior={resumoMesAnterior}
+            carregando={carregandoMesAnterior}
+          />
         </div>
 
         <GastosPorCategoria

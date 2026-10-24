@@ -9,26 +9,29 @@ import {
 
 import { useAsync } from './useAsync';
 
-interface ResumoMensalComparativo {
-  atual: ResumoMensalResponse | null;
-  anterior: ResumoMensalResponse | null;
+interface ResumoMesAnterior {
+  anoMes: string | null;
+  resumo: ResumoMensalResponse | null;
 }
 
 export const useResumoMensal = (anoMes: string) => {
   const carregarResumo = useCallback(
-    async (): Promise<ResumoMensalComparativo> => {
-      /*
-       * O mês anterior serve apenas para saber se
-       * existe base de comparação. Uma falha nele não
-       * deve impedir a exibição do mês selecionado.
-       */
-      const [atual, anterior] = await Promise.all([
-        buscarResumoMensal(converterAnoMesParaPeriodo(anoMes)),
-        buscarResumoMensal(obterPeriodoAnterior(anoMes)).catch(() => null),
-      ]);
+    () => buscarResumoMensal(converterAnoMesParaPeriodo(anoMes)),
+    [anoMes],
+  );
 
-      return { atual, anterior };
-    },
+  /*
+   * O mês anterior é buscado à parte para que o resumo do
+   * mês selecionado não espere por ele. Ele serve apenas
+   * para saber se existe base de comparação, então uma
+   * falha nele não deve impedir a exibição do mês.
+   */
+  const carregarMesAnterior = useCallback(
+    async (): Promise<ResumoMesAnterior> => ({
+      anoMes,
+      resumo: await buscarResumoMensal(obterPeriodoAnterior(anoMes))
+        .catch(() => null),
+    }),
     [anoMes],
   );
 
@@ -37,14 +40,31 @@ export const useResumoMensal = (anoMes: string) => {
     carregando,
     erro,
     recarregar,
-  } = useAsync<ResumoMensalComparativo>(
+  } = useAsync<ResumoMensalResponse | null>(
     carregarResumo,
     {
-      valorInicial: { atual: null, anterior: null },
+      valorInicial: null,
       mensagemErro:
         'Não foi possível carregar o resumo do mês.',
     },
   );
+
+  const {
+    dados: dadosMesAnterior,
+    carregando: carregandoMesAnterior,
+    recarregar: recarregarMesAnterior,
+  } = useAsync<ResumoMesAnterior>(
+    carregarMesAnterior,
+    {
+      valorInicial: { anoMes: null, resumo: null },
+      mensagemErro: '',
+    },
+  );
+
+  const recarregarTudo = useCallback(() => {
+    recarregar();
+    recarregarMesAnterior();
+  }, [recarregar, recarregarMesAnterior]);
 
   /*
    * Entre a troca de mês e o início da nova busca existe
@@ -54,13 +74,18 @@ export const useResumoMensal = (anoMes: string) => {
    */
   const { ano, mes } = converterAnoMesParaPeriodo(anoMes);
   const ehResumoDoMesSelecionado =
-    dados.atual?.ano === ano && dados.atual?.mes === mes;
+    dados?.ano === ano && dados?.mes === mes;
+  const ehComparacaoDoMesSelecionado = dadosMesAnterior.anoMes === anoMes;
 
   return {
-    resumo: ehResumoDoMesSelecionado ? dados.atual : null,
-    resumoMesAnterior: ehResumoDoMesSelecionado ? dados.anterior : null,
+    resumo: ehResumoDoMesSelecionado ? dados : null,
+    resumoMesAnterior: ehComparacaoDoMesSelecionado
+      ? dadosMesAnterior.resumo
+      : null,
+    carregandoMesAnterior:
+      carregandoMesAnterior || !ehComparacaoDoMesSelecionado,
     carregando,
     erro,
-    recarregar,
+    recarregar: recarregarTudo,
   };
 };

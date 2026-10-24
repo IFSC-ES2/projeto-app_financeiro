@@ -4,6 +4,7 @@ import { formatarMoeda, formatarVariacaoPercentual } from '../../utils/formataca
 interface PropsVariacaoGastos {
   resumo: ResumoMensalResponse;
   resumoMesAnterior: ResumoMensalResponse | null;
+  carregando?: boolean;
 }
 
 const obterClasseVariacao = (variacao: number) => {
@@ -19,7 +20,21 @@ const obterDescricaoVariacao = (variacao: number) => {
   return 'igual ao mês anterior';
 };
 
-const VariacaoGastos = ({ resumo, resumoMesAnterior }: PropsVariacaoGastos) => {
+const VariacaoGastos = ({
+  resumo,
+  resumoMesAnterior,
+  carregando = false,
+}: PropsVariacaoGastos) => {
+  if (carregando) {
+    return (
+      <article className="dashboard-insight-card" aria-label="Variação de gastos">
+        <span className="dashboard-insight-label">Variação de gastos</span>
+        <strong className="dashboard-insight-value">—</strong>
+        <p aria-live="polite">Carregando comparação com o mês anterior...</p>
+      </article>
+    );
+  }
+
   const gastoMesAnterior = Number(resumoMesAnterior?.totalGasto || 0);
   const possuiComparacao =
     resumoMesAnterior !== null
