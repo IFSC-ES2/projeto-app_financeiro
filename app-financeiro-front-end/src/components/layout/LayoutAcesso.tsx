@@ -61,7 +61,6 @@ const LayoutAcesso: React.FC<PropsLayoutAcesso> = ({
           {children}
         </div>
 
-        <p className="acesso-area-rodape">© 2026 SmartBudget</p>
       </main>
     </div>
   );
