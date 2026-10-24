@@ -124,4 +124,16 @@ describe('Tela de Login', () => {
     await user.click(screen.getByRole('button', { name: 'Ocultar senha' }));
     expect(campoSenha).toHaveAttribute('type', 'password');
   });
+
+  it('não deve pintar a senha de verde depois de preenchida', async () => {
+    renderizarComponente();
+
+    const user = userEvent.setup();
+    const campoSenha = screen.getByLabelText('Senha');
+
+    await user.type(campoSenha, 'senha123');
+    await user.tab();
+
+    expect(campoSenha).not.toHaveClass('is-valid');
+  });
 });
