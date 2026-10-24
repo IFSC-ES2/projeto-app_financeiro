@@ -30,7 +30,11 @@ const Login: React.FC = () => {
   const aoEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
     setErro('');
-    if (!eValido()) return;
+    if (!eValido()) {
+      const primeiroInvalido = Object.keys(validar(valores))[0];
+      document.getElementById(primeiroInvalido)?.focus();
+      return;
+    }
 
     setCarregando(true);
     try {
