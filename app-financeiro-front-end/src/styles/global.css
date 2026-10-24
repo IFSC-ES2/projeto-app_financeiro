@@ -2629,13 +2629,13 @@ button:disabled {
   gap: 12px;
 }
 
-.acesso-cadastro {
+.acesso-alternativa {
   margin: 0;
   color: rgba(255, 255, 255, 0.65);
   font-size: 0.92rem;
 }
 
-.acesso-cadastro a {
+.acesso-alternativa a {
   margin-left: 4px;
   padding: 7px 14px;
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -2646,8 +2646,8 @@ button:disabled {
   transition: border-color 0.18s ease, color 0.18s ease;
 }
 
-.acesso-cadastro a:hover,
-.acesso-cadastro a:focus-visible {
+.acesso-alternativa a:hover,
+.acesso-alternativa a:focus-visible {
   border-color: var(--sb-primary-light);
   color: var(--sb-primary-light);
 }
@@ -2765,7 +2765,7 @@ button:disabled {
 }
 
 @media (max-width: 479px) {
-  .acesso-cadastro-pergunta {
+  .acesso-alternativa-pergunta {
     display: none;
   }
 }
