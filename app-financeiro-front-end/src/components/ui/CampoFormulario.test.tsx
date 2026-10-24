@@ -34,4 +34,10 @@ describe('CampoFormulario', () => {
 
     expect(screen.getByLabelText('Senha')).not.toHaveClass('is-valid');
   });
+
+  it('renderiza a ação junto do campo', () => {
+    render(<CampoFormulario rotulo="Senha" id="senha" acao={<button type="button">Mostrar</button>} />);
+
+    expect(screen.getByRole('button', { name: 'Mostrar' })).toBeInTheDocument();
+  });
 });
