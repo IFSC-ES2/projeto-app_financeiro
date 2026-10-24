@@ -2456,58 +2456,6 @@ button:disabled {
   pointer-events: none;
 }
 
-/* A página inteira como a carteira da logo: cartões empilhados e o bolso creme embaixo */
-.acesso-fundo-carteira {
-  --acesso-fundo-bolso: 68%;
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.acesso-fundo-carteira span {
-  position: absolute;
-  bottom: 0;
-}
-
-.acesso-fundo-carteira-amarela,
-.acesso-fundo-carteira-verde {
-  left: 40px;
-  right: 40px;
-  border-radius: 28px 28px 0 0;
-}
-
-.acesso-fundo-carteira-amarela {
-  top: calc(var(--acesso-fundo-bolso) - 52px);
-  background: var(--acesso-cartao-a);
-}
-
-.acesso-fundo-carteira-verde {
-  top: calc(var(--acesso-fundo-bolso) - 28px);
-  background: var(--acesso-cartao-b);
-}
-
-.acesso-fundo-carteira-bolso {
-  top: var(--acesso-fundo-bolso);
-  left: 0;
-  right: 0;
-  border-radius: 20px 20px 0 0;
-  background: var(--acesso-bolso);
-}
-
-/* Lingueta do cartão verde no recorte do bolso */
-.acesso-fundo-carteira-bolso::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 180px;
-  height: 46px;
-  transform: translateX(-50%);
-  border-radius: 0 0 90px 90px;
-  background: var(--acesso-cartao-b);
-}
-
 .acesso-vitrine,
 .acesso-area {
   position: relative;
@@ -2680,7 +2628,7 @@ button:disabled {
 
 .acesso-vitrine-rodape,
 .acesso-area-rodape {
-  color: color-mix(in srgb, var(--acesso-tinta) 55%, transparent);
+  color: color-mix(in srgb, var(--acesso-texto-claro) 45%, transparent);
 }
 
 .acesso-area-rodape {
