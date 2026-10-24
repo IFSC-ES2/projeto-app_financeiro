@@ -2753,6 +2753,12 @@ button:disabled {
   color: var(--acesso-texto-claro);
 }
 
+.acesso-botao:focus-visible {
+  outline: 2px solid var(--acesso-foco);
+  outline-offset: 3px;
+  box-shadow: none;
+}
+
 @keyframes acesso-entrada {
   from {
     opacity: 0;
