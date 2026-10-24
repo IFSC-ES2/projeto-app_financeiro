@@ -109,4 +109,19 @@ describe('Tela de Login', () => {
 
     expect(screen.getByLabelText('Senha')).toHaveFocus();
   });
+
+  it('deve alternar a visibilidade da senha', async () => {
+    renderizarComponente();
+
+    const user = userEvent.setup();
+    const campoSenha = screen.getByLabelText('Senha');
+
+    expect(campoSenha).toHaveAttribute('type', 'password');
+
+    await user.click(screen.getByRole('button', { name: 'Mostrar senha' }));
+    expect(campoSenha).toHaveAttribute('type', 'text');
+
+    await user.click(screen.getByRole('button', { name: 'Ocultar senha' }));
+    expect(campoSenha).toHaveAttribute('type', 'password');
+  });
 });
