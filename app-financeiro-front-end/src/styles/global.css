@@ -2441,34 +2441,6 @@ button:disabled {
   pointer-events: none;
 }
 
-/* Linha de saldo gigante ao fundo, ecoando o gráfico da carteira */
-.acesso-fundo-grafico {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.acesso-fundo-grafico-linha {
-  fill: none;
-  stroke: var(--sb-accent);
-  stroke-opacity: 0.22;
-  stroke-width: 2;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-}
-
-.acesso-fundo-grafico-area-topo {
-  stop-color: var(--sb-primary);
-  stop-opacity: 0.16;
-}
-
-.acesso-fundo-grafico-area-base {
-  stop-color: var(--sb-primary);
-  stop-opacity: 0;
-}
-
 .acesso-vitrine,
 .acesso-area {
   position: relative;
