@@ -6,6 +6,7 @@ interface PropsCampoFormulario extends React.InputHTMLAttributes<HTMLInputElemen
   erro?: string;
   tocado?: boolean;
   icone?: React.ReactNode;
+  destacarValido?: boolean;
 }
 
 const CampoFormulario: React.FC<PropsCampoFormulario> = ({
@@ -14,6 +15,7 @@ const CampoFormulario: React.FC<PropsCampoFormulario> = ({
   erro,
   tocado,
   icone,
+  destacarValido = true,
   className = '',
   ...rest
 }) => {
@@ -33,7 +35,7 @@ const CampoFormulario: React.FC<PropsCampoFormulario> = ({
         <input
           id={id}
           className={`form-control ${icone ? 'border-start-0' : ''} ${
-            mostrarErro ? 'is-invalid' : tocado ? 'is-valid' : ''
+            mostrarErro ? 'is-invalid' : tocado && destacarValido ? 'is-valid' : ''
           } ${className}`}
           style={{ boxShadow: 'none' }}
           aria-invalid={mostrarErro ? true : undefined}
