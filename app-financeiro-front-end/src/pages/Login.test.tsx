@@ -98,4 +98,15 @@ describe('Tela de Login', () => {
 
     expect(mockNavigate).not.toHaveBeenCalled();
   });
+
+  it('deve focar o primeiro campo inválido ao enviar o formulário', async () => {
+    renderizarComponente();
+
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText('E-mail'), 'teste@email.com');
+    await user.click(screen.getByRole('button', { name: /entrar/i }));
+
+    expect(screen.getByLabelText(/Senha/i)).toHaveFocus();
+  });
 });
