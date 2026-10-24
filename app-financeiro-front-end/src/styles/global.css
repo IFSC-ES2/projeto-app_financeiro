@@ -2441,47 +2441,6 @@ button:disabled {
   pointer-events: none;
 }
 
-/* Colunas de lançamentos ao fundo, como um extrato impresso no terminal */
-.acesso-fundo-extrato {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  mask-image: linear-gradient(180deg, transparent, #000 15%, #000 80%, transparent);
-}
-
-.acesso-fundo-extrato ul {
-  position: absolute;
-  top: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  font-size: 0.85rem;
-  line-height: 2.25;
-  white-space: pre;
-  text-align: right;
-  color: rgba(255, 255, 255, 0.07);
-}
-
-.acesso-fundo-extrato-entrada {
-  color: rgba(108, 197, 178, 0.16);
-}
-
-.acesso-fundo-extrato ul:nth-child(1) {
-  left: 1.5%;
-}
-
-.acesso-fundo-extrato ul:nth-child(2) {
-  left: 45%;
-  top: -40px;
-}
-
-.acesso-fundo-extrato ul:nth-child(3) {
-  right: 1.5%;
-  top: -20px;
-}
-
 .acesso-vitrine,
 .acesso-area {
   position: relative;
