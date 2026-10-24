@@ -18,7 +18,6 @@ const CarteiraIlustrativa: React.FC<PropsCarteiraIlustrativa> = ({ rotulo, saldo
   return (
     <div className="acesso-carteira">
       <div className="acesso-carteira-cartao">
-        <span className="acesso-carteira-prompt">&gt;_</span>
         <span className="acesso-carteira-rotulo">{rotulo}</span>
         <strong className="acesso-carteira-saldo">{saldo}</strong>
         {trajetoGrafico && (
