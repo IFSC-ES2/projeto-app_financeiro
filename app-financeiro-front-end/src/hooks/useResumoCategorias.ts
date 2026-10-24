@@ -6,9 +6,23 @@ import { converterAnoMesParaPeriodo } from '../utils/dashboard';
 
 import { useAsync } from './useAsync';
 
+interface ResumoCategoriasDoMes {
+  anoMes: string | null;
+  categorias: ResumoCategoriaResponse[];
+}
+
 export const useResumoCategorias = (anoMes: string) => {
+  /*
+   * A resposta não informa o período, então o resultado
+   * guarda o mês consultado para ser validado abaixo.
+   */
   const carregarCategorias = useCallback(
-    () => buscarResumoPorCategorias(converterAnoMesParaPeriodo(anoMes)),
+    async (): Promise<ResumoCategoriasDoMes> => ({
+      anoMes,
+      categorias: await buscarResumoPorCategorias(
+        converterAnoMesParaPeriodo(anoMes),
+      ),
+    }),
     [anoMes],
   );
 
@@ -17,18 +31,26 @@ export const useResumoCategorias = (anoMes: string) => {
     carregando,
     erro,
     recarregar,
-  } = useAsync<ResumoCategoriaResponse[]>(
+  } = useAsync<ResumoCategoriasDoMes>(
     carregarCategorias,
     {
-      valorInicial: [],
+      valorInicial: { anoMes: null, categorias: [] },
       mensagemErro:
         'Não foi possível carregar os gastos por categoria.',
     },
   );
 
+  /*
+   * Assim como no resumo mensal, as categorias de outro
+   * mês são descartadas enquanto a nova busca não chega,
+   * evitando misturar os totais do mês atual com as
+   * categorias do mês anterior.
+   */
+  const ehDoMesSelecionado = dados.anoMes === anoMes;
+
   return {
-    categorias: dados,
-    carregando,
+    categorias: ehDoMesSelecionado ? dados.categorias : [],
+    carregando: carregando || (!ehDoMesSelecionado && !erro),
     erro,
     recarregar,
   };
