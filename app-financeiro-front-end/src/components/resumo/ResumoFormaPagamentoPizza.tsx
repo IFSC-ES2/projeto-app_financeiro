@@ -106,8 +106,9 @@ const ResumoFormaPagamentoPizza = () => {
           <h2>Formas de pagamento</h2>
 
           <p>
-            Distribuição das transações por meio de
-            pagamento.
+            Distribuição de todas as transações por meio
+            de pagamento, independente do mês selecionado
+            no resumo.
           </p>
         </div>
       </div>
