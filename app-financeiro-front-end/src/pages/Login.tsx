@@ -20,6 +20,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const { login } = useAutenticacao();
 
   const { valores, erros, tocados, aoAlterar, aoSair, eValido } = useFormulario({
@@ -90,7 +91,7 @@ const Login: React.FC = () => {
           rotulo="Senha"
           id="senha"
           name="senha"
-          type="password"
+          type={mostrarSenha ? 'text' : 'password'}
           value={valores.senha}
           onChange={aoAlterar}
           onBlur={aoSair}
@@ -98,6 +99,16 @@ const Login: React.FC = () => {
           autoComplete="current-password"
           erro={erros.senha}
           tocado={tocados.senha}
+          acao={
+            <button
+              type="button"
+              className="acesso-mostrar-senha"
+              aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+              onClick={() => setMostrarSenha((atual) => !atual)}
+            >
+              {mostrarSenha ? 'Ocultar' : 'Mostrar'}
+            </button>
+          }
         />
 
         <BotaoCarregando

@@ -40,7 +40,7 @@ describe('Tela de Login', () => {
     renderizarComponente();
 
     expect(screen.getByLabelText('E-mail')).toBeInTheDocument();
-    expect(screen.getByLabelText(/Senha/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('Senha')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /entrar/i })).toBeInTheDocument();
   });
 
@@ -66,7 +66,7 @@ describe('Tela de Login', () => {
     const user = userEvent.setup();
 
     await user.type(screen.getByLabelText('E-mail'), 'teste@email.com');
-    await user.type(screen.getByLabelText(/Senha/i), 'senha123');
+    await user.type(screen.getByLabelText('Senha'), 'senha123');
     await user.click(screen.getByRole('button', { name: /entrar/i }));
 
     await waitFor(() => {
@@ -89,7 +89,7 @@ describe('Tela de Login', () => {
     const user = userEvent.setup();
 
     await user.type(screen.getByLabelText('E-mail'), 'errado@email.com');
-    await user.type(screen.getByLabelText(/Senha/i), 'senhaerrada');
+    await user.type(screen.getByLabelText('Senha'), 'senhaerrada');
     await user.click(screen.getByRole('button', { name: /entrar/i }));
 
     await waitFor(() => {
@@ -107,6 +107,6 @@ describe('Tela de Login', () => {
     await user.type(screen.getByLabelText('E-mail'), 'teste@email.com');
     await user.click(screen.getByRole('button', { name: /entrar/i }));
 
-    expect(screen.getByLabelText(/Senha/i)).toHaveFocus();
+    expect(screen.getByLabelText('Senha')).toHaveFocus();
   });
 });
