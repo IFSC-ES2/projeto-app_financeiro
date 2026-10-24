@@ -85,7 +85,6 @@ const Login: React.FC = () => {
           value={valores.email}
           onChange={aoAlterar}
           onBlur={aoSair}
-          placeholder="seu@email.com"
           autoComplete="email"
           erro={erros.email}
           tocado={tocados.email}
@@ -99,7 +98,6 @@ const Login: React.FC = () => {
           value={valores.senha}
           onChange={aoAlterar}
           onBlur={aoSair}
-          placeholder="Sua senha"
           autoComplete="current-password"
           erro={erros.senha}
           tocado={tocados.senha}
