@@ -22,4 +22,16 @@ describe('CampoFormulario', () => {
 
     expect(screen.getByLabelText('E-mail')).toHaveAccessibleDescription('E-mail é obrigatório.');
   });
+
+  it('destaca o campo válido por padrão depois de tocado', () => {
+    render(<CampoFormulario rotulo="Nome" id="nome" tocado />);
+
+    expect(screen.getByLabelText('Nome')).toHaveClass('is-valid');
+  });
+
+  it('não destaca o campo válido quando destacarValido é falso', () => {
+    render(<CampoFormulario rotulo="Senha" id="senha" tocado destacarValido={false} />);
+
+    expect(screen.getByLabelText('Senha')).not.toHaveClass('is-valid');
+  });
 });
