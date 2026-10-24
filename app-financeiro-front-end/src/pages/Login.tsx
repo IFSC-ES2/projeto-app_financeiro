@@ -43,64 +43,64 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="login-page">
-      <aside className="login-vitrine" aria-hidden="true">
-        <div className="login-marca">
+    <div className="acesso-page">
+      <aside className="acesso-vitrine" aria-hidden="true">
+        <div className="acesso-marca">
           <img src="/smartbudget-logo.png" alt="" width="36" height="36" />
           <span>SmartBudget</span>
         </div>
 
-        <div className="login-vitrine-conteudo">
-          <p className="login-manchete">
+        <div className="acesso-vitrine-conteudo">
+          <p className="acesso-manchete">
             Seu dinheiro,
             <br />
             <em>em ordem.</em>
           </p>
-          <p className="login-vitrine-texto">
+          <p className="acesso-vitrine-texto">
             Contas, cartões e categorias num só lugar. Você vê para onde vai cada real antes do fim do mês.
           </p>
 
           {/* Ilustração estática da carteira da logo, sem dados reais */}
-          <div className="login-carteira">
-            <div className="login-carteira-cartao">
-              <span className="login-carteira-prompt">&gt;_</span>
-              <span className="login-carteira-rotulo">Saldo do mês</span>
-              <strong className="login-carteira-saldo">R$ 2.418,90</strong>
-              <svg className="login-carteira-grafico" viewBox="0 0 240 56" preserveAspectRatio="none">
+          <div className="acesso-carteira">
+            <div className="acesso-carteira-cartao">
+              <span className="acesso-carteira-prompt">&gt;_</span>
+              <span className="acesso-carteira-rotulo">Saldo do mês</span>
+              <strong className="acesso-carteira-saldo">R$ 2.418,90</strong>
+              <svg className="acesso-carteira-grafico" viewBox="0 0 240 56" preserveAspectRatio="none">
                 <path d="M0 44 L30 38 L60 42 L90 26 L120 30 L150 18 L180 22 L210 10 L240 14" />
               </svg>
             </div>
-            <div className="login-carteira-faixa login-carteira-faixa-amarela" />
-            <div className="login-carteira-faixa login-carteira-faixa-verde" />
-            <ul className="login-carteira-bolso">
-              <li><span>Salário</span><span className="login-valor-entrada">+ R$ 4.200,00</span></li>
+            <div className="acesso-carteira-faixa acesso-carteira-faixa-amarela" />
+            <div className="acesso-carteira-faixa acesso-carteira-faixa-verde" />
+            <ul className="acesso-carteira-bolso">
+              <li><span>Salário</span><span className="acesso-valor-entrada">+ R$ 4.200,00</span></li>
               <li><span>Mercado</span><span>− R$ 612,40</span></li>
               <li><span>Aluguel</span><span>− R$ 1.168,70</span></li>
             </ul>
           </div>
         </div>
 
-        <p className="login-vitrine-rodape">Projeto acadêmico · IFSC</p>
+        <p className="acesso-vitrine-rodape">Projeto acadêmico · IFSC</p>
       </aside>
 
-      <main className="login-area">
-        <div className="login-area-topo">
-          <div className="login-marca login-marca-mobile">
+      <main className="acesso-area">
+        <div className="acesso-area-topo">
+          <div className="acesso-marca acesso-marca-mobile">
             <img src="/smartbudget-logo.png" alt="" width="32" height="32" />
             <span>SmartBudget</span>
           </div>
-          <p className="login-cadastro">
-            <span className="login-cadastro-pergunta">Novo aqui?</span> <Link to="/cadastro">Criar uma conta</Link>
+          <p className="acesso-cadastro">
+            <span className="acesso-cadastro-pergunta">Novo aqui?</span> <Link to="/cadastro">Criar uma conta</Link>
           </p>
         </div>
 
-        <div className="login-cartao">
-          <h1 className="login-titulo">Entrar</h1>
-          <p className="login-subtitulo">Bem-vindo de volta. Acesse com seu e-mail e senha.</p>
+        <div className="acesso-cartao">
+          <h1 className="acesso-titulo">Entrar</h1>
+          <p className="acesso-subtitulo">Bem-vindo de volta. Acesse com seu e-mail e senha.</p>
 
           <MensagemAlerta mensagem={erro} tipo="danger" />
 
-          <form onSubmit={aoEnviar} noValidate className="login-formulario">
+          <form onSubmit={aoEnviar} noValidate className="acesso-formulario">
             <CampoFormulario
               rotulo="Usuário ou e-mail"
               id="email"
@@ -133,14 +133,14 @@ const Login: React.FC = () => {
               type="submit"
               carregando={carregando}
               textoCarregando="Entrando..."
-              className="login-botao w-100"
+              className="acesso-botao w-100"
             >
               Entrar
             </BotaoCarregando>
           </form>
         </div>
 
-        <p className="login-area-rodape">© 2026 SmartBudget</p>
+        <p className="acesso-area-rodape">© 2026 SmartBudget</p>
       </main>
     </div>
   );

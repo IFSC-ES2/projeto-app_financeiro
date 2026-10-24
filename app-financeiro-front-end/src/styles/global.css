@@ -2401,12 +2401,12 @@ button:disabled {
   color: var(--sb-text-muted);
 }
 
-/* ---------- Tela de login ---------- */
+/* ---------- Telas de acesso (login e cadastro) ---------- */
 
 /* Os dois lados repetem as mesmas três faixas (topo, centro, rodapé) para ficarem alinhados */
-.login-page {
-  --login-respiro-x: clamp(24px, 4.5vw, 64px);
-  --login-respiro-y: clamp(24px, 5vh, 48px);
+.acesso-page {
+  --acesso-respiro-x: clamp(24px, 4.5vw, 64px);
+  --acesso-respiro-y: clamp(24px, 5vh, 48px);
   min-height: 100vh;
   min-height: 100dvh;
   display: grid;
@@ -2420,16 +2420,16 @@ button:disabled {
     var(--sb-primary-dark);
 }
 
-.login-vitrine,
-.login-area {
+.acesso-vitrine,
+.acesso-area {
   display: grid;
   grid-template-rows: 40px minmax(0, 1fr) 20px;
   row-gap: clamp(12px, 3vh, 32px);
-  padding: var(--login-respiro-y) var(--login-respiro-x);
+  padding: var(--acesso-respiro-y) var(--acesso-respiro-x);
 }
 
 /* Malha de papel quadriculado, lembrando um caderno de contas */
-.login-page::before {
+.acesso-page::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -2441,12 +2441,12 @@ button:disabled {
   pointer-events: none;
 }
 
-.login-vitrine,
-.login-area {
+.acesso-vitrine,
+.acesso-area {
   position: relative;
 }
 
-.login-marca {
+.acesso-marca {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2455,18 +2455,18 @@ button:disabled {
   font-weight: 700;
 }
 
-.login-marca img {
+.acesso-marca img {
   border-radius: 10px;
 }
 
-.login-vitrine-conteudo {
+.acesso-vitrine-conteudo {
   align-self: center;
   justify-self: center;
   width: 100%;
   max-width: 440px;
 }
 
-.login-manchete {
+.acesso-manchete {
   margin: 0 0 clamp(10px, 2vh, 18px);
   font-family: var(--sb-font-titulo);
   font-size: clamp(2rem, min(4vw, 6.5vh), 3.4rem);
@@ -2475,12 +2475,12 @@ button:disabled {
   letter-spacing: -0.02em;
 }
 
-.login-manchete em {
+.acesso-manchete em {
   font-style: normal;
   color: var(--sb-primary-light);
 }
 
-.login-vitrine-texto {
+.acesso-vitrine-texto {
   margin: 0 0 clamp(20px, 4.5vh, 40px);
   max-width: 380px;
   color: rgba(255, 255, 255, 0.7);
@@ -2488,9 +2488,9 @@ button:disabled {
 }
 
 /* Carteira desenhada nas cores da logo: cartões empilhados atrás de um bolso */
-.login-carteira {
-  --login-carteira-verde: #2E8A5E;
-  --login-carteira-creme: #F2EEE5;
+.acesso-carteira {
+  --acesso-carteira-verde: #2E8A5E;
+  --acesso-carteira-creme: #F2EEE5;
   max-width: 360px;
   padding: clamp(10px, 2vh, 18px) 18px clamp(12px, 2.2vh, 20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -2499,12 +2499,12 @@ button:disabled {
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
 }
 
-.login-carteira-cartao,
-.login-carteira-faixa {
+.acesso-carteira-cartao,
+.acesso-carteira-faixa {
   margin-inline: 10px;
 }
 
-.login-carteira-cartao {
+.acesso-carteira-cartao {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -2514,7 +2514,7 @@ button:disabled {
   background: #1F3A57;
 }
 
-.login-carteira-prompt {
+.acesso-carteira-prompt {
   position: absolute;
   top: clamp(12px, 2.2vh, 18px);
   right: 20px;
@@ -2523,25 +2523,25 @@ button:disabled {
   color: rgba(255, 255, 255, 0.55);
 }
 
-.login-carteira-rotulo {
+.acesso-carteira-rotulo {
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.8rem;
 }
 
-.login-carteira-saldo {
+.acesso-carteira-saldo {
   font-size: 1.6rem;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
 
-.login-carteira-grafico {
+.acesso-carteira-grafico {
   display: block;
   width: 100%;
   height: clamp(28px, 5vh, 48px);
   margin-top: clamp(6px, 1.3vh, 10px);
 }
 
-.login-carteira-grafico path {
+.acesso-carteira-grafico path {
   fill: none;
   stroke: var(--sb-accent);
   stroke-width: 2.5;
@@ -2550,34 +2550,34 @@ button:disabled {
   vector-effect: non-scaling-stroke;
 }
 
-.login-carteira-faixa {
+.acesso-carteira-faixa {
   position: relative;
   height: 30px;
   border-radius: 14px 14px 0 0;
 }
 
-.login-carteira-faixa-amarela {
+.acesso-carteira-faixa-amarela {
   margin-top: -10px;
   background: var(--sb-accent);
 }
 
-.login-carteira-faixa-verde {
+.acesso-carteira-faixa-verde {
   margin-top: -16px;
-  background: var(--login-carteira-verde);
+  background: var(--acesso-carteira-verde);
 }
 
-.login-carteira-bolso {
+.acesso-carteira-bolso {
   position: relative;
   margin: -14px 0 0;
   padding: clamp(16px, 2.6vh, 22px) 20px clamp(4px, 1vh, 8px);
   list-style: none;
   border-radius: 8px 8px 20px 20px;
-  background: var(--login-carteira-creme);
+  background: var(--acesso-carteira-creme);
   color: var(--sb-text);
 }
 
 /* Lingueta do cartão verde aparecendo no recorte do bolso */
-.login-carteira-bolso::before {
+.acesso-carteira-bolso::before {
   content: '';
   position: absolute;
   top: 0;
@@ -2586,10 +2586,10 @@ button:disabled {
   height: 18px;
   transform: translateX(-50%);
   border-radius: 0 0 32px 32px;
-  background: var(--login-carteira-verde);
+  background: var(--acesso-carteira-verde);
 }
 
-.login-carteira-bolso li {
+.acesso-carteira-bolso li {
   display: flex;
   justify-content: space-between;
   padding: clamp(5px, 1vh, 8px) 0;
@@ -2597,45 +2597,45 @@ button:disabled {
   font-variant-numeric: tabular-nums;
 }
 
-.login-carteira-bolso li + li {
+.acesso-carteira-bolso li + li {
   border-top: 1px solid rgba(14, 22, 36, 0.08);
 }
 
-.login-carteira-bolso .login-valor-entrada {
+.acesso-carteira-bolso .acesso-valor-entrada {
   color: var(--sb-success);
   font-weight: 700;
 }
 
-.login-vitrine-rodape,
-.login-area-rodape {
+.acesso-vitrine-rodape,
+.acesso-area-rodape {
   margin: 0;
   align-self: end;
   font-size: 0.8rem;
 }
 
-.login-vitrine-rodape,
-.login-area-rodape {
+.acesso-vitrine-rodape,
+.acesso-area-rodape {
   color: rgba(255, 255, 255, 0.45);
 }
 
-.login-area-rodape {
+.acesso-area-rodape {
   justify-self: end;
 }
 
-.login-area-topo {
+.acesso-area-topo {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
 }
 
-.login-cadastro {
+.acesso-cadastro {
   margin: 0;
   color: rgba(255, 255, 255, 0.65);
   font-size: 0.92rem;
 }
 
-.login-cadastro a {
+.acesso-cadastro a {
   margin-left: 4px;
   padding: 7px 14px;
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -2646,13 +2646,13 @@ button:disabled {
   transition: border-color 0.18s ease, color 0.18s ease;
 }
 
-.login-cadastro a:hover,
-.login-cadastro a:focus-visible {
+.acesso-cadastro a:hover,
+.acesso-cadastro a:focus-visible {
   border-color: var(--sb-primary-light);
   color: var(--sb-primary-light);
 }
 
-.login-cartao {
+.acesso-cartao {
   align-self: center;
   justify-self: center;
   width: 100%;
@@ -2662,14 +2662,14 @@ button:disabled {
   background: var(--sb-surface);
   color: var(--sb-text);
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
-  animation: login-entrada 0.4s ease-out both;
+  animation: acesso-entrada 0.4s ease-out both;
 }
 
-.login-marca-mobile {
+.acesso-marca-mobile {
   display: none;
 }
 
-.login-titulo {
+.acesso-titulo {
   margin: 0 0 6px;
   font-size: 2rem;
   font-weight: 800;
@@ -2677,27 +2677,27 @@ button:disabled {
   color: var(--sb-text);
 }
 
-.login-subtitulo {
+.acesso-subtitulo {
   margin: 0 0 28px;
   color: var(--sb-text-muted);
 }
 
-.login-formulario .form-label {
+.acesso-formulario .form-label {
   color: var(--sb-text) !important;
 }
 
-.login-formulario .form-control {
+.acesso-formulario .form-control {
   padding: 0.75rem 0.95rem;
   border-radius: 10px !important;
   background: var(--sb-surface-soft);
   border-color: transparent;
 }
 
-.login-formulario .form-control:focus {
+.acesso-formulario .form-control:focus {
   background: var(--sb-surface);
 }
 
-.login-botao {
+.acesso-botao {
   margin-top: 8px;
   padding: 0.8rem 1rem;
   border: none;
@@ -2707,13 +2707,13 @@ button:disabled {
   font-weight: 700;
 }
 
-.login-botao:hover:not(:disabled),
-.login-botao:focus-visible {
+.acesso-botao:hover:not(:disabled),
+.acesso-botao:focus-visible {
   background: var(--sb-primary-mid);
   color: #ffffff;
 }
 
-@keyframes login-entrada {
+@keyframes acesso-entrada {
   from {
     opacity: 0;
     transform: translateY(8px);
@@ -2721,51 +2721,51 @@ button:disabled {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .login-cartao {
+  .acesso-cartao {
     animation: none;
   }
 }
 
 /* Janela baixa demais para o cartão caber sem gerar rolagem */
 @media (max-height: 640px) {
-  .login-carteira {
+  .acesso-carteira {
     display: none;
   }
 }
 
 @media (max-width: 991px) {
-  .login-page {
+  .acesso-page {
     grid-template-columns: 1fr;
   }
 
-  .login-vitrine {
+  .acesso-vitrine {
     display: none;
   }
 
-  .login-area {
+  .acesso-area {
     grid-template-rows: auto auto 1fr;
   }
 
-  .login-area-topo {
+  .acesso-area-topo {
     justify-content: space-between;
   }
 
-  .login-area-rodape {
+  .acesso-area-rodape {
     justify-self: center;
   }
 
-  .login-marca-mobile {
+  .acesso-marca-mobile {
     display: flex;
   }
 
-  .login-cartao {
+  .acesso-cartao {
     align-self: start;
     margin-top: 24px;
   }
 }
 
 @media (max-width: 479px) {
-  .login-cadastro-pergunta {
+  .acesso-cadastro-pergunta {
     display: none;
   }
 }
