@@ -5,10 +5,17 @@ interface PropsLayoutAcesso {
   pergunta: string;
   rotuloLink: string;
   destinoLink: string;
+  classeCartao?: string;
   children: React.ReactNode;
 }
 
-const LayoutAcesso: React.FC<PropsLayoutAcesso> = ({ pergunta, rotuloLink, destinoLink, children }) => {
+const LayoutAcesso: React.FC<PropsLayoutAcesso> = ({
+  pergunta,
+  rotuloLink,
+  destinoLink,
+  classeCartao = '',
+  children,
+}) => {
   return (
     <div className="acesso-page">
       <aside className="acesso-vitrine" aria-hidden="true">
@@ -61,7 +68,7 @@ const LayoutAcesso: React.FC<PropsLayoutAcesso> = ({ pergunta, rotuloLink, desti
           </p>
         </div>
 
-        <div className="acesso-cartao">
+        <div className={`acesso-cartao ${classeCartao}`}>
           {children}
         </div>
 
