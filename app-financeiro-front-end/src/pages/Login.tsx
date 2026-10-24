@@ -72,7 +72,7 @@ const Login: React.FC = () => {
       destinoLink="/cadastro"
     >
       <h1 className="acesso-titulo">Entrar</h1>
-      <p className="acesso-subtitulo">Bem-vindo de volta. Acesse com seu e-mail e senha.</p>
+      <p className="acesso-subtitulo">Bem-vindo de volta.</p>
 
       <MensagemAlerta mensagem={erro} tipo="danger" />
 
