@@ -39,7 +39,7 @@ describe('Tela de Login', () => {
   it('deve renderizar os campos de e-mail, senha e o botão de entrar', () => {
     renderizarComponente();
 
-    expect(screen.getByLabelText(/Usuário ou e-mail/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('E-mail')).toBeInTheDocument();
     expect(screen.getByLabelText(/Senha/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /entrar/i })).toBeInTheDocument();
   });
@@ -65,7 +65,7 @@ describe('Tela de Login', () => {
 
     const user = userEvent.setup();
 
-    await user.type(screen.getByLabelText(/Usuário ou e-mail/i), 'teste@email.com');
+    await user.type(screen.getByLabelText('E-mail'), 'teste@email.com');
     await user.type(screen.getByLabelText(/Senha/i), 'senha123');
     await user.click(screen.getByRole('button', { name: /entrar/i }));
 
@@ -88,7 +88,7 @@ describe('Tela de Login', () => {
 
     const user = userEvent.setup();
 
-    await user.type(screen.getByLabelText(/Usuário ou e-mail/i), 'errado@email.com');
+    await user.type(screen.getByLabelText('E-mail'), 'errado@email.com');
     await user.type(screen.getByLabelText(/Senha/i), 'senhaerrada');
     await user.click(screen.getByRole('button', { name: /entrar/i }));
 

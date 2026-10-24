@@ -69,7 +69,7 @@ const Login: React.FC = () => {
 
       <form onSubmit={aoEnviar} noValidate className="acesso-formulario">
         <CampoFormulario
-          rotulo="Usuário ou e-mail"
+          rotulo="E-mail"
           id="email"
           name="email"
           type="email"
