@@ -2438,7 +2438,7 @@ button:disabled {
 .acesso-vitrine,
 .acesso-area {
   display: grid;
-  grid-template-rows: 40px minmax(0, 1fr) 20px;
+  grid-template-rows: 40px minmax(0, 1fr);
   row-gap: clamp(12px, 3vh, 32px);
   padding: var(--acesso-respiro-y) var(--acesso-respiro-x);
 }
@@ -2619,22 +2619,6 @@ button:disabled {
   font-weight: 700;
 }
 
-.acesso-vitrine-rodape,
-.acesso-area-rodape {
-  margin: 0;
-  align-self: end;
-  font-size: 0.8rem;
-}
-
-.acesso-vitrine-rodape,
-.acesso-area-rodape {
-  color: color-mix(in srgb, var(--acesso-texto-claro) 45%, transparent);
-}
-
-.acesso-area-rodape {
-  justify-self: end;
-}
-
 .acesso-area-topo {
   display: flex;
   align-items: center;
@@ -2777,10 +2761,6 @@ button:disabled {
 
   .acesso-area-topo {
     justify-content: space-between;
-  }
-
-  .acesso-area-rodape {
-    justify-self: center;
   }
 
   .acesso-marca-mobile {
