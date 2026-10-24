@@ -2710,6 +2710,33 @@ button:disabled {
   border-color: var(--sb-danger);
 }
 
+.acesso-formulario .form-control:has(+ .acesso-mostrar-senha) {
+  padding-right: 5.5rem;
+}
+
+.acesso-mostrar-senha {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 5;
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--acesso-tinta);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.acesso-mostrar-senha:hover {
+  background: color-mix(in srgb, var(--acesso-tinta) 6%, transparent);
+}
+
+.acesso-mostrar-senha:focus-visible {
+  outline: 2px solid var(--acesso-foco);
+  outline-offset: 1px;
+}
+
 .acesso-botao {
   margin-top: 8px;
   padding: 0.8rem 1rem;
