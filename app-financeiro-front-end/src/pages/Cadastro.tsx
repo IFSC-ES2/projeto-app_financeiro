@@ -70,17 +70,16 @@ const Cadastro: React.FC = () => {
 
   return (
     <LayoutAcesso
-      manchete="Seu dinheiro,"
-      mancheteDestaque="em ordem."
-      textoApresentacao="Contas, cartões e categorias num só lugar. Você vê para onde vai cada real antes do fim do mês."
+      manchete="Boas-vindas ao"
+      mancheteDestaque="SmartBudget!"
+      textoApresentacao="Comece agora: crie sua conta e tenha controle total das suas finanças em poucos passos."
       carteira={{
-        rotulo: 'Saldo do mês',
-        saldo: 'R$ 2.418,90',
-        trajetoGrafico: 'M0 44 L30 38 L60 42 L90 26 L120 30 L150 18 L180 22 L210 10 L240 14',
+        rotulo: 'Sua carteira nova',
+        saldo: 'R$ 0,00',
         itens: [
-          { texto: 'Salário', valor: '+ R$ 4.200,00', destaque: true },
-          { texto: 'Mercado', valor: '− R$ 612,40' },
-          { texto: 'Aluguel', valor: '− R$ 1.168,70' },
+          { texto: 'Criar sua conta', valor: 'agora', destaque: true },
+          { texto: 'Cadastrar a primeira conta', valor: 'em seguida' },
+          { texto: 'Importar um extrato', valor: 'quando quiser' },
         ],
       }}
       pergunta="Já tem uma conta?"
