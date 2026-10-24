@@ -27,6 +27,12 @@ const LayoutAcesso: React.FC<PropsLayoutAcesso> = ({
 }) => {
   return (
     <div className="acesso-page">
+      <div className="acesso-fundo-cartoes" aria-hidden="true">
+        <span className="acesso-fundo-cartao-amarelo" />
+        <span className="acesso-fundo-cartao-verde" />
+        <span className="acesso-fundo-cartao-creme" />
+      </div>
+
       <aside className="acesso-vitrine" aria-hidden="true">
         <div className="acesso-marca">
           <img src="/smartbudget-logo.png" alt="" width="36" height="36" />
