@@ -99,6 +99,7 @@ const Login: React.FC = () => {
           autoComplete="current-password"
           erro={erros.senha}
           tocado={tocados.senha}
+          destacarValido={false}
           acao={
             <button
               type="button"
