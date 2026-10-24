@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import LayoutAutenticacao from '../components/layout/LayoutAutenticacao';
+import { useNavigate } from 'react-router-dom';
+import LayoutAcesso from '../components/layout/LayoutAcesso';
 import CampoFormulario from '../components/ui/CampoFormulario';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
-import { obterMensagemErroApi } from '../services/apiError';
+import { obterMensagemErroApi, obterStatusHttp } from '../services/apiError';
 import { useAutenticacao } from '../contexts/ContextoAutenticacao';
 import { useFormulario } from '../hooks/useFormulario';
 
@@ -20,6 +20,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const { login } = useAutenticacao();
 
   const { valores, erros, tocados, aoAlterar, aoSair, eValido } = useFormulario({
@@ -30,117 +31,99 @@ const Login: React.FC = () => {
   const aoEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
     setErro('');
-    if (!eValido()) return;
+    if (!eValido()) {
+      const primeiroInvalido = Object.keys(validar(valores))[0];
+      document.getElementById(primeiroInvalido)?.focus();
+      return;
+    }
 
     setCarregando(true);
     try {
       await login(valores.email, valores.senha);
       navigate('/dashboard');
     } catch (err: unknown) {
-      setErro(obterMensagemErroApi(err, 'Credenciais inválidas. Verifique seu e-mail e senha.'));
+      setErro(
+        obterStatusHttp(err) === 401
+          ? 'E-mail ou senha incorretos. Confira os dados e tente de novo.'
+          : obterMensagemErroApi(err, 'Não foi possível entrar. Tente de novo em instantes.'),
+      );
     } finally {
       setCarregando(false);
     }
   };
 
   return (
-    <LayoutAutenticacao
-      tituloPainel="Bem-vindo de volta!"
-      subtituloPainel="Faça login para acessar seu painel financeiro e continuar no controle do seu orçamento."
+    <LayoutAcesso
+      manchete="Seu dinheiro,"
+      mancheteDestaque="em ordem."
+      textoApresentacao="Contas, cartões e categorias num só lugar. Você vê para onde vai cada real antes do fim do mês."
+      carteira={{
+        rotulo: 'Saldo do mês',
+        saldo: 'R$ 2.418,90',
+        trajetoGrafico: 'M0 44 L30 38 L60 42 L90 26 L120 30 L150 18 L180 22 L210 10 L240 14',
+        itens: [
+          { texto: 'Salário', valor: '+ R$ 4.200,00', destaque: true },
+          { texto: 'Mercado', valor: '− R$ 612,40' },
+          { texto: 'Aluguel', valor: '− R$ 1.168,70' },
+        ],
+      }}
+      pergunta="Novo aqui?"
+      rotuloLink="Criar uma conta"
+      destinoLink="/cadastro"
     >
-      <div className="mb-4">
-        {/* Logo visível apenas no mobile */}
-        <div className="d-flex d-lg-none align-items-center gap-2 mb-4">
-          <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
-            <rect width="36" height="36" rx="10" fill="var(--sb-primary)" />
-            <path
-              d="M10 24 L14 16 L18 20 L22 12 L26 18"
-              stroke="white"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-            />
-            <circle cx="26" cy="18" r="2" fill="white" />
-          </svg>
-          <span className="fw-bold" style={{ fontSize: '1.2rem', color: 'var(--sb-primary-dark)' }}>
-            SmartBudget
-          </span>
-        </div>
-
-        <h2 className="fw-bold mb-1" style={{ color: 'var(--sb-text)', fontSize: '1.8rem' }}>
-          Entrar
-        </h2>
-        <p className="text-muted small mb-0">Acesse sua conta com suas credenciais</p>
-      </div>
+      <h1 className="acesso-titulo">Entrar</h1>
+      <p className="acesso-subtitulo">Bem-vindo de volta.</p>
 
       <MensagemAlerta mensagem={erro} tipo="danger" />
 
-      <form onSubmit={aoEnviar} noValidate>
+      <form onSubmit={aoEnviar} noValidate className="acesso-formulario">
         <CampoFormulario
-          rotulo="Usuário ou e-mail"
+          rotulo="E-mail"
           id="email"
           name="email"
           type="email"
           value={valores.email}
           onChange={aoAlterar}
           onBlur={aoSair}
-          placeholder="seu@email.com"
           autoComplete="email"
           erro={erros.email}
           tocado={tocados.email}
-          icone={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" />
-              <polyline points="22,6 12,13 2,6" />
-            </svg>
-          }
         />
 
         <CampoFormulario
           rotulo="Senha"
           id="senha"
           name="senha"
-          type="password"
+          type={mostrarSenha ? 'text' : 'password'}
           value={valores.senha}
           onChange={aoAlterar}
           onBlur={aoSair}
-          placeholder="Sua senha"
           autoComplete="current-password"
           erro={erros.senha}
           tocado={tocados.senha}
-          icone={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
+          destacarValido={false}
+          acao={
+            <button
+              type="button"
+              className="acesso-mostrar-senha"
+              aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+              onClick={() => setMostrarSenha((atual) => !atual)}
+            >
+              {mostrarSenha ? 'Ocultar' : 'Mostrar'}
+            </button>
           }
         />
-
 
         <BotaoCarregando
           type="submit"
           carregando={carregando}
           textoCarregando="Entrando..."
-          className="w-100 py-2 fw-semibold"
-          style={{
-            background: 'var(--sb-gradient)',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '1rem',
-          }}
+          className="acesso-botao w-100"
         >
           Entrar
         </BotaoCarregando>
-
-        <p className="text-center text-muted small mt-4 mb-0">
-          Novo aqui?{' '}
-          <Link to="/cadastro" className="fw-semibold text-decoration-none" style={{ color: 'var(--sb-primary)' }}>
-            Criar uma conta
-          </Link>
-        </p>
       </form>
-    </LayoutAutenticacao>
+    </LayoutAcesso>
   );
 };
 

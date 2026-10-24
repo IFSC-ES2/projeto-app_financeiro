@@ -20,6 +20,8 @@
   --sb-info-soft: #EEF4FF;
   --sb-gradient: linear-gradient(135deg, #0E1624, #2FA98F);
   --sb-shadow: 0 20px 45px rgba(14, 22, 36, 0.08);
+  --sb-font-texto: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --sb-font-titulo: 'Bricolage Grotesque', var(--sb-font-texto);
 }
 
 * {
@@ -34,7 +36,7 @@ html {
 body {
   margin: 0;
   min-height: 100%;
-  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--sb-font-texto);
   background: var(--sb-bg);
   color: var(--sb-text);
   -webkit-font-smoothing: antialiased;
@@ -49,6 +51,12 @@ textarea {
 
 a {
   color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--sb-font-titulo);
 }
 
 .form-control:focus,
@@ -2391,4 +2399,410 @@ button:disabled {
 .form-empty-state p {
   margin: 0 0 16px;
   color: var(--sb-text-muted);
+}
+
+/* ---------- Telas de acesso (login e cadastro) ---------- */
+
+/* Os dois lados repetem as mesmas três faixas (topo, centro, rodapé) para ficarem alinhados */
+.acesso-page {
+  --acesso-respiro-x: clamp(24px, 4.5vw, 64px);
+  --acesso-respiro-y: clamp(24px, 5vh, 48px);
+  /* Paleta própria das telas de acesso; o resto do app segue os tokens --sb-* */
+  --acesso-noite: #0E1624;
+  --acesso-brilho: #2FA98F;
+  --acesso-destaque: #6CC5B2;
+  --acesso-texto-claro: #FFFFFF;
+  --acesso-tinta: #0E1624;
+  --acesso-cartao-a: #FFC83D;
+  --acesso-cartao-b: #2E8A5E;
+  --acesso-cartao-c: #1F3A57;
+  --acesso-carteira: #0A111C;
+  --acesso-bolso: #F2EEE5;
+  --acesso-positivo: #0E7353;
+  --acesso-botao: #0E1624;
+  --acesso-botao-hover: #162A3D;
+  --acesso-foco: #1D8A73;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  position: relative;
+  overflow: hidden;
+  color: var(--acesso-texto-claro);
+  background:
+    radial-gradient(circle at 75% 55%, color-mix(in srgb, var(--acesso-brilho) 28%, transparent), transparent 45%),
+    radial-gradient(circle at 15% 115%, color-mix(in srgb, var(--acesso-brilho) 35%, transparent), transparent 50%),
+    var(--acesso-noite);
+}
+
+.acesso-vitrine,
+.acesso-area {
+  display: grid;
+  grid-template-rows: 40px minmax(0, 1fr);
+  row-gap: clamp(12px, 3vh, 32px);
+  padding: var(--acesso-respiro-y) var(--acesso-respiro-x);
+}
+
+/* Malha de papel quadriculado, lembrando um caderno de contas */
+.acesso-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--acesso-texto-claro) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--acesso-texto-claro) 5%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(180deg, #000 30%, transparent 95%);
+  pointer-events: none;
+}
+
+.acesso-vitrine,
+.acesso-area {
+  position: relative;
+}
+
+.acesso-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--sb-font-titulo);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.acesso-marca img {
+  border-radius: 10px;
+}
+
+.acesso-vitrine-conteudo {
+  align-self: center;
+  justify-self: center;
+  width: 100%;
+  max-width: 440px;
+}
+
+.acesso-manchete {
+  margin: 0 0 clamp(10px, 2vh, 18px);
+  font-family: var(--sb-font-titulo);
+  font-size: clamp(2rem, min(4vw, 6.5vh), 3.4rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+
+.acesso-manchete em {
+  font-style: normal;
+  color: var(--acesso-destaque);
+}
+
+.acesso-vitrine-texto {
+  margin: 0 0 clamp(20px, 4.5vh, 40px);
+  max-width: 380px;
+  color: color-mix(in srgb, var(--acesso-texto-claro) 70%, transparent);
+  line-height: 1.55;
+}
+
+/* Carteira desenhada nas cores da logo: cartões empilhados atrás de um bolso */
+.acesso-carteira {
+  max-width: 360px;
+  padding: clamp(10px, 2vh, 18px) 18px clamp(12px, 2.2vh, 20px);
+  border: 1px solid color-mix(in srgb, var(--acesso-texto-claro) 8%, transparent);
+  border-radius: 30px;
+  background: var(--acesso-carteira);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+}
+
+.acesso-carteira-cartao,
+.acesso-carteira-faixa {
+  margin-inline: 10px;
+}
+
+.acesso-carteira-cartao {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: clamp(12px, 2.2vh, 18px) 20px 22px;
+  border-radius: 14px;
+  background: var(--acesso-cartao-c);
+}
+
+.acesso-carteira-rotulo {
+  color: color-mix(in srgb, var(--acesso-texto-claro) 60%, transparent);
+  font-size: 0.8rem;
+}
+
+.acesso-carteira-saldo {
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.acesso-carteira-grafico {
+  display: block;
+  width: 100%;
+  height: clamp(28px, 5vh, 48px);
+  margin-top: clamp(6px, 1.3vh, 10px);
+}
+
+.acesso-carteira-grafico path {
+  fill: none;
+  stroke: var(--acesso-cartao-a);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.acesso-carteira-faixa {
+  position: relative;
+  height: 30px;
+  border-radius: 14px 14px 0 0;
+}
+
+.acesso-carteira-faixa-amarela {
+  margin-top: -10px;
+  background: var(--acesso-cartao-a);
+}
+
+.acesso-carteira-faixa-verde {
+  margin-top: -16px;
+  background: var(--acesso-cartao-b);
+}
+
+.acesso-carteira-bolso {
+  position: relative;
+  margin: -14px 0 0;
+  padding: clamp(16px, 2.6vh, 22px) 20px clamp(4px, 1vh, 8px);
+  list-style: none;
+  border-radius: 8px 8px 20px 20px;
+  background: var(--acesso-bolso);
+  color: var(--acesso-tinta);
+}
+
+/* Lingueta do cartão verde aparecendo no recorte do bolso */
+.acesso-carteira-bolso::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 64px;
+  height: 18px;
+  transform: translateX(-50%);
+  border-radius: 0 0 32px 32px;
+  background: var(--acesso-cartao-b);
+}
+
+.acesso-carteira-bolso li {
+  display: flex;
+  justify-content: space-between;
+  padding: clamp(5px, 1vh, 8px) 0;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.acesso-carteira-bolso li + li {
+  border-top: 1px solid color-mix(in srgb, var(--acesso-tinta) 8%, transparent);
+}
+
+.acesso-carteira-bolso .acesso-valor-entrada {
+  color: var(--acesso-positivo);
+  font-weight: 700;
+}
+
+.acesso-area-topo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.acesso-alternativa {
+  margin: 0;
+  color: color-mix(in srgb, var(--acesso-texto-claro) 65%, transparent);
+  font-size: 0.92rem;
+}
+
+.acesso-alternativa a {
+  margin-left: 4px;
+  padding: 7px 14px;
+  border: 1px solid color-mix(in srgb, var(--acesso-texto-claro) 25%, transparent);
+  border-radius: 999px;
+  color: var(--acesso-texto-claro);
+  font-weight: 700;
+  text-decoration: none;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.acesso-alternativa a:hover,
+.acesso-alternativa a:focus-visible {
+  border-color: var(--acesso-destaque);
+  color: var(--acesso-destaque);
+}
+
+.acesso-cartao {
+  align-self: center;
+  justify-self: center;
+  width: 100%;
+  max-width: 440px;
+  padding: clamp(24px, 5vh, 44px) clamp(24px, 3vw, 40px);
+  border-radius: 24px;
+  background: var(--sb-surface);
+  color: var(--acesso-tinta);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+  animation: acesso-entrada 0.4s ease-out both;
+}
+
+.acesso-cartao-largo {
+  max-width: 540px;
+}
+
+.acesso-campos-duplos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+}
+
+.acesso-marca-mobile {
+  display: none;
+}
+
+.acesso-titulo {
+  margin: 0 0 6px;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--acesso-tinta);
+}
+
+.acesso-subtitulo {
+  margin: 0 0 28px;
+  color: var(--sb-text-muted);
+}
+
+.acesso-formulario .form-label {
+  color: var(--acesso-tinta) !important;
+}
+
+.acesso-formulario .form-control {
+  padding: 0.75rem 0.95rem;
+  border-radius: 10px !important;
+  background: var(--sb-surface-soft);
+  border-color: transparent;
+}
+
+.acesso-formulario .form-control:focus {
+  background: var(--sb-surface);
+  border-color: var(--acesso-foco) !important;
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--acesso-brilho) 18%, transparent) !important;
+}
+
+.acesso-formulario .form-control.is-invalid {
+  border-color: var(--sb-danger);
+}
+
+.acesso-formulario .form-control:has(+ .acesso-mostrar-senha) {
+  padding-right: 5.5rem;
+}
+
+.acesso-mostrar-senha {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 5;
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--acesso-tinta);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.acesso-mostrar-senha:hover {
+  background: color-mix(in srgb, var(--acesso-tinta) 6%, transparent);
+}
+
+.acesso-mostrar-senha:focus-visible {
+  outline: 2px solid var(--acesso-foco);
+  outline-offset: 1px;
+}
+
+.acesso-botao {
+  margin-top: 8px;
+  padding: 0.8rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--acesso-botao);
+  color: var(--acesso-texto-claro);
+  font-weight: 700;
+}
+
+.acesso-botao:hover:not(:disabled),
+.acesso-botao:focus-visible {
+  background: var(--acesso-botao-hover);
+  color: var(--acesso-texto-claro);
+}
+
+.acesso-botao:focus-visible {
+  outline: 2px solid var(--acesso-foco);
+  outline-offset: 3px;
+  box-shadow: none;
+}
+
+@keyframes acesso-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acesso-cartao {
+    animation: none;
+  }
+}
+
+/* Janela baixa demais para o cartão caber sem gerar rolagem */
+@media (max-height: 640px) {
+  .acesso-carteira {
+    display: none;
+  }
+}
+
+@media (max-width: 991px) {
+  .acesso-page {
+    grid-template-columns: 1fr;
+  }
+
+  .acesso-vitrine {
+    display: none;
+  }
+
+  .acesso-area {
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .acesso-area-topo {
+    justify-content: space-between;
+  }
+
+  .acesso-marca-mobile {
+    display: flex;
+  }
+
+  .acesso-cartao {
+    align-self: start;
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 479px) {
+  .acesso-alternativa-pergunta {
+    display: none;
+  }
+
+  .acesso-campos-duplos {
+    grid-template-columns: 1fr;
+  }
 }
