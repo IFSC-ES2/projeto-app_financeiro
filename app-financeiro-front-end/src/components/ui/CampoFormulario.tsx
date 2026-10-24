@@ -6,6 +6,7 @@ interface PropsCampoFormulario extends React.InputHTMLAttributes<HTMLInputElemen
   erro?: string;
   tocado?: boolean;
   icone?: React.ReactNode;
+  acao?: React.ReactNode;
   destacarValido?: boolean;
 }
 
@@ -15,6 +16,7 @@ const CampoFormulario: React.FC<PropsCampoFormulario> = ({
   erro,
   tocado,
   icone,
+  acao,
   destacarValido = true,
   className = '',
   ...rest
@@ -42,6 +44,7 @@ const CampoFormulario: React.FC<PropsCampoFormulario> = ({
           aria-describedby={mostrarErro ? `${id}-erro` : undefined}
           {...rest}
         />
+        {acao}
         {mostrarErro && (
           <div id={`${id}-erro`} className="invalid-feedback">{erro}</div>
         )}
