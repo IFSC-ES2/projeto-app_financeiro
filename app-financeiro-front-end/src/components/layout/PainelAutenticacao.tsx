@@ -92,7 +92,7 @@ const PainelAutenticacao: React.FC<PropsPainelAutenticacao> = ({ titulo, subtitu
           />
           <span
             className="fw-bold text-white"
-            style={{ fontSize: '1.3rem', letterSpacing: '-0.02em', fontFamily: 'system-ui, sans-serif' }}
+            style={{ fontSize: '1.3rem', letterSpacing: '-0.02em', fontFamily: 'var(--sb-font-titulo)' }}
           >
             SmartBudget
           </span>
