@@ -44,14 +44,14 @@ const IconeNavegacao = ({ nome }: { nome: string }) => {
   }
 
   if (nome === "contas") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M3 7h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-        <path d="M3 7l9-4 9 4" />
-        <path d="M7 10v6M12 10v6M17 10v6" />
-      </svg>
-    );
-  }
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 7h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <path d="M3 7l9-4 9 4" />
+      <path d="M7 10v6M12 10v6M17 10v6" />
+    </svg>
+  );
+}
 
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -81,9 +81,7 @@ const LayoutPrivado = ({
     };
 
     document.addEventListener("mousedown", fecharAoClicarFora);
-
-    return () =>
-      document.removeEventListener("mousedown", fecharAoClicarFora);
+    return () => document.removeEventListener("mousedown", fecharAoClicarFora);
   }, []);
 
   const sairDaConta = () => {
@@ -116,10 +114,7 @@ const LayoutPrivado = ({
         onClick={fecharMenuLateralMobile}
       />
 
-      <aside
-        className="app-sidebar"
-        aria-label="Navegação principal"
-      >
+      <aside className="app-sidebar" aria-label="Navegação principal">
         <button
           type="button"
           className="app-brand"
@@ -141,7 +136,6 @@ const LayoutPrivado = ({
             alt=""
             className="app-brand-logo"
           />
-
           <span className="app-brand-text">
             <strong>SmartBudget</strong>
             <span>Área privada</span>
@@ -155,20 +149,11 @@ const LayoutPrivado = ({
               to={item.para}
               className="app-nav-link"
               aria-label={item.rotulo}
-              title={
-                menuLateralRecolhido
-                  ? item.rotulo
-                  : undefined
-              }
+              title={menuLateralRecolhido ? item.rotulo : undefined}
               onClick={fecharMenuLateralMobile}
             >
-              <IconeNavegacao
-                nome={item.icone}
-              />
-
-              <span>
-                {item.rotulo}
-              </span>
+              <IconeNavegacao nome={item.icone} />
+              <span>{item.rotulo}</span>
             </NavLink>
           ))}
         </nav>
@@ -182,77 +167,40 @@ const LayoutPrivado = ({
               className="mobile-sidebar-button"
               aria-label="Abrir menu lateral"
               aria-expanded={menuLateralAberto}
-              onClick={() =>
-                setMenuLateralAberto(true)}
+              onClick={() => setMenuLateralAberto(true)}
             >
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
 
             <div>
-              <p className="app-eyebrow">
-                Painel financeiro
-              </p>
-
-              <h1>
-                {titulo}
-              </h1>
-
-              {subtitulo && (
-                <p>
-                  {subtitulo}
-                </p>
-              )}
+              <p className="app-eyebrow">Painel financeiro</p>
+              <h1>{titulo}</h1>
+              {subtitulo && <p>{subtitulo}</p>}
             </div>
           </div>
 
           <div className="app-topbar-actions">
             {acaoPrimaria}
 
-            <div
-              className="profile-menu"
-              ref={menuRef}
-            >
+            <div className="profile-menu" ref={menuRef}>
               <button
                 type="button"
                 className="profile-button"
                 aria-label="Abrir menu do perfil"
                 aria-expanded={menuAberto}
-                onClick={() =>
-                  setMenuAberto(
-                    (atual) =>
-                      !atual,
-                  )}
+                onClick={() => setMenuAberto((atual) => !atual)}
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M20 21a8 8 0 0 0-16 0" />
-                  <circle
-                    cx="12"
-                    cy="8"
-                    r="4"
-                  />
+                  <circle cx="12" cy="8" r="4" />
                 </svg>
               </button>
 
               {menuAberto && (
-                <div
-                  className="profile-dropdown"
-                  role="menu"
-                >
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={
-                      sairDaConta
-                    }
-                  >
+                <div className="profile-dropdown" role="menu">
+                  <button type="button" role="menuitem" onClick={sairDaConta}>
                     Sair
                   </button>
                 </div>
