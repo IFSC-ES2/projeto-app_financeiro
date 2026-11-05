@@ -23,8 +23,8 @@ const BotaoCarregando: React.FC<PropsBotaoCarregando> = ({
       {...rest}
     >
       {carregando ? (
-        <span className="d-flex align-items-center justify-content-center gap-2">
-          <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+        <span className="d-flex align-items-center justify-content-center gap-2" role="status">
+          <span className="spinner-border spinner-border-sm" aria-hidden="true" />
           {textoCarregando}
         </span>
       ) : (
