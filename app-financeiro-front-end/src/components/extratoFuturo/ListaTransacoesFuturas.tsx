@@ -48,6 +48,33 @@ const ListaTransacoesFuturas = ({
             transacao.tipoTransacao ===
             'DEBITO';
 
+          /*
+           * O backend não inclui novamente no total de débitos
+           * as compras que já pertencem a uma fatura.
+           *
+           * Como TransacaoResponse ainda não expõe faturaId,
+           * a forma de pagamento é utilizada como aproximação
+           * para indicar visualmente que a compra será
+           * representada pelo valor da fatura.
+           */
+          const consideradaNaFatura =
+            transacao.formaPagamento ===
+            'CARTAO_CREDITO';
+
+          const classeValor =
+            consideradaNaFatura
+              ? 'text-body'
+              : ehDebito
+                ? 'text-danger'
+                : 'text-success';
+
+          const prefixoValor =
+            consideradaNaFatura
+              ? ''
+              : ehDebito
+                ? '- '
+                : '+ ';
+
           return (
             <article
               key={transacao.transacaoId}
@@ -77,6 +104,15 @@ const ListaTransacoesFuturas = ({
                       </span>
                     )}
 
+                    {consideradaNaFatura && (
+                      <span
+                        className="badge bg-info-subtle text-info-emphasis"
+                        title="Este valor será considerado no total da fatura."
+                      >
+                        Na fatura
+                      </span>
+                    )}
+
                     <span
                       className={`badge ${
                         ehDebito
@@ -92,13 +128,14 @@ const ListaTransacoesFuturas = ({
                 </div>
 
                 <strong
-                  className={
-                    ehDebito
-                      ? 'text-danger'
-                      : 'text-success'
+                  className={classeValor}
+                  title={
+                    consideradaNaFatura
+                      ? 'Valor já representado pela fatura e não somado novamente aos débitos.'
+                      : undefined
                   }
                 >
-                  {ehDebito ? '- ' : '+ '}
+                  {prefixoValor}
                   {formatarMoeda(
                     transacao.valor,
                   )}
