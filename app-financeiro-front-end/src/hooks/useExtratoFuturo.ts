@@ -6,7 +6,7 @@ import type { ProjecaoMensalResponse } from '../types/extratoFuturo';
 import { useAsync } from './useAsync';
 
 export const useExtratoFuturo = (
-  meses = 3,
+  meses: number,
 ) => {
   const carregarExtratoFuturo = useCallback(
     () => buscarExtratoFuturo(meses),
