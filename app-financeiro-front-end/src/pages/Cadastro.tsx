@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAutenticacao } from '../hooks/useAutenticacao';
-import LayoutAutenticacao from '../components/layout/LayoutAutenticacao';
+import LayoutAcesso from '../components/layout/LayoutAcesso';
 import CampoFormulario from '../components/ui/CampoFormulario';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
@@ -69,39 +69,30 @@ const Cadastro: React.FC = () => {
   };
 
   return (
-    <LayoutAutenticacao
-      tituloPainel="Comece agora!"
-      subtituloPainel="Crie sua conta e tenha controle total das suas finanças com o SmartBudget."
+    <LayoutAcesso
+      manchete="Boas-vindas ao"
+      mancheteDestaque="SmartBudget!"
+      textoApresentacao="Comece agora: crie sua conta e tenha controle total das suas finanças em poucos passos."
+      carteira={{
+        rotulo: 'Sua carteira nova',
+        saldo: 'R$ 0,00',
+        itens: [
+          { texto: 'Criar sua conta', valor: 'agora', destaque: true },
+          { texto: 'Cadastrar a primeira conta', valor: 'em seguida' },
+          { texto: 'Importar um extrato', valor: 'quando quiser' },
+        ],
+      }}
+      pergunta="Já tem uma conta?"
+      rotuloLink="Entrar"
+      destinoLink="/login"
+      classeCartao="acesso-cartao-largo"
     >
-      <div className="mb-4">
-        {/* Logo visível apenas no mobile */}
-        <div className="d-flex d-lg-none align-items-center gap-2 mb-4">
-          <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
-            <rect width="36" height="36" rx="10" fill="var(--sb-primary)" />
-            <path
-              d="M10 24 L14 16 L18 20 L22 12 L26 18"
-              stroke="white"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-            />
-            <circle cx="26" cy="18" r="2" fill="white" />
-          </svg>
-          <span className="fw-bold" style={{ fontSize: '1.2rem', color: 'var(--sb-primary-dark)' }}>
-            SmartBudget
-          </span>
-        </div>
-
-        <h2 className="fw-bold mb-1" style={{ color: 'var(--sb-text)', fontSize: '1.8rem' }}>
-          Criar conta
-        </h2>
-        <p className="text-muted small mb-0">Preencha seus dados para começar</p>
-      </div>
+      <h1 className="acesso-titulo">Criar conta</h1>
+      <p className="acesso-subtitulo">Preencha seus dados para começar a organizar suas finanças.</p>
 
       <MensagemAlerta mensagem={erro} tipo="danger" />
 
-      <form onSubmit={aoEnviar} noValidate>
+      <form onSubmit={aoEnviar} noValidate className="acesso-formulario">
         <CampoFormulario
           rotulo="Nome completo"
           id="nome"
@@ -114,117 +105,76 @@ const Cadastro: React.FC = () => {
           autoComplete="name"
           erro={erros.nome}
           tocado={tocados.nome}
-          icone={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          }
         />
 
-        <CampoFormulario
-          rotulo="E-mail"
-          id="email"
-          name="email"
-          type="email"
-          value={valores.email}
-          onChange={aoAlterar}
-          onBlur={aoSair}
-          placeholder="seu@email.com"
-          autoComplete="email"
-          erro={erros.email}
-          tocado={tocados.email}
-          icone={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" />
-              <polyline points="22,6 12,13 2,6" />
-            </svg>
-          }
-        />
+        <div className="acesso-campos-duplos">
+          <CampoFormulario
+            rotulo="E-mail"
+            id="email"
+            name="email"
+            type="email"
+            value={valores.email}
+            onChange={aoAlterar}
+            onBlur={aoSair}
+            placeholder="seu@email.com"
+            autoComplete="email"
+            erro={erros.email}
+            tocado={tocados.email}
+          />
+          <CampoFormulario
+            rotulo="CPF"
+            id="cpf"
+            name="cpf"
+            type="text"
+            value={valores.cpf}
+            onChange={aoAlterarCpf}
+            onBlur={aoSair}
+            placeholder="000.000.000-00"
+            inputMode="numeric"
+            erro={erros.cpf}
+            tocado={tocados.cpf}
+          />
+        </div>
 
-        <CampoFormulario
-          rotulo="CPF"
-          id="cpf"
-          name="cpf"
-          type="text"
-          value={valores.cpf}
-          onChange={aoAlterarCpf}
-          onBlur={aoSair}
-          placeholder="000.000.000-00"
-          inputMode="numeric"
-          erro={erros.cpf}
-          tocado={tocados.cpf}
-          icone={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="4" width="18" height="16" rx="2" />
-              <line x1="7" y1="9" x2="17" y2="9" />
-              <line x1="7" y1="13" x2="13" y2="13" />
-            </svg>
-          }
-        />
-
-        <CampoFormulario
-          rotulo="Senha"
-          id="senha"
-          name="senha"
-          type="password"
-          value={valores.senha}
-          onChange={aoAlterar}
-          onBlur={aoSair}
-          placeholder="Mínimo 6 caracteres"
-          autoComplete="new-password"
-          erro={erros.senha}
-          tocado={tocados.senha}
-          icone={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-          }
-        />
-
-        <CampoFormulario
-          rotulo="Confirmar senha"
-          id="confirmacao"
-          name="confirmacao"
-          type="password"
-          value={valores.confirmacao}
-          onChange={aoAlterar}
-          onBlur={aoSair}
-          placeholder="Repita a senha"
-          autoComplete="new-password"
-          erro={erros.confirmacao}
-          tocado={tocados.confirmacao}
-          icone={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          }
-        />
+        <div className="acesso-campos-duplos">
+          <CampoFormulario
+            rotulo="Senha"
+            id="senha"
+            name="senha"
+            type="password"
+            value={valores.senha}
+            onChange={aoAlterar}
+            onBlur={aoSair}
+            placeholder="Mínimo 6 caracteres"
+            autoComplete="new-password"
+            erro={erros.senha}
+            tocado={tocados.senha}
+          />
+          <CampoFormulario
+            rotulo="Confirmar senha"
+            id="confirmacao"
+            name="confirmacao"
+            type="password"
+            value={valores.confirmacao}
+            onChange={aoAlterar}
+            onBlur={aoSair}
+            placeholder="Repita a senha"
+            autoComplete="new-password"
+            erro={erros.confirmacao}
+            tocado={tocados.confirmacao}
+          />
+        </div>
 
         <BotaoCarregando
           type="submit"
           carregando={carregando}
           textoCarregando="Criando conta..."
-          className="w-100 py-2 fw-semibold mt-2"
-          style={{
-            background: 'var(--sb-gradient)',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '1rem',
-          }}
+          className="acesso-botao w-100"
         >
           Criar conta
         </BotaoCarregando>
-
-        <p className="text-center text-muted small mt-4 mb-0">
-          Já tem uma conta?{' '}
-          <Link to="/login" className="fw-semibold text-decoration-none" style={{ color: 'var(--sb-primary)' }}>
-            Entrar
-          </Link>
-        </p>
       </form>
-    </LayoutAutenticacao>
+    </LayoutAcesso>
   );
 };
 

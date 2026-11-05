@@ -298,3 +298,10 @@ $RECYCLE.BIN/
 .env.*
 !.env.example
 !.env.prod.example
+
+### Ferramentas locais de IA e skills ###
+.claude/
+.impeccable/
+.playwright-mcp/
+.agents/
+.codex/
