@@ -50,10 +50,8 @@ const formatarMes = (
 const ProjecaoMensal = ({
   projecao,
 }: PropsProjecaoMensal) => {
-  const saldoPositivo =
-    Number(
-      projecao.saldoPrevisto,
-    ) >= 0;
+  const resultadoPositivo =
+    projecao.saldoPrevisto >= 0;
 
   return (
     <article
@@ -94,12 +92,12 @@ const ProjecaoMensal = ({
           <div className="col-12 col-md-4">
             <div className="border rounded-3 p-3 h-100">
               <span className="text-muted small d-block mb-1">
-                Saldo previsto
+                Resultado previsto do mês
               </span>
 
               <strong
                 className={`fs-5 ${
-                  saldoPositivo
+                  resultadoPositivo
                     ? 'text-success'
                     : 'text-danger'
                 }`}
@@ -108,6 +106,10 @@ const ProjecaoMensal = ({
                   projecao.saldoPrevisto,
                 )}
               </strong>
+
+              <small className="text-muted d-block mt-1">
+                Créditos menos débitos previstos, sem considerar o saldo atual das contas.
+              </small>
             </div>
           </div>
 
