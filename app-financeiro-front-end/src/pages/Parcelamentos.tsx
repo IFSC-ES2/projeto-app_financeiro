@@ -6,6 +6,20 @@ import { useExtratoFuturo } from '../hooks/useExtratoFuturo';
 
 const MESES_PADRAO = 3;
 
+const obterPeriodoDescricao = (
+  meses: number,
+) =>
+  meses === 1
+    ? 'no próximo mês'
+    : `nos próximos ${meses} meses`;
+
+const obterTituloPeriodo = (
+  meses: number,
+) =>
+  meses === 1
+    ? 'Próximo mês'
+    : `Próximos ${meses} meses`;
+
 const Parcelamentos = () => {
   const {
     projecoes,
@@ -23,6 +37,16 @@ const Parcelamentos = () => {
           0 ||
         projecao.faturas.length >
           0,
+    );
+
+  const periodoDescricao =
+    obterPeriodoDescricao(
+      MESES_PADRAO,
+    );
+
+  const tituloPeriodo =
+    obterTituloPeriodo(
+      MESES_PADRAO,
     );
 
   const renderizarConteudo =
@@ -72,7 +96,7 @@ const Parcelamentos = () => {
 
               <button
                 type="button"
-                className="btn btn-outline-secondary"
+                className="sb-button sb-button-secondary"
                 onClick={
                   recarregar
                 }
@@ -92,7 +116,7 @@ const Parcelamentos = () => {
         return (
           <EstadoVazio
             titulo="Nenhum compromisso futuro"
-            descricao="Você não possui transações futuras ou faturas abertas previstas para os próximos três meses."
+            descricao={`Você não possui transações futuras ou faturas abertas previstas ${periodoDescricao}.`}
           />
         );
       }
@@ -107,7 +131,7 @@ const Parcelamentos = () => {
           >
             <div className="card-body p-4">
               <p className="text-muted small text-uppercase fw-semibold mb-1">
-                Próximos meses
+                {tituloPeriodo}
               </p>
 
               <h2 className="h5 fw-bold mb-2">
@@ -115,11 +139,10 @@ const Parcelamentos = () => {
               </h2>
 
               <p className="text-muted mb-0">
-                Acompanhe seus
-                créditos, débitos,
-                boletos e faturas
-                previstos para os
-                próximos três meses.
+                Acompanhe seus créditos,
+                débitos, boletos e faturas
+                previstos{' '}
+                {periodoDescricao}.
               </p>
             </div>
           </section>
@@ -143,7 +166,7 @@ const Parcelamentos = () => {
   return (
     <LayoutPrivado
       titulo="Extrato futuro"
-      subtitulo="Visualize seus compromissos e saldos previstos para os próximos meses."
+      subtitulo={`Visualize seus compromissos e resultados previstos ${periodoDescricao}.`}
     >
       {renderizarConteudo()}
     </LayoutPrivado>
