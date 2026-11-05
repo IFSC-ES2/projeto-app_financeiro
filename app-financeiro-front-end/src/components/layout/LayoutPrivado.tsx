@@ -14,7 +14,7 @@ const itensNavegacao = [
   { para: "/dashboard", rotulo: "Dashboard", icone: "dashboard" },
   { para: "/transacoes", rotulo: "Transações", icone: "transacoes" },
   { para: "/categorias", rotulo: "Categorias", icone: "categorias" },
-  { para: "/parcelamentos", rotulo: "Parcelamentos", icone: "parcelamentos" },
+  { para: "/parcelamentos", rotulo: "Extrato futuro", icone: "parcelamentos" },
   { para: "/contas", rotulo: "Contas", icone: "contas" },
 ];
 
