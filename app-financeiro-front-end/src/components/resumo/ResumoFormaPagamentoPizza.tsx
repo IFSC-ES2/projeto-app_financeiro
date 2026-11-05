@@ -1,20 +1,31 @@
-import { useMemo } from 'react';
+import {
+  useMemo,
+} from 'react';
 
 import EstadoVazio from '../ui/EstadoVazio';
 import MensagemAlerta from '../ui/MensagemAlerta';
 import { useResumoFormaPagamento } from '../../hooks/useResumoFormaPagamento';
 import type { TipoPagamento } from '../../types/transacao';
 
+interface ResumoFormaPagamentoPizzaProps {
+  anoMes?: string;
+}
+
 const classesFormaPagamento: Record<
   TipoPagamento,
   string
 > = {
   PIX: 'payment-chart-color-pix',
-  CARTAO_DEBITO: 'payment-chart-color-debito',
-  CARTAO_CREDITO: 'payment-chart-color-credito',
-  DINHEIRO: 'payment-chart-color-dinheiro',
-  BOLETO: 'payment-chart-color-boleto',
-  TED_DOC: 'payment-chart-color-ted',
+  CARTAO_DEBITO:
+    'payment-chart-color-debito',
+  CARTAO_CREDITO:
+    'payment-chart-color-credito',
+  DINHEIRO:
+    'payment-chart-color-dinheiro',
+  BOLETO:
+    'payment-chart-color-boleto',
+  TED_DOC:
+    'payment-chart-color-ted',
 };
 
 const coresFormaPagamento: Record<
@@ -30,71 +41,103 @@ const coresFormaPagamento: Record<
 };
 
 const obterCorFormaPagamento = (
-  formaPagamento: TipoPagamento | null,
+  formaPagamento:
+    TipoPagamento | null,
 ) => {
   if (!formaPagamento) {
     return 'var(--sb-text-muted)';
   }
 
-  return coresFormaPagamento[formaPagamento];
+  return coresFormaPagamento[
+    formaPagamento
+  ];
 };
 
 const obterClasseFormaPagamento = (
-  formaPagamento: TipoPagamento | null,
+  formaPagamento:
+    TipoPagamento | null,
 ) => {
   if (!formaPagamento) {
     return 'payment-chart-color-nao-informado';
   }
 
-  return classesFormaPagamento[formaPagamento];
+  return classesFormaPagamento[
+    formaPagamento
+  ];
 };
 
-const formatarPercentual = (percentual: number) =>
-  `${Number(percentual).toLocaleString('pt-BR', {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  })}%`;
+const formatarPercentual = (
+  percentual: number,
+) =>
+  `${Number(
+    percentual,
+  ).toLocaleString(
+    'pt-BR',
+    {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    },
+  )}%`;
 
-const ResumoFormaPagamentoPizza = () => {
+const ResumoFormaPagamentoPizza = ({
+  anoMes,
+}: ResumoFormaPagamentoPizzaProps) => {
   const {
     resumo,
     carregando,
     erro,
-  } = useResumoFormaPagamento();
+  } =
+    useResumoFormaPagamento(
+      anoMes,
+    );
 
-  const resumoValido = useMemo(
-    () =>
-      resumo.filter(
-        (item) => Number(item.percentual) > 0,
-      ),
-    [resumo],
-  );
+  const resumoValido =
+    useMemo(
+      () =>
+        resumo.filter(
+          (item) =>
+            Number(
+              item.percentual,
+            ) > 0,
+        ),
+      [resumo],
+    );
 
-  const graficoPizza = useMemo(() => {
-    if (resumoValido.length === 0) {
-      return 'var(--sb-border) 0deg 360deg';
-    }
+  const graficoPizza =
+    useMemo(() => {
+      if (
+        resumoValido.length === 0
+      ) {
+        return 'var(--sb-border) 0deg 360deg';
+      }
 
-    let inicio = 0;
+      let inicio = 0;
 
-    return resumoValido
-      .map((item) => {
-        const graus =
-          (Number(item.percentual) / 100) * 360;
+      return resumoValido
+        .map((item) => {
+          const graus =
+            (Number(
+              item.percentual,
+            ) /
+              100) *
+            360;
 
-        const fim = inicio + graus;
+          const fim =
+            inicio +
+            graus;
 
-        const fatia =
-          `${obterCorFormaPagamento(
-            item.formaPagamento,
-          )} ${inicio}deg ${fim}deg`;
+          const fatia =
+            `${obterCorFormaPagamento(
+              item.formaPagamento,
+            )} ${inicio}deg ${fim}deg`;
 
-        inicio = fim;
+          inicio =
+            fim;
 
-        return fatia;
-      })
-      .join(', ');
-  }, [resumoValido]);
+          return fatia;
+        })
+        .join(', ');
+    }, [resumoValido]);
 
   return (
     <section
@@ -103,12 +146,15 @@ const ResumoFormaPagamentoPizza = () => {
     >
       <div className="dashboard-payment-card-header">
         <div>
-          <h2>Formas de pagamento</h2>
+          <h2>
+            Formas de pagamento
+          </h2>
 
           <p>
-            Distribuição de todas as transações por meio
-            de pagamento, independente do mês selecionado
-            no resumo.
+            Distribuição das
+            transações do mês
+            selecionado por meio
+            de pagamento.
           </p>
         </div>
       </div>
@@ -127,10 +173,11 @@ const ResumoFormaPagamentoPizza = () => {
             tipo="danger"
           />
         </div>
-      ) : resumoValido.length === 0 ? (
+      ) : resumoValido.length ===
+        0 ? (
         <EstadoVazio
           titulo="Nenhum resumo disponível"
-          descricao="Ainda não existem transações suficientes para montar o gráfico."
+          descricao="Não existem transações no período selecionado para montar o gráfico."
         />
       ) : (
         <div className="dashboard-payment-chart-area">
@@ -147,34 +194,36 @@ const ResumoFormaPagamentoPizza = () => {
           </div>
 
           <div className="dashboard-payment-legend">
-            {resumoValido.map((item) => (
-              <div
-                className="dashboard-payment-legend-item"
-                key={
-                  item.formaPagamento ??
-                  'NAO_INFORMADO'
-                }
-              >
-                <span
-                  className={obterClasseFormaPagamento(
-                    item.formaPagamento,
-                  )}
-                />
-
-                <div>
-                  <strong>
-                    {item.rotulo ??
-                      'Não informado'}
-                  </strong>
-
-                  <small>
-                    {formatarPercentual(
-                      item.percentual,
+            {resumoValido.map(
+              (item) => (
+                <div
+                  className="dashboard-payment-legend-item"
+                  key={
+                    item.formaPagamento ??
+                    'NAO_INFORMADO'
+                  }
+                >
+                  <span
+                    className={obterClasseFormaPagamento(
+                      item.formaPagamento,
                     )}
-                  </small>
+                  />
+
+                  <div>
+                    <strong>
+                      {item.rotulo ??
+                        'Não informado'}
+                    </strong>
+
+                    <small>
+                      {formatarPercentual(
+                        item.percentual,
+                      )}
+                    </small>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ),
+            )}
           </div>
         </div>
       )}
