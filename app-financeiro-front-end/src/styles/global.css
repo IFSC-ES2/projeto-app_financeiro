@@ -2696,7 +2696,9 @@ button:disabled {
   padding-right: 2.5rem;
 }
 
+/* Altura fixa menor que a de rows=2 do Bootstrap: mantém a PrimeiraConta sem rolagem em janelas baixas */
 .acesso-formulario textarea.form-control {
+  height: 4rem;
   resize: vertical;
 }
 
