@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LayoutAutenticacao from '../components/layout/LayoutAutenticacao';
+import LayoutAcesso from '../components/layout/LayoutAcesso';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
+import CampoFormulario from '../components/ui/CampoFormulario';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
+import { useFormulario } from '../hooks/useFormulario';
 import { obterMensagemErroApi } from '../services/apiError';
 import { registrarConta } from '../services/contaService';
 import type { ContaRequest, TipoConta } from '../types/conta';
@@ -10,15 +12,8 @@ import type { ContaRequest, TipoConta } from '../types/conta';
 type CamposConta = {
   nome: string;
   banco: string;
-  tipoConta: TipoConta;
+  tipoConta: string;
   descricao: string;
-};
-
-const valoresIniciais: CamposConta = {
-  nome: '',
-  banco: 'Nubank',
-  tipoConta: 'CORRENTE',
-  descricao: '',
 };
 
 const tiposConta: Array<{ valor: TipoConta; rotulo: string }> = [
@@ -28,66 +23,46 @@ const tiposConta: Array<{ valor: TipoConta; rotulo: string }> = [
   { valor: 'CARTEIRA', rotulo: 'Carteira' },
 ];
 
+const validar = (valores: CamposConta) => {
+  const erros: Partial<CamposConta> = {};
+  if (!valores.nome.trim()) erros.nome = 'Nome da conta é obrigatório.';
+  if (!valores.banco.trim()) erros.banco = 'Banco é obrigatório.';
+  if (!valores.tipoConta) erros.tipoConta = 'Tipo de conta é obrigatório.';
+  return erros;
+};
+
 const PrimeiraConta: React.FC = () => {
   const navigate = useNavigate();
-
-  const [campos, setCampos] = useState<CamposConta>(valoresIniciais);
-  const [erros, setErros] = useState<Partial<Record<keyof CamposConta, string>>>({});
   const [erroGeral, setErroGeral] = useState('');
   const [sucesso, setSucesso] = useState('');
   const [salvando, setSalvando] = useState(false);
 
-  const alterarCampo = (
-    evento: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = evento.target;
+  const { valores, erros, tocados, aoAlterar, aoSair, eValido } = useFormulario<CamposConta>({
+    valoresIniciais: { nome: '', banco: 'Nubank', tipoConta: 'CORRENTE', descricao: '' },
+    validar,
+  });
 
-    setCampos((atual) => ({
-      ...atual,
-      [name]: value,
-    }));
-
-    setErros((atuais) => ({
-      ...atuais,
-      [name]: undefined,
-    }));
-  };
-
-  const validar = () => {
-    const novosErros: Partial<Record<keyof CamposConta, string>> = {};
-
-    if (!campos.nome.trim()) {
-      novosErros.nome = 'Nome da conta é obrigatório.';
-    }
-
-    if (!campos.banco.trim()) {
-      novosErros.banco = 'Banco é obrigatório.';
-    }
-
-    if (!campos.tipoConta) {
-      novosErros.tipoConta = 'Tipo de conta é obrigatório.';
-    }
-
-    setErros(novosErros);
-    return Object.keys(novosErros).length === 0;
-  };
+  const erroTipoConta = tocados.tipoConta ? erros.tipoConta : undefined;
 
   const enviar = async (evento: React.FormEvent) => {
     evento.preventDefault();
-
     setErroGeral('');
     setSucesso('');
 
-    if (!validar()) return;
+    if (!eValido()) {
+      const primeiroInvalido = Object.keys(validar(valores))[0];
+      document.getElementById(primeiroInvalido)?.focus();
+      return;
+    }
 
     setSalvando(true);
 
     try {
       const novaConta: ContaRequest = {
-        nome: campos.nome.trim(),
-        banco: campos.banco.trim(),
-        tipoConta: campos.tipoConta,
-        descricao: campos.descricao.trim() || undefined,
+        nome: valores.nome.trim(),
+        banco: valores.banco.trim(),
+        tipoConta: valores.tipoConta as TipoConta,
+        descricao: valores.descricao.trim() || undefined,
       };
 
       await registrarConta(novaConta);
@@ -105,69 +80,56 @@ const PrimeiraConta: React.FC = () => {
   };
 
   return (
-    <LayoutAutenticacao
-      tituloPainel="Cadastro quase finalizado!"
-      subtituloPainel="Agora cadastre sua primeira conta bancária para começar a usar o SmartBudget."
+    <LayoutAcesso
+      manchete="Falta só"
+      mancheteDestaque="um passo."
+      textoApresentacao="Cadastre a conta onde seu dinheiro está hoje. É a partir dela que o SmartBudget organiza suas primeiras transações."
+      carteira={{
+        rotulo: 'Seu cadastro',
+        saldo: '2 de 3',
+        itens: [
+          { texto: 'Criar sua conta', valor: 'concluído' },
+          { texto: 'Cadastrar a primeira conta', valor: 'agora', destaque: true },
+          { texto: 'Importar um extrato', valor: 'quando quiser' },
+        ],
+      }}
+      classeCartao="acesso-cartao-largo"
     >
-      <div className="mb-4">
-        <div className="d-flex d-lg-none align-items-center gap-2 mb-4">
-          <img
-            src="/smartbudget-logo.png"
-            alt="SmartBudget"
-            width="32"
-            height="32"
-            style={{ objectFit: 'contain' }}
-          />
-          <span className="fw-bold" style={{ fontSize: '1.2rem', color: 'var(--sb-primary-dark)' }}>
-            SmartBudget
-          </span>
-        </div>
-
-        <h2 className="fw-bold mb-1" style={{ color: 'var(--sb-text)', fontSize: '1.8rem' }}>
-          Cadastre sua primeira conta
-        </h2>
-
-        <p className="text-muted small mb-0">
-          Essa conta será usada para organizar suas primeiras transações.
-        </p>
-      </div>
+      <h1 className="acesso-titulo">Cadastre sua primeira conta</h1>
+      <p className="acesso-subtitulo">Você poderá adicionar outras contas depois.</p>
 
       <MensagemAlerta mensagem={erroGeral} tipo="danger" />
       <MensagemAlerta mensagem={sucesso} tipo="success" />
 
-      <form onSubmit={enviar} noValidate>
-        <div className="mb-3">
-          <label htmlFor="nome" className="form-label fw-semibold text-secondary small mb-1">
-            Nome da conta
-          </label>
-          <input
+      <form onSubmit={enviar} noValidate className="acesso-formulario">
+        <div className="acesso-campos-duplos">
+          <CampoFormulario
+            rotulo="Nome da conta"
             id="nome"
             name="nome"
             type="text"
-            className={`form-control ${erros.nome ? 'is-invalid' : ''}`}
-            value={campos.nome}
-            onChange={alterarCampo}
+            value={valores.nome}
+            onChange={aoAlterar}
+            onBlur={aoSair}
             placeholder="Ex.: Conta principal"
+            erro={erros.nome}
+            tocado={tocados.nome}
           />
-          {erros.nome && <div className="invalid-feedback">{erros.nome}</div>}
-        </div>
-
-        <div className="mb-3">
-          <label htmlFor="banco" className="form-label fw-semibold text-secondary small mb-1">
-            Banco
-          </label>
-          <input
+          <CampoFormulario
+            rotulo="Banco"
             id="banco"
             name="banco"
             type="text"
-            className={`form-control ${erros.banco ? 'is-invalid' : ''}`}
-            value={campos.banco}
-            onChange={alterarCampo}
+            value={valores.banco}
+            onChange={aoAlterar}
+            onBlur={aoSair}
             placeholder="Ex.: Nubank"
+            erro={erros.banco}
+            tocado={tocados.banco}
           />
-          {erros.banco && <div className="invalid-feedback">{erros.banco}</div>}
         </div>
 
+        {/* CampoFormulario só renderiza <input>; select e textarea seguem a mesma marcação e os mesmos atributos de acessibilidade */}
         <div className="mb-3">
           <label htmlFor="tipoConta" className="form-label fw-semibold text-secondary small mb-1">
             Tipo de conta
@@ -175,9 +137,12 @@ const PrimeiraConta: React.FC = () => {
           <select
             id="tipoConta"
             name="tipoConta"
-            className={`form-select ${erros.tipoConta ? 'is-invalid' : ''}`}
-            value={campos.tipoConta}
-            onChange={alterarCampo}
+            className={`form-select ${erroTipoConta ? 'is-invalid' : ''}`}
+            value={valores.tipoConta}
+            onChange={aoAlterar}
+            onBlur={aoSair}
+            aria-invalid={erroTipoConta ? true : undefined}
+            aria-describedby={erroTipoConta ? 'tipoConta-erro' : undefined}
           >
             {tiposConta.map((tipo) => (
               <option key={tipo.valor} value={tipo.valor}>
@@ -185,19 +150,22 @@ const PrimeiraConta: React.FC = () => {
               </option>
             ))}
           </select>
-          {erros.tipoConta && <div className="invalid-feedback">{erros.tipoConta}</div>}
+          {erroTipoConta && (
+            <div id="tipoConta-erro" className="invalid-feedback">{erroTipoConta}</div>
+          )}
         </div>
 
         <div className="mb-3">
           <label htmlFor="descricao" className="form-label fw-semibold text-secondary small mb-1">
-            Descrição
+            Descrição <span className="acesso-opcional">(opcional)</span>
           </label>
           <textarea
             id="descricao"
             name="descricao"
             className="form-control"
-            value={campos.descricao}
-            onChange={alterarCampo}
+            rows={2}
+            value={valores.descricao}
+            onChange={aoAlterar}
             placeholder="Ex.: Conta usada para despesas do dia a dia"
           />
         </div>
@@ -206,12 +174,12 @@ const PrimeiraConta: React.FC = () => {
           type="submit"
           carregando={salvando}
           textoCarregando="Cadastrando..."
-          className="w-100 py-2 fw-semibold mt-2"
+          className="acesso-botao w-100"
         >
           Finalizar cadastro
         </BotaoCarregando>
       </form>
-    </LayoutAutenticacao>
+    </LayoutAcesso>
   );
 };
 
