@@ -65,6 +65,42 @@ describe.sequential('Tela de Primeira Conta (onboarding)', () => {
     expect(screen.getByLabelText(/Tipo de conta/i)).toHaveValue('CORRENTE');
   });
 
+  it('deve exibir um único h1 e não oferecer o link de entrar ou cadastrar', () => {
+    renderizarComponente();
+
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Cadastre sua primeira conta');
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('deve focar o primeiro campo inválido ao submeter com erros', async () => {
+    renderizarComponente();
+
+    fireEvent.change(screen.getByLabelText(/Banco/i), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: /Finalizar cadastro/i }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Nome da conta/i)).toHaveFocus();
+    });
+    expect(screen.getByLabelText(/Nome da conta/i)).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText(/Banco/i)).toHaveAttribute('aria-describedby', 'banco-erro');
+  });
+
+  it('deve ligar o erro do tipo de conta ao select por aria-describedby', async () => {
+    renderizarComponente();
+    preencherCamposMinimos();
+
+    fireEvent.change(screen.getByLabelText(/Tipo de conta/i), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: /Finalizar cadastro/i }));
+
+    const select = screen.getByLabelText(/Tipo de conta/i);
+    await waitFor(() => {
+      expect(select).toHaveFocus();
+    });
+    expect(select).toHaveAttribute('aria-invalid', 'true');
+    expect(select).toHaveAccessibleDescription('Tipo de conta é obrigatório.');
+  });
+
   it('deve exibir erro de validação ao tentar submeter com o nome em branco', async () => {
     renderizarComponente();
 
