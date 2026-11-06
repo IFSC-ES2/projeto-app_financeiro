@@ -13,7 +13,9 @@ export function useFormulario<T extends Record<string, string>>({
   const [erros, setErros] = useState<Partial<Record<keyof T, string>>>({});
   const [tocados, setTocados] = useState<Partial<Record<keyof T, boolean>>>({});
 
-  const aoAlterar = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const aoAlterar = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setValores((prev) => ({ ...prev, [name]: value }));
     if (erros[name as keyof T]) {
@@ -21,7 +23,9 @@ export function useFormulario<T extends Record<string, string>>({
     }
   };
 
-  const aoSair = (e: React.FocusEvent<HTMLInputElement>) => {
+  const aoSair = (
+    e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+  ) => {
     const { name } = e.target;
     setTocados((prev) => ({ ...prev, [name]: true }));
   };
