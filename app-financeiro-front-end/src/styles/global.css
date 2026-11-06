@@ -2716,6 +2716,11 @@ button:disabled {
   padding-right: 5.5rem;
 }
 
+.acesso-opcional {
+  color: var(--sb-text-muted);
+  font-weight: 400;
+}
+
 .acesso-mostrar-senha {
   position: absolute;
   top: 0.5rem;
