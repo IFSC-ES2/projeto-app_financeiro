@@ -16,9 +16,15 @@ import java.util.UUID;
 @Repository
 public interface TransacaoRepository
         extends JpaRepository<Transacao, UUID>, JpaSpecificationExecutor<Transacao> {
-    List<Transacao> findAllByContaUsuarioId(UUID usuarioId);
+
     boolean existsByContaId(UUID contaId);
-    List<Transacao> findAllByContaUsuarioIdAndDataBetween(UUID usuarioId, LocalDate dataInicio, LocalDate dataFim);
+
+    List<Transacao> findAllByContaUsuarioIdAndDataBetween(
+            UUID usuarioId,
+            LocalDate dataInicio,
+            LocalDate dataFim
+    );
+
     boolean existsByContaIdAndDataAndDescricaoAndValorAndTipo(
             UUID contaId,
             LocalDate data,
@@ -26,11 +32,17 @@ public interface TransacaoRepository
             BigDecimal valor,
             TipoTransacao tipo
     );
+
     @Query("""
         SELECT COALESCE(SUM(t.valor), 0)
         from Transacao t
         where t.fatura.id = :faturaId
     """)
     BigDecimal somarValorPorFatura(@Param("faturaId") UUID faturaId);
-    List<Transacao> findAllByContaUsuarioIdAndFuturaTrueAndDataBetweenOrderByDataAsc(UUID usuarioId, LocalDate dataInicio, LocalDate dataFim);
+
+    List<Transacao> findAllByContaUsuarioIdAndFuturaTrueAndDataBetweenOrderByDataAsc(
+            UUID usuarioId,
+            LocalDate dataInicio,
+            LocalDate dataFim
+    );
 }
