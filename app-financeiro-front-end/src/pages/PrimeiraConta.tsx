@@ -87,11 +87,11 @@ const PrimeiraConta: React.FC = () => {
       textoApresentacao="Cadastre a conta onde seu dinheiro está hoje. É a partir dela que o SmartBudget organiza suas primeiras transações."
       carteira={{
         rotulo: 'Seu cadastro',
-        saldo: '2 de 3',
+        saldo: 'Etapa final',
         itens: [
           { texto: 'Criar sua conta', valor: 'concluído' },
           { texto: 'Cadastrar a primeira conta', valor: 'agora', destaque: true },
-          { texto: 'Importar um extrato', valor: 'quando quiser' },
+          { texto: 'Importar um extrato', valor: 'opcional' },
         ],
       }}
       classeCartao="acesso-cartao-largo"
