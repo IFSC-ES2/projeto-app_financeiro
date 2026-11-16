@@ -115,6 +115,7 @@ const PrimeiraConta: React.FC = () => {
             placeholder="Ex.: Conta principal"
             erro={erros.nome}
             tocado={tocados.nome}
+            destacarValido={false}
           />
           <CampoFormulario
             rotulo="Banco"
@@ -127,6 +128,7 @@ const PrimeiraConta: React.FC = () => {
             placeholder="Ex.: Nubank"
             erro={erros.banco}
             tocado={tocados.banco}
+            destacarValido={false}
           />
         </div>
 

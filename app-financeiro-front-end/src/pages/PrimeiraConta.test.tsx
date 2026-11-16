@@ -213,6 +213,15 @@ describe.sequential('Tela de Primeira Conta (onboarding)', () => {
     mockNavigate.mockClear();
   });
 
+  it('não deve marcar como válido um campo obrigatório vazio ao perder o foco', () => {
+    renderizarComponente();
+
+    const nome = screen.getByLabelText(/Nome da conta/i);
+    fireEvent.blur(nome);
+
+    expect(nome).not.toHaveClass('is-valid');
+  });
+
   it('deve chamar registrarConta com dados tratados e redirecionar para o dashboard', async () => {
     mockRegistrarConta.mockResolvedValueOnce({
       contaId: 'conta-1',
