@@ -10,63 +10,27 @@ export interface PeriodoResumo {
   mes: number;
 }
 
-export const buscarResumoPorPagamento = async (
-  periodo?: PeriodoResumo,
-) => {
-  const configuracao = periodo
-    ? {
-        params: periodo,
-        ignorarLogoutAutomatico: true,
-      }
-    : {
-        ignorarLogoutAutomatico: true,
-      };
-
-  const { data } =
-    await httpClient.get<
-      ResumoPagamentoResponse[]
-    >(
-      '/resumo/pagamentos',
-      configuracao,
-    );
+export const buscarResumoPorPagamento = async (periodo?: PeriodoResumo) => {
+  const { data } = await httpClient.get<ResumoPagamentoResponse[]>('/resumo/pagamentos', {
+    params: periodo,
+    ignorarLogoutAutomatico: true,
+  });
 
   return data;
 };
 
-export const buscarResumoMensal = async ({
-  ano,
-  mes,
-}: PeriodoResumo) => {
-  const { data } =
-    await httpClient.get<ResumoMensalResponse>(
-      '/resumo',
-      {
-        params: {
-          ano,
-          mes,
-        },
-      },
-    );
+export const buscarResumoMensal = async ({ ano, mes }: PeriodoResumo) => {
+  const { data } = await httpClient.get<ResumoMensalResponse>('/resumo', {
+    params: { ano, mes },
+  });
 
   return data;
 };
 
-export const buscarResumoPorCategorias = async ({
-  ano,
-  mes,
-}: PeriodoResumo) => {
-  const { data } =
-    await httpClient.get<
-      ResumoCategoriaResponse[]
-    >(
-      '/resumo/categorias',
-      {
-        params: {
-          ano,
-          mes,
-        },
-      },
-    );
+export const buscarResumoPorCategorias = async ({ ano, mes }: PeriodoResumo) => {
+  const { data } = await httpClient.get<ResumoCategoriaResponse[]>('/resumo/categorias', {
+    params: { ano, mes },
+  });
 
   return data;
 };
