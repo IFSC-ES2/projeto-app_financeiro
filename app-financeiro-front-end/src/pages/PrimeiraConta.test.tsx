@@ -190,6 +190,29 @@ describe.sequential('Tela de Primeira Conta (onboarding)', () => {
     mockNavigate.mockClear();
   });
 
+  it('não deve enviar de novo enquanto aguarda o redirecionamento após o sucesso', async () => {
+    mockRegistrarConta.mockResolvedValueOnce({ contaId: 'conta-1' });
+
+    renderizarComponente();
+    preencherCamposMinimos();
+
+    const botao = screen.getByRole('button', { name: /Finalizar cadastro/i });
+    fireEvent.click(botao);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Conta bancária cadastrada com sucesso. Redirecionando para o Dashboard/i),
+      ).toBeInTheDocument();
+    });
+
+    expect(botao).toBeDisabled();
+    fireEvent.submit(botao.closest('form') as HTMLFormElement);
+    expect(mockRegistrarConta).toHaveBeenCalledTimes(1);
+
+    await aguardarRedirecionamentoPendente();
+    mockNavigate.mockClear();
+  });
+
   it('deve chamar registrarConta com dados tratados e redirecionar para o dashboard', async () => {
     mockRegistrarConta.mockResolvedValueOnce({
       contaId: 'conta-1',

@@ -46,6 +46,8 @@ const PrimeiraConta: React.FC = () => {
 
   const enviar = async (evento: React.FormEvent) => {
     evento.preventDefault();
+    // Bloqueia reenvio durante a requisição e durante o atraso do redirecionamento
+    if (salvando) return;
     setErroGeral('');
     setSucesso('');
 
@@ -74,7 +76,6 @@ const PrimeiraConta: React.FC = () => {
       }, 900);
     } catch (erro) {
       setErroGeral(obterMensagemErroApi(erro, 'Não foi possível cadastrar a conta bancária.'));
-    } finally {
       setSalvando(false);
     }
   };
