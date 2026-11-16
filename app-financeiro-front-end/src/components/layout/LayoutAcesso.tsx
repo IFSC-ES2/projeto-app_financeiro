@@ -7,9 +7,10 @@ interface PropsLayoutAcesso {
   mancheteDestaque: string;
   textoApresentacao: string;
   carteira: PropsCarteiraIlustrativa;
-  pergunta: string;
-  rotuloLink: string;
-  destinoLink: string;
+  // Opcionais: telas pós-login (ex.: PrimeiraConta) não oferecem alternância entre entrar e cadastrar
+  pergunta?: string;
+  rotuloLink?: string;
+  destinoLink?: string;
   classeCartao?: string;
   children: React.ReactNode;
 }
@@ -52,9 +53,11 @@ const LayoutAcesso: React.FC<PropsLayoutAcesso> = ({
             <img src="/smartbudget-logo.png" alt="" width="32" height="32" />
             <span>SmartBudget</span>
           </div>
-          <p className="acesso-alternativa">
-            <span className="acesso-alternativa-pergunta">{pergunta}</span> <Link to={destinoLink}>{rotuloLink}</Link>
-          </p>
+          {pergunta && rotuloLink && destinoLink && (
+            <p className="acesso-alternativa">
+              <span className="acesso-alternativa-pergunta">{pergunta}</span> <Link to={destinoLink}>{rotuloLink}</Link>
+            </p>
+          )}
         </div>
 
         <div className={`acesso-cartao ${classeCartao}`}>

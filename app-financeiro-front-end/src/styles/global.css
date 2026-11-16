@@ -2684,25 +2684,43 @@ button:disabled {
   color: var(--acesso-tinta) !important;
 }
 
-.acesso-formulario .form-control {
+.acesso-formulario .form-control,
+.acesso-formulario .form-select {
   padding: 0.75rem 0.95rem;
   border-radius: 10px !important;
-  background: var(--sb-surface-soft);
+  background-color: var(--sb-surface-soft);
   border-color: transparent;
 }
 
-.acesso-formulario .form-control:focus {
-  background: var(--sb-surface);
+.acesso-formulario .form-select {
+  padding-right: 2.5rem;
+}
+
+/* Altura fixa menor que a de rows=2 do Bootstrap: mantém a PrimeiraConta sem rolagem em janelas baixas */
+.acesso-formulario textarea.form-control {
+  height: 4rem;
+  resize: vertical;
+}
+
+.acesso-formulario .form-control:focus,
+.acesso-formulario .form-select:focus {
+  background-color: var(--sb-surface);
   border-color: var(--acesso-foco) !important;
   box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--acesso-brilho) 18%, transparent) !important;
 }
 
-.acesso-formulario .form-control.is-invalid {
+.acesso-formulario .form-control.is-invalid,
+.acesso-formulario .form-select.is-invalid {
   border-color: var(--sb-danger);
 }
 
 .acesso-formulario .form-control:has(+ .acesso-mostrar-senha) {
   padding-right: 5.5rem;
+}
+
+.acesso-opcional {
+  color: var(--sb-text-muted);
+  font-weight: 400;
 }
 
 .acesso-mostrar-senha {
