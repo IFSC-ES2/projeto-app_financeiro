@@ -20,7 +20,7 @@ public class ResumoController {
 
     private final ResumoService resumoService;
 
-    public ResumoController(ResumoService resumoService) {
+    public ResumoController(ResumoService resumoService){
         this.resumoService = resumoService;
     }
 
@@ -45,13 +45,13 @@ public class ResumoController {
             @RequestParam(required = false) Integer ano,
             @RequestParam(required = false) Integer mes
     ) {
-        List<GrupoPagamentoDTO> grupos = resumoService.agruparFormaPagamento(
-                usuarioAutenticado,
-                ano,
-                mes
+        return ResponseEntity.ok(
+                resumoService.agruparFormaPagamento(
+                        usuarioAutenticado,
+                        ano,
+                        mes
+                )
         );
-
-        return ResponseEntity.ok(grupos);
     }
 
     @GetMapping("/categorias")
