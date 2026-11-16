@@ -10,8 +10,9 @@ export interface PeriodoResumo {
   mes: number;
 }
 
-export const buscarResumoPorPagamento = async () => {
+export const buscarResumoPorPagamento = async (periodo?: PeriodoResumo) => {
   const { data } = await httpClient.get<ResumoPagamentoResponse[]>('/resumo/pagamentos', {
+    params: periodo,
     ignorarLogoutAutomatico: true,
   });
 

@@ -2,13 +2,24 @@ import { useCallback } from 'react';
 
 import { buscarResumoPorPagamento } from '../services/resumoService';
 import type { ResumoPagamentoResponse } from '../types/resumo';
+import { converterAnoMesParaPeriodo } from '../utils/dashboard';
 
 import { useAsync } from './useAsync';
 
-export const useResumoFormaPagamento = () => {
+interface ResumoPagamentoDoMes {
+  anoMes: string | null;
+  resumo: ResumoPagamentoResponse[];
+}
+
+export const useResumoFormaPagamento = (anoMes?: string) => {
   const carregarResumo = useCallback(
-    () => buscarResumoPorPagamento(),
-    [],
+    async (): Promise<ResumoPagamentoDoMes> => ({
+      anoMes: anoMes ?? null,
+      resumo: await buscarResumoPorPagamento(
+        anoMes ? converterAnoMesParaPeriodo(anoMes) : undefined,
+      ),
+    }),
+    [anoMes],
   );
 
   const {
@@ -16,18 +27,21 @@ export const useResumoFormaPagamento = () => {
     carregando,
     erro,
     recarregar,
-  } = useAsync<ResumoPagamentoResponse[]>(
+  } = useAsync<ResumoPagamentoDoMes>(
     carregarResumo,
     {
-      valorInicial: [],
+      valorInicial: { anoMes: null, resumo: [] },
       mensagemErro:
         'Não foi possível carregar o resumo por forma de pagamento.',
     },
   );
 
+  const periodoEsperado = anoMes ?? null;
+  const ehDoPeriodoSelecionado = dados.anoMes === periodoEsperado;
+
   return {
-    resumo: dados,
-    carregando,
+    resumo: ehDoPeriodoSelecionado ? dados.resumo : [],
+    carregando: carregando || (!ehDoPeriodoSelecionado && !erro),
     erro,
     recarregar,
   };

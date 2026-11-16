@@ -5,6 +5,10 @@ import MensagemAlerta from '../ui/MensagemAlerta';
 import { useResumoFormaPagamento } from '../../hooks/useResumoFormaPagamento';
 import type { TipoPagamento } from '../../types/transacao';
 
+interface ResumoFormaPagamentoPizzaProps {
+  anoMes?: string;
+}
+
 const classesFormaPagamento: Record<
   TipoPagamento,
   string
@@ -55,12 +59,14 @@ const formatarPercentual = (percentual: number) =>
     maximumFractionDigits: 1,
   })}%`;
 
-const ResumoFormaPagamentoPizza = () => {
+const ResumoFormaPagamentoPizza = ({
+  anoMes,
+}: ResumoFormaPagamentoPizzaProps) => {
   const {
     resumo,
     carregando,
     erro,
-  } = useResumoFormaPagamento();
+  } = useResumoFormaPagamento(anoMes);
 
   const resumoValido = useMemo(
     () =>
@@ -106,9 +112,8 @@ const ResumoFormaPagamentoPizza = () => {
           <h2>Formas de pagamento</h2>
 
           <p>
-            Distribuição de todas as transações por meio
-            de pagamento, independente do mês selecionado
-            no resumo.
+            Distribuição das transações do mês selecionado
+            por meio de pagamento.
           </p>
         </div>
       </div>
@@ -130,7 +135,7 @@ const ResumoFormaPagamentoPizza = () => {
       ) : resumoValido.length === 0 ? (
         <EstadoVazio
           titulo="Nenhum resumo disponível"
-          descricao="Ainda não existem transações suficientes para montar o gráfico."
+          descricao="Não existem transações no período selecionado para montar o gráfico."
         />
       ) : (
         <div className="dashboard-payment-chart-area">

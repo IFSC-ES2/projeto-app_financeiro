@@ -138,7 +138,7 @@ const Dashboard = () => {
 
       {renderizarConteudo()}
 
-      <ResumoFormaPagamentoPizza />
+      <ResumoFormaPagamentoPizza anoMes={mesSelecionado} />
     </LayoutPrivado>
   );
 };

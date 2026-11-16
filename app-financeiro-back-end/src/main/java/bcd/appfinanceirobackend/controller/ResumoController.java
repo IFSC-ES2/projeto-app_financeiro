@@ -41,10 +41,17 @@ public class ResumoController {
 
     @GetMapping("/pagamentos")
     public ResponseEntity<List<GrupoPagamentoDTO>> resumoPagamentoAgrupados(
-            @AuthenticationPrincipal Usuario usuarioAutenticado
-            ) {
-        return ResponseEntity.ok(resumoService.agruparFormaPagamento(usuarioAutenticado));
-
+            @AuthenticationPrincipal Usuario usuarioAutenticado,
+            @RequestParam(required = false) Integer ano,
+            @RequestParam(required = false) Integer mes
+    ) {
+        return ResponseEntity.ok(
+                resumoService.agruparFormaPagamento(
+                        usuarioAutenticado,
+                        ano,
+                        mes
+                )
+        );
     }
 
     @GetMapping("/categorias")

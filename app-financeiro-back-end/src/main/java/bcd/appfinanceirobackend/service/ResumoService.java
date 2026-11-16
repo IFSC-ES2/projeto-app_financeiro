@@ -79,10 +79,19 @@ public class ResumoService {
         return resumoMensalDTO;
     }
 
-    public List<GrupoPagamentoDTO> agruparFormaPagamento(Usuario usuarioAutenticado) {
+    public List<GrupoPagamentoDTO> agruparFormaPagamento(
+            Usuario usuarioAutenticado,
+            Integer ano,
+            Integer mes
+    ) {
         validarUsuarioAutenticado(usuarioAutenticado);
+        PeriodoResumo periodoSolicitado = resolverPeriodo(ano, mes);
 
-        List<Transacao> transacoes = transacaoRepository.findAllByContaUsuarioId(usuarioAutenticado.getId());
+        List<Transacao> transacoes = transacaoRepository.findAllByContaUsuarioIdAndDataBetween(
+                usuarioAutenticado.getId(),
+                periodoSolicitado.dataInicio(),
+                periodoSolicitado.dataFim()
+        );
 
         if (transacoes.isEmpty()) {
             return new ArrayList<>();
@@ -269,6 +278,7 @@ public class ResumoService {
             throw new AccessDeniedException("Usuário autenticado não encontrado.");
         }
     }
+
     private PeriodoResumo resolverPeriodo(Integer ano, Integer mes){
         if(ano == null && mes == null){
             ano = LocalDate.now().getYear();
