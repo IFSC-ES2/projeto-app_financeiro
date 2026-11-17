@@ -56,9 +56,11 @@ Esse comando baixa a imagem do PostgreSQL 16, cria o container definido no `dock
 
 - Banco: `app_financeiro`
 - Usuário: `postgres`
-- Senha: `1234`
+- Senha local de desenvolvimento: `smartbudget-local-only` (ou `DEV_DB_PASSWORD`)
 - Porta: `5432`
 - Container: `smartbudget-postgres`
+
+Essas credenciais são destinadas exclusivamente ao ambiente de desenvolvimento.
 
 Você pode confirmar que o container está rodando com:
 
@@ -67,6 +69,38 @@ docker compose ps
 ```
 
 O serviço `postgres` deve aparecer como iniciado. Após alguns segundos, o status de saúde deve ficar como `healthy`.
+
+### Atualização de volumes locais anteriores à issue #299
+
+A senha do PostgreSQL não é alterada automaticamente ao modificar o Docker Compose.
+
+Caso já exista um volume do banco criado antes da implementação da issue #299, faça um backup e execute:
+
+```bash
+docker compose exec postgres psql -U postgres -d app_financeiro
+```
+
+Dentro do PostgreSQL, execute:
+
+```text
+\password postgres
+```
+
+Informe duas vezes a nova senha local:
+
+```text
+smartbudget-local-only
+```
+
+Caso tenha definido uma senha personalizada através da variável `DEV_DB_PASSWORD`, utilize essa senha.
+
+Para sair:
+
+```text
+\q
+```
+
+Não é necessário apagar o volume ou perder os dados locais para alterar a senha.
 
 ### Passo 3: testar a conexão opcionalmente
 
@@ -126,27 +160,41 @@ spring.jpa.hibernate.ddl-auto=validate
 
 ### Banco vazio
 
-Ao subir a aplicação em um banco vazio, o Flyway executará automaticamente as migrations existentes, como:
+Ao subir a aplicação em um banco vazio, o Flyway utilizará a baseline:
 
 ```text
-V1__create_tables.sql
-V2__seed_categorias.sql
-V3__seed_usuarios.sql
+B6__baseline_sem_usuarios_demo.sql
 ```
 
-Essas migrations criam a estrutura inicial do banco e inserem dados necessários para o funcionamento do sistema.
+E executará as migrations posteriores, como:
+
+```text
+V7__remove_usuarios_demonstrativos.sql
+```
+
+A baseline cria a estrutura do banco e as categorias padrão, sem inserir usuários demonstrativos.
+
+Novos usuários devem ser cadastrados normalmente através do sistema.
 
 ### Banco já existente
 
-Para bancos criados em versões anteriores do projeto, antes da adoção do Flyway, o sistema utiliza:
+Em bancos que já possuem histórico de migrations, o Flyway executará apenas as migrations pendentes.
+
+A migration V7 remove os usuários demonstrativos criados anteriormente pela V3, incluindo os dados associados a esses usuários.
+
+Faça backup antes de atualizar um banco existente e confirme que os usuários demonstrativos não possuem dados reais que precisem ser preservados.
+
+Para bancos locais criados antes da adoção do Flyway, o perfil de desenvolvimento mantém a configuração:
 
 ```properties
 spring.flyway.baseline-on-migrate=true
 ```
 
-Essa configuração permite que o Flyway reconheça um banco já existente como uma versão inicial, evitando recriação de tabelas e perda de dados.
+Essa configuração permite que o Flyway reconheça um banco já existente como uma versão inicial.
 
 Mesmo com essa configuração, é necessário validar manualmente a subida da aplicação em um banco antigo já populado antes de considerar a migration finalizada.
+
+O perfil de produção não realiza automaticamente essa adoção de bancos sem histórico Flyway.
 
 ### Criando novas migrations
 
@@ -167,9 +215,11 @@ V<numero>__descricao_da_migration.sql
 Exemplos:
 
 ```text
-V4__add_status_to_transacao.sql
-V5__create_table_objetivo_financeiro.sql
+V8__add_status_to_transacao.sql
+V9__create_table_objetivo_financeiro.sql
 ```
+
+Os exemplos acima são ilustrativos. Sempre utilize a próxima versão disponível no repositório.
 
 Regras importantes:
 
@@ -178,15 +228,31 @@ Regras importantes:
 - Não depender do Hibernate para criar tabelas, colunas, índices ou constraints
 - Toda alteração de schema deve possuir uma migration versionada
 - Migrations já aplicadas não devem ser editadas depois de enviadas ao repositório
-
+- Não inserir usuários demonstrativos ou credenciais conhecidas nas migrations compartilhadas com produção
 
 ## 3. Backend (Spring Boot)
+
+### Perfis de execução
+
+O backend utiliza três perfis:
+
+| Perfil | Finalidade |
+|---|---|
+| `dev` | Desenvolvimento local |
+| `test` | Testes automatizados |
+| `prod` | Ambiente de produção |
+
+O perfil padrão é `prod`.
+
+Caso nenhuma configuração de ambiente seja informada, a aplicação assumirá o perfil de produção e exigirá as credenciais obrigatórias.
+
+Para executar localmente, utilize explicitamente o perfil `dev`.
 
 Com o banco de dados rodando, suba o backend:
 
 ```bash
 cd app-financeiro-back-end
-./gradlew bootRun
+./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
 - Porta: 8080
@@ -199,13 +265,27 @@ Ao iniciar, o backend executa as migrations pendentes do Flyway e depois o Hiber
 
 | Variável | Default | Para que serve |
 |---|---|---|
-| `JWT_SECRET` | chave de dev em `application.properties` | Segredo HMAC do JWT. Em produção, sobrescrever com no mínimo 32 bytes. |
+| `DEV_DB_PASSWORD` | `smartbudget-local-only` | Senha exclusiva do banco de desenvolvimento |
+| `JWT_SECRET` | Chave local em `application-dev.properties` | Segredo HMAC utilizado na assinatura dos tokens JWT |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/app_financeiro` | URL de conexão com o PostgreSQL |
+| `SPRING_DATASOURCE_USERNAME` | `postgres` | Usuário do banco local |
+| `SPRING_DATASOURCE_PASSWORD` | Valor de `DEV_DB_PASSWORD` ou senha local padrão | Senha utilizada pelo backend |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | Origens permitidas nas requisições ao backend |
 
-Exemplo:
+Exemplo utilizando um segredo JWT personalizado:
 
 ```bash
-JWT_SECRET="$(openssl rand -hex 32)" ./gradlew bootRun
+JWT_SECRET="$(openssl rand -hex 32)" \
+./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
+
+Caso utilize uma senha personalizada no PostgreSQL, a mesma senha deve estar configurada no Docker Compose e no ambiente do backend.
+
+O Spring Boot não carrega automaticamente o arquivo `.env` utilizado pelo Docker Compose. Exporte as variáveis necessárias no terminal antes de iniciar o backend.
+
+Nunca reutilize credenciais de produção no ambiente local.
+
+Para a configuração do ambiente de produção, consulte [DEPLOY.md](./DEPLOY.md).
 
 ### Endpoints de autenticação
 
@@ -220,13 +300,15 @@ Erros mapeados:
 - `409` — e-mail ou CPF já cadastrado
 - `401` — credenciais inválidas
 
-Teste rápido via `curl`:
+Teste rápido via `curl` em ambiente local:
 
 ```bash
 curl -X POST http://localhost:8080/auth/register \
   -H "Content-Type: application/json" \
   -d '{"nome":"Alexandre","email":"alex@test.com","cpf":"12345678909","senha":"123456"}'
 ```
+
+Os valores acima são exclusivamente ilustrativos para testes locais.
 
 ## 4. Frontend (React + Vite)
 
@@ -260,7 +342,7 @@ Backend:
 ```bash
 ./gradlew build
 ./gradlew test
-./gradlew bootRun
+./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
 Frontend:
@@ -273,6 +355,23 @@ npm run lint
 npm test
 npm run test:coverage
 ```
+
+### Testes de configuração de segurança
+
+Para executar especificamente os testes relacionados à segurança das credenciais e dos ambientes:
+
+```bash
+cd app-financeiro-back-end
+
+./gradlew test \
+  --tests "*ConfiguracaoProducaoTest" \
+  --tests "*JwtUtilTest" \
+  --tests "*UsuariosDemoMigrationIntegrationTests"
+```
+
+Os testes de integração utilizam PostgreSQL através do Testcontainers.
+
+Certifique-se de que o Docker esteja em execução antes de rodar os testes de integração.
 
 ### Cobertura de testes do frontend
 
@@ -321,17 +420,39 @@ O backend deve conseguir conectar quando o PostgreSQL estiver pronto para aceita
 
 Você já tem um PostgreSQL ocupando a porta `5432`, seja instalado na máquina ou em outro container.
 
-Você pode parar o serviço que está usando a porta ou trocar o mapeamento para `5433`:
+Você pode parar o serviço que está usando a porta ou trocar o mapeamento no `docker-compose.yml` para:
+
+```yaml
+ports:
+  - "127.0.0.1:5433:5432"
+```
+
+Nesse caso, informe a URL correspondente ao executar o backend:
 
 ```bash
--p 5433:5432
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5433/app_financeiro \
+./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
-Nesse caso, ajuste também a URL em `application.properties`:
+### Erro de autenticação no PostgreSQL
 
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5433/app_financeiro
+Se o PostgreSQL apresentar erro de autenticação após a atualização da issue #299, verifique se o volume existente ainda utiliza a senha anterior.
+
+A alteração da variável `POSTGRES_PASSWORD` do Docker Compose não modifica automaticamente a senha de um usuário em um volume já inicializado.
+
+Siga as instruções da seção de atualização de volumes locais.
+
+### Configuração obrigatória ausente
+
+Caso o backend apresente erros indicando ausência de configurações obrigatórias de produção, confirme se está executando com o perfil correto.
+
+Para desenvolvimento local:
+
+```bash
+./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
+
+Não configure credenciais fictícias para contornar as validações do perfil `prod`.
 
 ### Erro de validação do Hibernate ao iniciar
 
@@ -372,10 +493,12 @@ Confirme que:
 - O backend está rodando em `8080`
 - O frontend está rodando em `5173`
 
-Se mudar de porta, atualize a configuração de CORS no backend.
+Se mudar de porta, atualize a configuração `CORS_ALLOWED_ORIGINS` no backend.
 
 ### JWT inválido logo após login
 
 O `JWT_SECRET` pode ter mudado entre execuções.
 
 Tokens emitidos antes deixam de valer quando o segredo muda.
+
+Nesse caso, faça login novamente para obter um novo token.
