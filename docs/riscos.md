@@ -1,6 +1,6 @@
 # Registro de Riscos
 
-Este documento deve ser revisitado e atualizado ao final de cada sprint. 
+Este documento deve ser revisitado e atualizado ao final de cada sprint.
 
 ## 1. Critério de classificação
 
@@ -20,9 +20,9 @@ Este documento deve ser revisitado e atualizado ao final de cada sprint.
 | Médio | Compromete uma ou mais funcionalidades do MVP |
 | Alto | Compromete o prazo final |
 
-### Prioridade 
+### Prioridade
 
-Baseado em probabilidade × impacto em níveis de prioridade 
+Baseado em probabilidade × impacto em níveis de prioridade
 
 | | Impacto Baixo | Impacto Médio | Impacto Alto |
 |-|-|-|-|
@@ -36,9 +36,9 @@ Baseado em probabilidade × impacto em níveis de prioridade
 
 | | Impacto Baixo | Impacto Médio | Impacto Alto |
 |-|-|-|-|
-| **Prob. Alta** | — | R02, R03 | R01 |
+| **Prob. Alta** | — | R03, R08 | R01, R07 |
 | **Prob. Média** | — | R05 | R04 |
-| **Prob. Baixa** | — | — | R06, R07 |
+| **Prob. Baixa** | — | R02 | R06 |
 
 ### Tabela Resumo
 
@@ -50,7 +50,7 @@ Baseado em probabilidade × impacto em níveis de prioridade
 | R04 | Escopo crescendo além da capacidade da equipe | Média | Alto | **Alta** |
 | R05 | Falha na integração entre frontend e backend | Média | Médio | **Média** |
 | R06 | Saída ou inatividade de membro da equipe | Baixa | Alto | **Média** |
-| R07 | Vulnerabilidade de segurança nos dados financeiros | Baixa | Alto | **Média** |
+| R07 | Vulnerabilidade de segurança nos dados financeiros | Alta | Alto | **Crítica** |
 | R08 | Ausência de testes automatizados | Alta | Médio | **Alta** |
 
 ---
@@ -159,14 +159,15 @@ Baseado em probabilidade × impacto em níveis de prioridade
 
 - **Natureza:** Qualidade / Processo
 - **Descrição:** O sistema manipula dados financeiros sensíveis (extratos bancários, notas fiscais, histórico de gastos). Uma implementação insegura de autenticação, armazenamento ou transmissão de dados pode expor informações dos usuários.
-- **Causa:** Pressão por prazo pode levar a atalhos na implementação de segurança, como senhas armazenadas sem hash, tokens JWT sem expiração ou dados trafegando sem HTTPS.
+- **Causa:** Credenciais padrão no backend e usuários demo em migrations compartilhadas (issue #299). Pressão por prazo pode levar a atalhos na implementação de segurança, como senhas armazenadas sem hash, tokens JWT sem expiração ou dados trafegando sem HTTPS.
 - **Consequência:** Exposição de dados financeiros dos usuários, comprometimento da confiança no produto e eventual penalização acadêmica por entrega com falhas críticas de segurança.
-- **Probabilidade:** Baixa
+- **Probabilidade:** Alta
 - **Impacto:** Alto
-- **Prioridade:** Média
+- **Prioridade:** Crítica
 - **Estratégia de mitigação:** Incluir requisitos mínimos de segurança no DoD: senhas com BCrypt, JWT com expiração, HTTPS no ambiente de staging, variáveis sensíveis em .env. O Engenheiro de Qualidade valida esses requisitos nos PRs de autenticação.
 - **Plano de contingência:** Realizar revisão de segurança dedicada antes da entrega final, com foco nas rotas de autenticação e no armazenamento de dados do usuário.
 - **Status na Sprint 2:** Risco reduzido na Sprint 2: JWT com expiração, BCrypt, filtro de autenticação e validação de posse de recursos implementados.
+- **Atualização #299:** controles propostos: perfis isolados, validação obrigatória no startup, retirada do seed demo, geração criptográfica de segredos e procedimento de rotação. Status: mitigação depende de CI verde, deploy validado e auditoria/rotação das credenciais reais.
 - **Responsável:** Lucas de Leon Rodrigues (Engenheiro de Qualidade)
 
 ---
@@ -187,11 +188,13 @@ Baseado em probabilidade × impacto em níveis de prioridade
 
 ## 4. Riscos críticos no momento
 
-Os riscos **R01**, **R03** e **R08** são os mais críticos no estado atual do projeto (Pós-Sprint 2):
+Atualização #299: R07 passa a ser crítico até a validação do deploy e da rotação de credenciais. Os registros históricos das sprints abaixo foram preservados.
 
-- **R01** porque o parser de extratos é o diferencial central do produto e sua viabilidade técnica ainda é uma incógnita — nenhuma linha de código foi escrita para validá-la.
-- **R03** porque a sobrecarga da equipe já gerou bugs de desatenção.
-- **R08** porque a ausência de testes permite que bugs críticos passem despercebidos.
+Os riscos **R01**, **R03** e **R08** eram os mais relevantes no estado do projeto após a Sprint 2:
+
+- **R01** porque o parser de extratos é o diferencial central do produto e, naquele momento, sua viabilidade técnica ainda precisava ser validada.
+- **R03** porque a sobrecarga da equipe já havia gerado bugs de desatenção.
+- **R08** porque a ausência de testes permitia que bugs críticos passassem despercebidos.
 
 O risco **R02** foi mitigado e não é mais um bloqueio imediato.
 
@@ -267,6 +270,8 @@ Falhas como senhas sem hash ou tokens sem expiração expõem dados financeiros 
 
 Incluir esses requisitos no DoD e validar nos PRs faz com que a segurança seja tratada como parte do fluxo normal de entrega, e não como uma etapa deixada para o final.
 
+A separação das configurações por ambiente, a validação dos segredos na inicialização e a remoção de usuários demonstrativos reduzem a possibilidade de acessos indevidos decorrentes de configurações inseguras.
+
 ---
 
 ### R08 — Ausência de testes automatizados
@@ -297,3 +302,36 @@ A falta de testes unitários permite que regressões passem despercebidas e dese
 * Incluir testes unitários no `TransacaoService` e `ContaService` como critério de aceite (DoD).
 * Reduzir a carga de *story points* da Sprint 3 para acomodar o repouso da equipe e a inserção da cultura de testes.
 * Validar a integração final do JWT validado no back-end com a aplicação Front-end.
+
+---
+
+## 7. Atualização de riscos — Issue #299
+
+### R07 — Segurança das informações financeiras
+
+Durante a revisão de segurança do projeto foram identificados valores padrão para credenciais do PostgreSQL e para o segredo de assinatura dos tokens JWT, além da criação automática de usuários demonstrativos.
+
+O risco R07 foi reclassificado de prioridade média para crítica.
+
+### Medidas de mitigação propostas
+
+- Separar os ambientes de desenvolvimento, teste e produção utilizando Spring Profiles.
+- Exigir credenciais exclusivas no ambiente de produção.
+- Impedir a inicialização do backend quando configurações obrigatórias estiverem ausentes ou inválidas.
+- Remover usuários demonstrativos através de migrations corretivas.
+- Gerar segredos criptograficamente seguros.
+- Documentar procedimentos de rotação e revogação de credenciais.
+- Implementar testes automatizados das configurações de segurança.
+- Auditar o histórico do Git para identificar eventuais credenciais reais expostas.
+
+### Critérios de acompanhamento
+
+- Aprovação dos testes automatizados.
+- Execução bem-sucedida do pipeline de CI.
+- Validação do ambiente de produção.
+- Confirmação da ausência de usuários demonstrativos.
+- Auditoria das credenciais versionadas e revogação das credenciais reais eventualmente expostas.
+
+**Status:** mitigação em andamento, vinculada à issue #299.
+
+O risco não deve ser considerado mitigado apenas pela aprovação do pull request. É necessário validar também a configuração efetiva do ambiente de produção.
