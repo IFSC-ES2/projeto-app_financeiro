@@ -1,6 +1,6 @@
 # Projeto de App de Gerenciamento Financeiro - SmartBudget
 
-[Acesse web pelo Render](https://smartbudget-web-0sic.onrender.com) e a  [ API](https://smartbudget-api-kbze.onrender.com).
+[Acesse web pelo Render](https://smartbudget-web-0sic.onrender.com) e a [API](https://smartbudget-api-kbze.onrender.com).
 
 Projeto proposto pelo Clayrton em Extensão II:
 
@@ -88,9 +88,11 @@ O banco PostgreSQL será iniciado com as configurações definidas no `docker-co
 
 - Banco: `app_financeiro`
 - Usuário: `postgres`
-- Senha: `1234`
+- Senha de desenvolvimento: `smartbudget-local-only` (ou `DEV_DB_PASSWORD`)
 - Porta: `5432`
 - Container: `smartbudget-postgres`
+
+Essas credenciais são destinadas exclusivamente ao desenvolvimento local e não devem ser utilizadas em produção.
 
 Para parar o banco:
 
@@ -106,13 +108,27 @@ docker compose down -v
 
 Atenção: o comando `docker compose down -v` remove o volume Docker e apaga os dados locais do banco.
 
+Volumes locais anteriores à issue #299 precisam de ajuste da senha, sem apagar dados.
+
+Veja as instruções em [docs/como-rodar.md](docs/como-rodar.md).
+
 ### Backend
 
-Para rodar o backend:
+O backend utiliza perfis independentes para cada ambiente:
+
+| Perfil | Finalidade |
+|---|---|
+| `dev` | Desenvolvimento local |
+| `test` | Testes automatizados |
+| `prod` | Produção |
+
+O perfil padrão da aplicação é `prod`, que exige configurações explícitas das credenciais e dos segredos.
+
+Para rodar o backend localmente, utilize:
 
 ```bash
 cd app-financeiro-back-end
-./gradlew bootRun
+./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
 - Porta: 8080
@@ -154,6 +170,8 @@ cd app-financeiro-back-end
 ./gradlew test
 ```
 
+Os testes de integração utilizam Docker e Testcontainers.
+
 Para rodar os testes do frontend:
 
 ```bash
@@ -171,13 +189,17 @@ npm run build
 
 ### Teste rápido de autenticação via curl
 
-Com o backend rodando, é possível testar o cadastro de usuário com:
+Com o backend rodando localmente, é possível testar o cadastro de usuário com:
 
 ```bash
 curl -X POST http://localhost:8080/auth/register \
   -H "Content-Type: application/json" \
   -d '{"nome":"Alexandre","email":"alex@test.com","cpf":"12345678909","senha":"123456"}'
 ```
+
+Os dados acima são destinados exclusivamente a testes em ambientes isolados.
+
+O banco não recebe mais usuários demonstrativos automaticamente.
 
 Informações mais detalhadas estão disponíveis em [docs/como-rodar.md](docs/como-rodar.md).
 
@@ -199,6 +221,28 @@ As migrations ficam no diretório:
 app-financeiro-back-end/src/main/resources/db/migration
 ```
 
+### Inicialização do banco de dados
+
+Bancos novos utilizam a baseline:
+
+```text
+B6__baseline_sem_usuarios_demo.sql
+```
+
+Essa baseline contém a estrutura do banco até a versão V6, incluindo as categorias padrão do sistema, sem inserir usuários demonstrativos.
+
+Bancos existentes mantêm seu histórico de migrations.
+
+A migration:
+
+```text
+V7__remove_usuarios_demonstrativos.sql
+```
+
+Remove os usuários demonstrativos criados anteriormente pela V3.
+
+A remoção também afeta os dados associados a esses usuários. Realize um backup e verifique os registros antes de atualizar um banco existente.
+
 ### Criando uma nova migration
 
 Toda alteração estrutural no banco deve ser feita através de uma nova migration SQL.
@@ -212,10 +256,12 @@ V<numero>__descricao_da_migration.sql
 Exemplos:
 
 ```text
-V3__add_status_to_transacao.sql
-V4__create_table_objetivo_financeiro.sql
-V5__add_indice_data_transacao.sql
+V8__add_status_to_transacao.sql
+V9__create_table_objetivo_financeiro.sql
+V10__add_indice_data_transacao.sql
 ```
+
+Os exemplos são ilustrativos. Utilize sempre a próxima versão disponível no repositório.
 
 ### Regras para alterações de schema
 
@@ -224,6 +270,7 @@ V5__add_indice_data_transacao.sql
 - Não depender do Hibernate para criar tabelas, colunas, índices ou constraints
 - Toda alteração de tabela, coluna, índice ou constraint deve possuir uma migration versionada
 - Migrations já aplicadas não devem ser editadas depois de enviadas para o repositório
+- Não inserir usuários demonstrativos ou credenciais conhecidas em migrations utilizadas em produção
 
 ### Fluxo recomendado para novas alterações no banco
 
@@ -235,7 +282,7 @@ V5__add_indice_data_transacao.sql
 
 ## Rodando os testes localmente
 
-Os testes automatizados estão versionados no repositório e devem passar antes de qualquer merge — o pipeline de CI executa exatamente os mesmos comandos descritos abaixo a cada pull request.
+Os testes automatizados estão versionados no repositório e devem passar antes de qualquer merge.
 
 Backend (JUnit + Spring Boot):
 
@@ -249,7 +296,16 @@ O relatório HTML fica em `app-financeiro-back-end/build/reports/tests/test/inde
 Para rodar apenas uma classe específica:
 
 ```bash
-./gradlew test --tests "bcd.appfinanceirobackend.RegistrarLoginTests"
+./gradlew test --tests "*RegistrarLoginTests"
+```
+
+Para executar os testes relacionados à segurança das credenciais:
+
+```bash
+./gradlew test \
+  --tests "*ConfiguracaoProducaoTest" \
+  --tests "*JwtUtilTest" \
+  --tests "*UsuariosDemoMigrationIntegrationTests"
 ```
 
 Frontend (React + Vite):
@@ -258,18 +314,63 @@ Frontend (React + Vite):
 cd app-financeiro-front-end
 npm ci
 npm run lint
-npm test --if-present
+npm run build
+npm run test:coverage
 ```
 
-O frontend deve passar pelo lint antes do merge. O pipeline de CI executa `npm run lint`, `npm run build` e `npm test --if-present`, garantindo que problemas de padronização e erros estáticos sejam detectados automaticamente.
+O frontend deve passar pelo lint antes do merge. O pipeline de CI executa as validações de lint, build e testes automatizados, garantindo que problemas de padronização e erros estáticos sejam detectados automaticamente.
 
 ## Integração contínua (CI)
 
 O workflow `.github/workflows/ci.yml` é disparado em cada pull request (`opened`, `synchronize`, `reopened`) e roda quatro jobs: build e testes do backend com Postgres efêmero usando Gradle Wrapper, lint/build/testes do frontend, validação de YAML e verificação de arquivos obrigatórios.
 
-Qualquer falha derruba o check do PR e impede o merge.
+Qualquer falha derruba o check correspondente do PR.
 
-A proteção da branch `main` no GitHub já exige os quatro jobs (`Backend (build & test)`, `Frontend (build & test)`, `YAML syntax validation` e `Required files check`) como required status checks e exige ao menos 1 review aprovador, garantindo que nenhum PR seja mergeado com testes vermelhos.
+A proteção da branch `main` no GitHub exige os quatro jobs (`Backend (build & test)`, `Frontend (build & test)`, `YAML syntax validation` e `Required files check`) como required status checks e exige ao menos 1 review aprovador.
+
+## Segurança e configuração de ambientes
+
+O SmartBudget manipula informações financeiras e pessoais dos usuários. Por isso, as configurações dos ambientes devem permanecer isoladas.
+
+As principais medidas para proteção de credenciais são:
+
+- Separação dos perfis de desenvolvimento, teste e produção.
+- Ausência de valores padrão para credenciais de produção.
+- Validação das configurações obrigatórias na inicialização do backend.
+- Utilização de credenciais independentes por ambiente.
+- Geração criptograficamente segura dos segredos JWT.
+- Remoção dos usuários demonstrativos do banco.
+- Documentação dos procedimentos de rotação e revogação de credenciais.
+- Testes automatizados das configurações de segurança.
+
+Para gerar um segredo JWT de produção:
+
+```bash
+openssl rand -hex 32
+```
+
+Para gerar uma senha independente para o PostgreSQL:
+
+```bash
+openssl rand -hex 24
+```
+
+Os valores gerados devem ser configurados diretamente no ambiente correspondente.
+
+Nunca versione arquivos `.env` contendo credenciais reais, tokens, segredos ou backups do banco de dados.
+
+O arquivo `.env.prod.example` contém apenas um modelo das variáveis necessárias para a configuração do ambiente.
+
+### Deploy
+
+O projeto possui suporte à implantação através do Render e Docker Compose.
+
+Antes de realizar um deploy, configure as variáveis obrigatórias de produção e confirme que o perfil `prod` está ativo.
+
+As instruções de implantação, validação, rotação de credenciais e recuperação de ambientes estão disponíveis em:
+
+- [Documentação de deploy](docs/DEPLOY.md)
+- [Registro de riscos](docs/riscos.md)
 
 ---
 
@@ -277,10 +378,10 @@ A proteção da branch `main` no GitHub já exige os quatro jobs (`Backend (buil
 
 - [Visão do Produto e MVP](docs/inception.md)
 - [Arquitetura C4](docs/arquitetura.md)
-- [Definition of Done](docs/dod.md) 
-- [ADR-0001 — Stack Frontend](docs/adrs/ADR-0001-Tipo-de-Aplicacao.md) 
-- [ADR-0002 — Stack Backend](docs/adrs/ADR-0002-Linguagem-e-Framework.md) 
-- [ADR-0003 — Banco de Dados](docs/adrs/ADR-0003-Abordagem-de-persistência-de-dados.md) 
+- [Definition of Done](docs/dod.md)
+- [ADR-0001 — Stack Frontend](docs/adrs/ADR-0001-Tipo-de-Aplicacao.md)
+- [ADR-0002 — Stack Backend](docs/adrs/ADR-0002-Linguagem-e-Framework.md)
+- [ADR-0003 — Banco de Dados](docs/adrs/ADR-0003-Abordagem-de-persistência-de-dados.md)
 - [ADR-0004 — Arquitetura Geral](docs/adrs/ADR-0004-Estrategia-de-arquiteturas-e-camadas.md)
 - [ADR-0005 — Padrões de Projeto](docs/adrs/ADR-0005-padroes-de-projeto.md)
 - [ADR-0006 — Versionamento de Banco de Dados com Flyway](docs/adrs/ADR-0006-migracoes-de-banco-de-dados-com-flyway.md)
@@ -292,3 +393,5 @@ A proteção da branch `main` no GitHub já exige os quatro jobs (`Backend (buil
 - [Métricas](docs/metricas.md)
 - [Baseline](docs/baseline.md)
 - [Como rodar](docs/como-rodar.md)
+- [Deploy](docs/DEPLOY.md)
+- [Registro de riscos](docs/riscos.md)
