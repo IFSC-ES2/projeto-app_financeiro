@@ -6,9 +6,9 @@ services:
     environment:
       POSTGRES_DB: app_financeiro
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: "1234"
+      POSTGRES_PASSWORD: ${DEV_DB_PASSWORD:-smartbudget-local-only}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
