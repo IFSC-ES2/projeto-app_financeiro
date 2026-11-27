@@ -13,12 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.StringReader;
 import java.math.BigDecimal;
-import java.nio.ByteBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CodingErrorAction;
-import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -105,6 +99,13 @@ public class ParserCSV implements ParserExtrato {
             RegistroCsv primeiroRegistro = registros.getFirst();
             String[] cabecalho = primeiroRegistro.colunas();
 
+            if (ehCabecalhoBancoDoBrasil(cabecalho)) {
+                return processarCsvBancoDoBrasil(
+                        registros,
+                        conta
+                );
+            }
+
             if (ehCabecalhoNubankConta(cabecalho)) {
                 return processarCsvNubankConta(
                         registros,
@@ -139,48 +140,7 @@ public class ParserCSV implements ParserExtrato {
     private String lerConteudoDoArquivo(
             MultipartFile arquivo
     ) throws IOException {
-        byte[] bytes = arquivo.getBytes();
-
-        String textoUtf8 = tentarConverter(
-                bytes,
-                StandardCharsets.UTF_8
-        );
-
-        if (textoUtf8 != null) {
-            return textoUtf8;
-        }
-
-        String textoWindows1252 = tentarConverter(
-                bytes,
-                Charset.forName("Windows-1252")
-        );
-
-        if (textoWindows1252 != null) {
-            return textoWindows1252;
-        }
-
-        return new String(
-                bytes,
-                StandardCharsets.ISO_8859_1
-        );
-    }
-
-    private String tentarConverter(
-            byte[] bytes,
-            Charset charset
-    ) {
-        CharsetDecoder decoder = charset.newDecoder()
-                .onMalformedInput(CodingErrorAction.REPORT)
-                .onUnmappableCharacter(CodingErrorAction.REPORT);
-
-        try {
-            return decoder
-                    .decode(ByteBuffer.wrap(bytes))
-                    .toString();
-
-        } catch (CharacterCodingException e) {
-            return null;
-        }
+        return TextoExtrato.decodificar(arquivo.getBytes());
     }
 
     private String removerBom(String conteudo) {
@@ -652,6 +612,127 @@ public class ParserCSV implements ParserExtrato {
         return unica.length() > TAMANHO_MAXIMO_DESCRICAO
                 ? unica.substring(0, TAMANHO_MAXIMO_DESCRICAO)
                 : unica;
+    }
+
+    /**
+     * Extrato de conta corrente do Banco do Brasil:
+     * "Data","Lançamento","Detalhes","Nº documento","Valor","Tipo Lançamento".
+     */
+    private boolean ehCabecalhoBancoDoBrasil(
+            String[] cabecalho
+    ) {
+        return encontrarIndiceDaColuna(cabecalho, "data") >= 0
+                && encontrarIndiceDaColuna(cabecalho, "lancamento") >= 0
+                && encontrarIndiceDaColuna(cabecalho, "detalhes") >= 0
+                && encontrarIndiceDaColuna(cabecalho, "valor") >= 0;
+    }
+
+    /**
+     * O BB mistura linhas de saldo ("Saldo Anterior", "Saldo do dia", "S A L D O") aos
+     * lançamentos; elas são puladas e não contam como registro.
+     */
+    private ResultadoParser processarCsvBancoDoBrasil(
+            List<RegistroCsv> registros,
+            Conta conta
+    ) {
+        String[] cabecalho = registros.getFirst().colunas();
+
+        int indiceData = encontrarIndiceDaColuna(cabecalho, "data");
+        int indiceLancamento = encontrarIndiceDaColuna(cabecalho, "lancamento");
+        int indiceDetalhes = encontrarIndiceDaColuna(cabecalho, "detalhes");
+        int indiceValor = encontrarIndiceDaColuna(cabecalho, "valor");
+
+        ResultadoParser resultado = new ResultadoParser();
+        int totalLinhas = 0;
+
+        for (int i = 1; i < registros.size(); i++) {
+            RegistroCsv registro = registros.get(i);
+            String[] linha = registro.colunas();
+            int numeroRegistro = registro.numeroLinha();
+
+            if (
+                    indiceLancamento < linha.length &&
+                    normalizarTexto(linha[indiceLancamento]).replace(" ", "").startsWith("saldo")
+            ) {
+                continue;
+            }
+
+            totalLinhas++;
+
+            if (!possuiIndicesObrigatorios(linha, indiceData, indiceLancamento, indiceDetalhes, indiceValor)) {
+                resultado.adicionarErro(
+                        numeroRegistro,
+                        "estrutura",
+                        "Registro não possui todas as colunas obrigatórias."
+                );
+
+                continue;
+            }
+
+            LocalDate data = parsearData(linha[indiceData]);
+
+            if (data == null) {
+                resultado.adicionarErro(
+                        numeroRegistro,
+                        "data",
+                        "Data inválida. Verifique o formato informado."
+                );
+
+                continue;
+            }
+
+            BigDecimal valor = parsearValor(linha[indiceValor]);
+
+            if (valor == null) {
+                resultado.adicionarErro(
+                        numeroRegistro,
+                        "valor",
+                        "Valor monetário inválido."
+                );
+
+                continue;
+            }
+
+            if (valor.compareTo(BigDecimal.ZERO) == 0) {
+                resultado.adicionarErro(
+                        numeroRegistro,
+                        "valor",
+                        "O valor da transação não pode ser zero."
+                );
+
+                continue;
+            }
+
+            Transacao transacao = criarTransacao(
+                    conta,
+                    data,
+                    limitarDescricao(
+                            TextoExtrato.montarDescricaoBancaria(
+                                    linha[indiceLancamento],
+                                    linha[indiceDetalhes]
+                            )
+                    ),
+                    valor.abs(),
+                    resolverTipoNubankConta(valor)
+            );
+
+            resultado.adicionarTransacao(
+                    transacao,
+                    numeroRegistro
+            );
+        }
+
+        resultado.setTotalLinhas(totalLinhas);
+
+        return resultado;
+    }
+
+    private String limitarDescricao(
+            String descricao
+    ) {
+        return descricao.length() > TAMANHO_MAXIMO_DESCRICAO
+                ? descricao.substring(0, TAMANHO_MAXIMO_DESCRICAO)
+                : descricao;
     }
 
     private ResultadoParser processarCsvLegado(
