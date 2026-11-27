@@ -41,6 +41,15 @@ class ParserContratoTest {
                     + "linha,invalida\n"
                     + "2024-01-11,Outra valida,50.00,DEBITO\n";
 
+    private static final String CSV_SANTANDER_PARCIAL =
+            "Extrato de conta corrente\n"
+                    + "Nome;Fulano de Tal\n"
+                    + "Lançamentos:\n"
+                    + "Data;Descrição;Valor;Saldo\n"
+                    + "10/01/2024;\"Pix enviado\nFulano\";-100,00;900,00\n"
+                    + "data-invalida;\"Pix enviado\nCiclano\";-10,00;890,00\n"
+                    + "11/01/2024;\"Pix recebido\nBeltrano\";50,00;940,00\n";
+
     private static final String TXT_PARCIAL =
             "10/01/2024  Compra Valida  -100,00\n"
                     + "linha sem data valida aqui\n"
@@ -67,6 +76,7 @@ class ParserContratoTest {
     static Stream<Arguments> casosValidos() {
         return Stream.of(
                 arguments("CSV", new ParserCSV(), "csv/extrato-valido.csv", "text/csv"),
+                arguments("CSV Santander", new ParserCSV(), "csv/extrato-santander.csv", "text/csv"),
                 arguments("TXT", new ParserTXT(), "txt/extrato-colunar-valido.txt", "text/plain"),
                 arguments("XML", new ParserXML(), "xml/extrato-valido-transacao.xml", "application/xml"),
                 arguments("NF-e", new ParserNFe(), "nfe/nfe-valida-sem-nfeproc.xml", "application/xml")
@@ -77,6 +87,7 @@ class ParserContratoTest {
     static Stream<Arguments> casosSucessoParcial() {
         return Stream.of(
                 arguments("CSV", new ParserCSV(), "extrato.csv", CSV_PARCIAL, "text/csv"),
+                arguments("CSV Santander", new ParserCSV(), "extrato.csv", CSV_SANTANDER_PARCIAL, "text/csv"),
                 arguments("TXT", new ParserTXT(), "extrato.txt", TXT_PARCIAL, "text/plain"),
                 arguments("XML", new ParserXML(), "extrato.xml", XML_PARCIAL, "application/xml"),
                 arguments("NF-e", new ParserNFe(), "nota.xml", NFE_PARCIAL, "application/xml")
