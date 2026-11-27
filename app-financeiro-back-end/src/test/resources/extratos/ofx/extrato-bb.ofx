@@ -1,0 +1,79 @@
+OFXHEADER:100
+DATA:OFXSGML
+VERSION:102
+SECURITY:NONE
+ENCODING:USASCII
+CHARSET:1252
+COMPRESSION:NONE
+OLDFILEUID:NONE
+NEWFILEUID:NONE
+
+<OFX>
+  <SIGNONMSGSRSV1>
+   <SONRS>
+    <STATUS>
+      <CODE>0</CODE>
+      <SEVERITY>INFO</SEVERITY>
+    </STATUS>
+    <DTSERVER>20260301120000[-3:BRT]</DTSERVER>
+    <LANGUAGE>POR</LANGUAGE>
+    <FI>
+     <ORG>Banco do Brasil</ORG>
+     <FID>1</FID>
+    </FI>
+   </SONRS>
+  </SIGNONMSGSRSV1>
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <TRNUID>1</TRNUID>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <STMTRS>
+        <CURDEF>BRL</CURDEF>
+        <BANKACCTFROM>
+          <BANKID>1</BANKID>
+          <BRANCHID>0001-9</BRANCHID>
+          <ACCTID>12345-6</ACCTID>
+          <ACCTTYPE>CHECKING</ACCTTYPE>
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+            <DTSTART>20260201000000[-3:BRT]</DTSTART>
+            <DTEND>20260228000000[-3:BRT]</DTEND>
+            <STMTTRN>
+              <TRNTYPE>CREDIT</TRNTYPE>
+              <DTPOSTED>20260203000000[-3:BRT]</DTPOSTED>
+              <TRNAMT>150.00</TRNAMT>
+              <FITID>20260203001</FITID>
+              <CHECKNUM>000000000000001</CHECKNUM>
+              <NAME>Pix - Recebido</NAME>
+              <MEMO>03/02 09:15 11122233344 Fulano de Tal</MEMO>
+            </STMTTRN>
+            <STMTTRN>
+              <TRNTYPE>DEBIT</TRNTYPE>
+              <DTPOSTED>20260205000000[-3:BRT]</DTPOSTED>
+              <TRNAMT>-12.50</TRNAMT>
+              <FITID>20260205001</FITID>
+              <CHECKNUM>000123</CHECKNUM>
+              <NAME>Compra com Cartão</NAME>
+              <MEMO>05/02 12:30 PADARIA EXEMPLO - 0010-</MEMO>
+            </STMTTRN>
+            <STMTTRN>
+              <TRNTYPE>DEBIT</TRNTYPE>
+              <DTPOSTED>20260210000000[-3:BRT]</DTPOSTED>
+              <TRNAMT>-1250.75</TRNAMT>
+              <FITID>20260210001</FITID>
+              <CHECKNUM>10001</CHECKNUM>
+              <NAME>Pix - Enviado</NAME>
+              <MEMO>10/02 18:00 Imobiliaria Exemplo Ltda</MEMO>
+            </STMTTRN>
+        </BANKTRANLIST>
+        <LEDGERBAL>
+          <BALAMT>886.75</BALAMT>
+          <DTASOF>20260228000000[-3:BRT]</DTASOF>
+        </LEDGERBAL>
+      </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>

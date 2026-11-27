@@ -654,4 +654,37 @@ class ParserCSVTest {
             );
         }
     }
+
+    @Nested
+    @DisplayName("parsear() - extrato Banco do Brasil")
+    class ExtratoBancoDoBrasil {
+
+        @Test
+        @DisplayName("pula as linhas de saldo e monta a descrição sem data, hora, CPF e código do terminal")
+        void importaLancamentosSemLinhasDeSaldo() throws IOException {
+            ResultadoParser resultado = parser.parsear(fromFixture("extrato-bb.csv"), conta);
+
+            assertAll(
+                    () -> assertEquals(3, resultado.getTransacoes().size()),
+                    () -> assertEquals(3, resultado.getTotalLinhas()),
+                    () -> assertTrue(resultado.getErros().isEmpty()),
+                    () -> assertEquals("Pix - Recebido - Fulano de Tal", resultado.getTransacoes().get(0).getDescricao()),
+                    () -> assertEquals("Compra com Cartão - PADARIA EXEMPLO", resultado.getTransacoes().get(1).getDescricao()),
+                    () -> assertEquals(new BigDecimal("1250.75"), resultado.getTransacoes().get(2).getValor()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(2).getTipo()),
+                    () -> assertEquals(TipoTransacao.CREDITO, resultado.getTransacoes().get(0).getTipo())
+            );
+        }
+
+        @Test
+        @DisplayName("cabeçalho do BB não é mais confundido com um Nubank inválido")
+        void naoConfundeComNubank() {
+            String conteudo = "\"Data\",\"Lançamento\",\"Detalhes\",\"Nº documento\",\"Valor\",\"Tipo Lançamento\"\n"
+                    + "\"01/02/2026\",\"Pix - Enviado\",\"01/02 10:00 Fulano\",\"1\",\"-10,00\",\"Saída\"\n";
+
+            ResultadoParser resultado = parser.parsear(fromString("bb.csv", conteudo), conta);
+
+            assertEquals("Pix - Enviado - Fulano", resultado.getTransacoes().get(0).getDescricao());
+        }
+    }
 }

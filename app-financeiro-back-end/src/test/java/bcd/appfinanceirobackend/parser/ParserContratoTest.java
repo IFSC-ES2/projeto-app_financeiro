@@ -50,6 +50,20 @@ class ParserContratoTest {
                     + "data-invalida;\"Pix enviado\nCiclano\";-10,00;890,00\n"
                     + "11/01/2024;\"Pix recebido\nBeltrano\";50,00;940,00\n";
 
+    private static final String CSV_BB_PARCIAL =
+            "\"Data\",\"Lançamento\",\"Detalhes\",\"Nº documento\",\"Valor\",\"Tipo Lançamento\"\n"
+                    + "\"10/01/2024\",\"Pix - Enviado\",\"10/01 10:00 Fulano\",\"1\",\"-100,00\",\"Saída\"\n"
+                    + "\"10/01/2024\",\"Saldo do dia\",\"\",\"\",\"900,00\",\"\"\n"
+                    + "\"data-ruim\",\"Pix - Enviado\",\"Ciclano\",\"2\",\"-10,00\",\"Saída\"\n"
+                    + "\"11/01/2024\",\"Pix - Recebido\",\"Beltrano\",\"3\",\"50,00\",\"Entrada\"\n";
+
+    private static final String OFX_PARCIAL =
+            "<OFX><BANKTRANLIST>\n"
+                    + "<STMTTRN><DTPOSTED>20240110</DTPOSTED><TRNAMT>-100.00</TRNAMT><NAME>Ok</NAME></STMTTRN>\n"
+                    + "<STMTTRN><DTPOSTED>data-ruim</DTPOSTED><TRNAMT>-10.00</TRNAMT></STMTTRN>\n"
+                    + "<STMTTRN><DTPOSTED>20240111</DTPOSTED><TRNAMT>50.00</TRNAMT><NAME>Outra</NAME></STMTTRN>\n"
+                    + "</BANKTRANLIST></OFX>\n";
+
     private static final String TXT_PARCIAL =
             "10/01/2024  Compra Valida  -100,00\n"
                     + "linha sem data valida aqui\n"
@@ -77,6 +91,9 @@ class ParserContratoTest {
         return Stream.of(
                 arguments("CSV", new ParserCSV(), "csv/extrato-valido.csv", "text/csv"),
                 arguments("CSV Santander", new ParserCSV(), "csv/extrato-santander.csv", "text/csv"),
+                arguments("CSV Banco do Brasil", new ParserCSV(), "csv/extrato-bb.csv", "text/csv"),
+                arguments("OFX", new ParserOFX(), "ofx/extrato-bb.ofx", "application/x-ofx"),
+                arguments("OFX SGML", new ParserOFX(), "ofx/extrato-sgml-sem-fechamento.ofx", "application/x-ofx"),
                 arguments("TXT", new ParserTXT(), "txt/extrato-colunar-valido.txt", "text/plain"),
                 arguments("XML", new ParserXML(), "xml/extrato-valido-transacao.xml", "application/xml"),
                 arguments("NF-e", new ParserNFe(), "nfe/nfe-valida-sem-nfeproc.xml", "application/xml")
@@ -88,6 +105,8 @@ class ParserContratoTest {
         return Stream.of(
                 arguments("CSV", new ParserCSV(), "extrato.csv", CSV_PARCIAL, "text/csv"),
                 arguments("CSV Santander", new ParserCSV(), "extrato.csv", CSV_SANTANDER_PARCIAL, "text/csv"),
+                arguments("CSV Banco do Brasil", new ParserCSV(), "extrato.csv", CSV_BB_PARCIAL, "text/csv"),
+                arguments("OFX", new ParserOFX(), "extrato.ofx", OFX_PARCIAL, "application/x-ofx"),
                 arguments("TXT", new ParserTXT(), "extrato.txt", TXT_PARCIAL, "text/plain"),
                 arguments("XML", new ParserXML(), "extrato.xml", XML_PARCIAL, "application/xml"),
                 arguments("NF-e", new ParserNFe(), "nota.xml", NFE_PARCIAL, "application/xml")

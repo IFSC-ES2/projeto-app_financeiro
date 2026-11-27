@@ -578,6 +578,43 @@ class ImportacaoServiceTest {
                     formatosSalvos.getFirst()
             );
         }
+
+        @Test
+        @DisplayName(
+                "Arquivo .ofx é registrado com formato OFX"
+        )
+        void arquivoOfx_registraFormatoOfx() {
+            mockContaDoUsuarioAutenticado();
+            mockParserAceitandoComResultado(
+                    resultadoComTransacoes(
+                            1,
+                            0
+                    )
+            );
+
+            List<FormatoArquivo> formatosSalvos =
+                    new ArrayList<>();
+
+            mockSaveImportacaoRegistrandoFormato(
+                    formatosSalvos
+            );
+
+            service.processar(
+                    new org.springframework.mock.web.MockMultipartFile(
+                            "arquivo",
+                            "extrato.ofx",
+                            "application/x-ofx",
+                            "<OFX></OFX>".getBytes()
+                    ),
+                    conta.getId(),
+                    usuarioDono
+            );
+
+            assertEquals(
+                    FormatoArquivo.OFX,
+                    formatosSalvos.getFirst()
+            );
+        }
     }
 
     @Nested
