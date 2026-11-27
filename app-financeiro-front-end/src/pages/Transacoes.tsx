@@ -68,6 +68,7 @@ const Transacoes = () => {
 
   const [filtros, setFiltros] = useState<FiltrosTransacao>(filtrosIniciais);
   const [paginaAtual, setPaginaAtual] = useState(0);
+  const [filtrosAbertos, setFiltrosAbertos] = useState(false);
   const [tamanho, setTamanho] = useState(20);
   const [mensagemSucesso, setMensagemSucesso] = useState(estado?.mensagem ?? '');
   const [transacaoAtualizandoId, setTransacaoAtualizandoId] = useState<string | null>(null);
@@ -241,12 +242,29 @@ const erro =
     }
   };
 
+  const totalFiltrosAtivos = Object.values(filtros).filter(Boolean).length;
+
   return (
     <LayoutPrivado titulo="Transações" subtitulo="Visualize e registre movimentações financeiras da sua conta.">
       <MensagemAlerta mensagem={mensagemSucesso} tipo="success" />
       <MensagemAlerta mensagem={mensagemCategoria} tipo="success" />
       <MensagemAlerta mensagem={erro} tipo="danger" />
-      <section className="filters-panel" aria-label="Filtros de transações">
+      {/* No celular os filtros ficam atrás de um botão, para a lista aparecer na primeira tela */}
+      <button
+        type="button"
+        className="sb-button sb-button-secondary filters-toggle"
+        aria-expanded={filtrosAbertos}
+        aria-controls="filtros-transacoes"
+        onClick={() => setFiltrosAbertos((atual) => !atual)}
+      >
+        {totalFiltrosAtivos > 0 ? `Filtros (${totalFiltrosAtivos})` : 'Filtros'}
+      </button>
+      <section
+        id="filtros-transacoes"
+        className="filters-panel"
+        data-aberto={filtrosAbertos}
+        aria-label="Filtros de transações"
+      >
         <label>
           <span>Início</span>
           <input
