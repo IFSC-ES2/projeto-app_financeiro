@@ -44,7 +44,7 @@ class CategoriaSeedIntegrationTests {
 
     private static final List<String> CATEGORIAS_PADRAO = List.of(
             "Alimentação", "Transporte", "Saúde", "Lazer", "Habitação", "Serviços", "Manutenção",
-            "Receitas", "Assinaturas");
+            "Receitas", "Assinaturas", "Compras");
 
     @Autowired
     private CategoriaService categoriaService;
@@ -62,7 +62,7 @@ class CategoriaSeedIntegrationTests {
     private MockMvc mockMvc;
 
     @Test
-    @DisplayName("As 9 categorias padrão estão disponíveis após subir o projeto")
+    @DisplayName("As 10 categorias padrão estão disponíveis após subir o projeto")
     void categoriasPadraoDisponiveisAposSubir() {
         for (String nome : CATEGORIAS_PADRAO) {
             assertThat(categoriaRepository.findByNomeAndPadraoTrue(nome))
@@ -85,6 +85,10 @@ class CategoriaSeedIntegrationTests {
         assertThat(sugerir.apply("Debito visa electron brasil - 18/11 raia440").getNome()).isEqualTo("Saúde");
         assertThat(sugerir.apply("Debito visa electron brasil - 10/11 espaco recanto").getNome()).isEqualTo("Lazer");
         assertThat(sugerir.apply("Liquido de vencimento").getNome()).isEqualTo("Receitas");
+        assertThat(sugerir.apply("Compra com Cartão - MAIS NATURAL").getNome()).isEqualTo("Alimentação");
+        assertThat(sugerir.apply("Compra com Cartão - LAR DOS VELHINHOS DE").getNome()).isEqualTo("Compras");
+        assertThat(sugerir.apply("Compra com Cartão - CantinhoDasOstras").getNome()).isEqualTo("Alimentação");
+        assertThat(sugerir.apply("Pix - Enviado - Telefonica Brasil S A").getNome()).isEqualTo("Serviços");
         assertThat(sugerir.apply("Pix enviado - Fulano de Tal")).isNull();
     }
 
