@@ -24,6 +24,32 @@
   --sb-font-texto: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --sb-font-titulo: 'Bricolage Grotesque', var(--sb-font-texto);
   color-scheme: light;
+
+  /* Primária do Bootstrap na paleta do SmartBudget: sem isto, links, anéis de foco e os estados
+     pressionado/desabilitado do .btn-primary apareciam no azul padrão (#0d6efd) */
+  --bs-primary: #2FA98F;
+  --bs-primary-rgb: 47, 169, 143;
+  --bs-link-color: #1E8A73;
+  --bs-link-color-rgb: 30, 138, 115;
+  --bs-link-hover-color: #166B59;
+  --bs-link-hover-color-rgb: 22, 107, 89;
+  --bs-focus-ring-color: rgba(47, 169, 143, 0.25);
+}
+
+.btn-primary {
+  --bs-btn-color: #ffffff;
+  --bs-btn-bg: #2FA98F;
+  --bs-btn-border-color: #2FA98F;
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #27917B;
+  --bs-btn-hover-border-color: #27917B;
+  --bs-btn-focus-shadow-rgb: 47, 169, 143;
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: #227F6B;
+  --bs-btn-active-border-color: #227F6B;
+  --bs-btn-disabled-color: #ffffff;
+  --bs-btn-disabled-bg: #2FA98F;
+  --bs-btn-disabled-border-color: #2FA98F;
 }
 
 /* Tema escuro: superfícies em azul-noite (não preto puro), com elevação clareando a cada nível,
@@ -49,6 +75,10 @@
   --sb-info-soft: rgba(122, 167, 255, 0.14);
   --sb-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
   --sb-gradient: linear-gradient(135deg, #1F3A57, #2FA98F);
+  --bs-link-color: #7AD3C0;
+  --bs-link-color-rgb: 122, 211, 192;
+  --bs-link-hover-color: #A3E2D4;
+  --bs-link-hover-color-rgb: 163, 226, 212;
   color-scheme: dark;
 }
 
@@ -2565,6 +2595,21 @@ button:disabled {
 
 /* Os dois lados repetem as mesmas três faixas (topo, centro, rodapé) para ficarem alinhados */
 .acesso-page {
+  /* As telas de acesso ficam sempre no tema claro: os tokens --sb-* voltam aos valores claros aqui
+     dentro, senão o cartão branco herdava a superfície escura com texto escuro por cima. */
+  --sb-primary: #2FA98F;
+  --sb-primary-dark: #0E1624;
+  --sb-surface: #FFFFFF;
+  --sb-surface-soft: #F1F5F7;
+  --sb-surface-muted: #FAFCFB;
+  --sb-text: #0E1624;
+  --sb-text-muted: #607080;
+  --sb-border: #E4E8EE;
+  --sb-danger: #C93A3A;
+  --sb-danger-soft: #FDECEC;
+  --sb-success: #14835F;
+  --sb-success-soft: #EAF8F3;
+  color-scheme: light;
   --acesso-respiro-x: clamp(24px, 4.5vw, 64px);
   --acesso-respiro-y: clamp(24px, 5vh, 48px);
   /* Paleta própria das telas de acesso; o resto do app segue os tokens --sb-* */
@@ -2907,6 +2952,20 @@ button:disabled {
 }
 
 .acesso-botao {
+  /* O botão também é .btn-primary: sem estas variáveis, pressionado e carregando ele caía no azul do Bootstrap */
+  --bs-btn-color: var(--acesso-texto-claro);
+  --bs-btn-hover-color: var(--acesso-texto-claro);
+  --bs-btn-active-color: var(--acesso-texto-claro);
+  --bs-btn-disabled-color: var(--acesso-texto-claro);
+  --bs-btn-bg: var(--acesso-botao);
+  --bs-btn-hover-bg: var(--acesso-botao-hover);
+  --bs-btn-active-bg: var(--acesso-botao-hover);
+  --bs-btn-disabled-bg: var(--acesso-botao);
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-border-color: transparent;
+  --bs-btn-disabled-opacity: 0.75;
   margin-top: 8px;
   padding: 0.8rem 1rem;
   border: none;
