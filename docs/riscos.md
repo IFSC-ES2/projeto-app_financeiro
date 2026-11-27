@@ -36,22 +36,23 @@ Baseado em probabilidade × impacto em níveis de prioridade
 
 | | Impacto Baixo | Impacto Médio | Impacto Alto |
 |-|-|-|-|
-| **Prob. Alta** | — | R02, R03 | R01 |
-| **Prob. Média** | — | R05 | R04 |
+| **Prob. Alta** | — | R02, R03, R08 | R01 |
+| **Prob. Média** | — | R05 | R04, R09 |
 | **Prob. Baixa** | — | — | R06, R07 |
 
 ### Tabela Resumo
 
-| ID | Risco | Probabilidade | Impacto | Prioridade |
-|-|-|-|-|-|
-| R01 | Parser de extratos com formatos incompatíveis | Alta | Alto | **Crítica** |
-| R02 | Atraso no setup do ambiente de desenvolvimento | Baixa | Médio | **Baixa** |
-| R03 | Sobrecarga dos membros com outras disciplinas | Alta | Médio | **Alta** |
-| R04 | Escopo crescendo além da capacidade da equipe | Média | Alto | **Alta** |
-| R05 | Falha na integração entre frontend e backend | Média | Médio | **Média** |
-| R06 | Saída ou inatividade de membro da equipe | Baixa | Alto | **Média** |
-| R07 | Vulnerabilidade de segurança nos dados financeiros | Baixa | Alto | **Média** |
-| R08 | Ausência de testes automatizados | Alta | Médio | **Alta** |
+| ID | Risco | Probabilidade | Impacto | Prioridade | Status no RC |
+|-|-|-|-|-|-|
+| R01 | Parser de extratos com formatos incompatíveis | Alta | Alto | **Crítica** | Concretizado parcialmente, mitigado parcialmente e ainda ativo |
+| R02 | Atraso no setup do ambiente de desenvolvimento | Baixa | Médio | **Baixa** | Mitigado |
+| R03 | Sobrecarga dos membros com outras disciplinas | Alta | Médio | **Alta** | Concretizado parcialmente e monitorado |
+| R04 | Escopo crescendo além da capacidade da equipe | Média | Alto | **Alta** | Ativo |
+| R05 | Falha na integração entre frontend e backend | Média | Médio | **Média** | Concretizado parcialmente e mitigado |
+| R06 | Saída ou inatividade de membro da equipe | Baixa | Alto | **Média** | Não concretizado |
+| R07 | Vulnerabilidade de segurança nos dados financeiros | Baixa | Alto | **Média** | Reduzido/monitorado |
+| R08 | Ausência de testes automatizados | Alta | Médio | **Alta** | Mitigado parcialmente |
+| R09 | Release Candidate não contemplar 100% do MVP planejado no inception | Média | Alto | **Alta** | Concretizado parcialmente |
 
 ---
 
@@ -68,9 +69,9 @@ Baseado em probabilidade × impacto em níveis de prioridade
 - **Probabilidade:** Alta
 - **Impacto:** Alto
 - **Prioridade:** Crítica
-- **Estratégia de mitigação:** Iniciar o desenvolvimento do parser na Sprint 2, antes das demais funcionalidades de produto. Priorizar os formatos do Nubank (CSV) e Itaú (XML) por serem os bancos mais usados pelas personas. Modelar o parser com camada de adaptadores para facilitar adição de novos formatos sem reescrever o núcleo.
+- **Estratégia de mitigação:** Desenvolver parsers antes das demais funcionalidades avançadas de produto. Priorizar formatos frequentes nas personas e modelar o parser com contrato comum para facilitar adição de novos formatos sem reescrever o núcleo.
 - **Plano de contingência:** Caso o parser não esteja estável até a Sprint 4, priorizar o cadastro manual de transações como fallback funcional para o MVP.
-- **Status na Sprint 2:** Plano de contingência parcialmente executado: cadastro manual de transações implementado na Sprint 2 como fallback funcional.
+- **Status no Release Candidate:** Risco concretizado parcialmente. O sistema possui parsers para CSV, TXT, XML e NF-e, mas a importação de extratos reais mostrou variações de layout que exigiram correções adicionais. O risco foi mitigado com fallback de cadastro manual, testes de contrato e melhorias no parser CSV, mas permanece ativo para bancos e layouts ainda não testados. A issue `#200` registra a limitação relacionada a extratos reais.
 - **Responsável:** Victor Blum (Arquiteto de Software)
 
 ---
@@ -78,15 +79,15 @@ Baseado em probabilidade × impacto em níveis de prioridade
 ### R02 — Atraso no setup do ambiente de desenvolvimento
 
 - **Natureza:** Tecnologia / Prazo
-- **Descrição:** O ambiente local integrado (Spring Boot + React + MySQL) ainda não está configurado. Nenhuma issue de desenvolvimento pode avançar sem ele.
-- **Causa:** A equipe está em fase de planejamento e documentação. A configuração do ambiente está prevista para a Sprint 1, mas é o gargalo imediato para o início do desenvolvimento real.
+- **Descrição:** O ambiente local integrado (Spring Boot + React + PostgreSQL) precisava estar funcional para desbloquear o desenvolvimento.
+- **Causa:** No início do projeto, a equipe ainda estava em fase de planejamento e documentação, e a configuração do ambiente era o gargalo imediato para o desenvolvimento real.
 - **Consequência:** Cada semana de atraso no ambiente comprime o tempo disponível para implementação, impactando diretamente a viabilidade do MVP até 1 de julho.
 - **Probabilidade:** Baixa
 - **Impacto:** Médio
 - **Prioridade:** Baixa
 - **Estratégia de mitigação:** Tratar as issues #16, #17, #18 e #21 como prioridade máxima da Sprint 1. João Pedro e Alexandre ficam responsáveis por garantir que o ambiente esteja funcional e documentado até o fim da primeira sprint. Utilizar Docker Compose para padronizar o ambiente entre todos os membros.
 - **Plano de contingência:** Caso surjam bloqueios técnicos, o Arquiteto assume a triagem e define um ambiente mínimo viável para desbloquear o restante da equipe.
-- **Status na Sprint 2:** Mitigado. Ambiente local funcional com Spring Boot + PostgreSQL. Desenvolvimento da Sprint 2 não apresentou bloqueios de infraestrutura.
+- **Status no Release Candidate:** Mitigado. Ambiente local funcional com Spring Boot, React, PostgreSQL, Docker Compose e Flyway. O deploy/execução reprodutível também foi documentado.
 - **Responsável:** João Pedro Callegaro (DevOps / Infra)
 
 ---
@@ -102,7 +103,7 @@ Baseado em probabilidade × impacto em níveis de prioridade
 - **Prioridade:** Alta
 - **Estratégia de mitigação:** Revisar a capacidade da equipe no início de cada sprint durante o planejamento. Priorizar sempre as issues de maior valor do MVP para garantir que, se o ritmo cair, o essencial já esteja feito. Manter o board atualizado para o Scrum Master identificar bloqueios cedo.
 - **Plano de contingência:** Reduzir o escopo das sprints afetadas, preservando as funcionalidades essenciais e adiando as de menor prioridade.
-- **Status na Sprint 2:** Risco concretizado parcialmente na Sprint 2: bugs pontuais identificados nas implementações sugerem redução na atenção aos detalhes, consistente com sobrecarga acadêmica.
+- **Status no Release Candidate:** Concretizado parcialmente e monitorado. Houve bugs e retrabalhos durante as sprints, mas a equipe concluiu as issues consideradas na Sprint 4 após a estabilização da `v0.4.1`.
 - **Responsável:** Victor Gabriel Lacerda (Scrum Master)
 
 ---
@@ -118,7 +119,7 @@ Baseado em probabilidade × impacto em níveis de prioridade
 - **Prioridade:** Alta
 - **Estratégia de mitigação:** Qualquer nova funcionalidade deve passar pelo crivo do Scrum Master e do Arquiteto antes de entrar no backlog ativo. Utilizar os critérios de escopo definidos no inception.md como filtro. Manter o foco nas 5 funcionalidades essenciais definidas no MVP.
 - **Plano de contingência:** Se o escopo já tiver crescido, realizar uma sessão de repriorização com a equipe para cortar funcionalidades de menor impacto antes que comprometam o prazo.
-- **Status na Sprint 2:** Sem ocorrências na Sprint 2. Monitoramento contínuo mantido.
+- **Status no Release Candidate:** Ativo. O crescimento e a complexidade do escopo contribuíram para que funcionalidades planejadas, como extrato futuro e dashboard visual completo, ficassem fora do RC.
 - **Responsável:** Victor Gabriel Lacerda (Scrum Master)
 
 ---
@@ -134,7 +135,7 @@ Baseado em probabilidade × impacto em níveis de prioridade
 - **Prioridade:** Média
 - **Estratégia de mitigação:** Definir o contrato da API (endpoints, formatos de requisição e resposta) antes de iniciar o desenvolvimento paralelo. A issue #22 (CORS) deve ser validada na Sprint 1. O Arquiteto revisa os contratos antes da implementação.
 - **Plano de contingência:** Reservar ao menos 1 sprint para testes de integração antes da entrega final do MVP.
-- **Status na Sprint 2:** Autenticação JWT implementada e validada no backend na Sprint 2. Integração com frontend ainda pendente.
+- **Status no Release Candidate:** Risco concretizado parcialmente durante a estabilização, com problemas de CORS em produção e envio incorreto de arquivos por configuração global do Axios. Foi mitigado com ajuste de CORS e remoção do `Content-Type: application/json` global, permitindo envio `multipart/form-data`.
 - **Responsável:** Alexandre Vilela (DevOps / Infra)
 
 ---
@@ -150,7 +151,7 @@ Baseado em probabilidade × impacto em níveis de prioridade
 - **Prioridade:** Média
 - **Estratégia de mitigação:** Documentar bem o código e as decisões técnicas para facilitar a transferência de conhecimento. Evitar que funcionalidades críticas dependam de um único membro. O Scrum Master monitora o engajamento da equipe a cada sprint.
 - **Plano de contingência:** Redistribuir as tarefas do membro inativo entre os demais, priorizando as funcionalidades essenciais do MVP e descartando as de menor prioridade.
-- **Status na Sprint 2:** Sem evidências de inatividade. Todos os membros participaram das entregas da sprint.
+- **Status no Release Candidate:** Não concretizado. A documentação de entregas indica participação da equipe e redistribuição de atividades ao longo das sprints.
 - **Responsável:** Victor Gabriel Lacerda (Scrum Master)
 
 ---
@@ -166,7 +167,7 @@ Baseado em probabilidade × impacto em níveis de prioridade
 - **Prioridade:** Média
 - **Estratégia de mitigação:** Incluir requisitos mínimos de segurança no DoD: senhas com BCrypt, JWT com expiração, HTTPS no ambiente de staging, variáveis sensíveis em .env. O Engenheiro de Qualidade valida esses requisitos nos PRs de autenticação.
 - **Plano de contingência:** Realizar revisão de segurança dedicada antes da entrega final, com foco nas rotas de autenticação e no armazenamento de dados do usuário.
-- **Status na Sprint 2:** Risco reduzido na Sprint 2: JWT com expiração, BCrypt, filtro de autenticação e validação de posse de recursos implementados.
+- **Status no Release Candidate:** Reduzido e monitorado. JWT com expiração, BCrypt, filtro de autenticação, validação de posse de recursos, CORS parametrizado e uso de variáveis de ambiente reduzem o risco, mas dados financeiros seguem exigindo atenção contínua.
 - **Responsável:** Lucas de Leon Rodrigues (Engenheiro de Qualidade)
 
 ---
@@ -181,19 +182,36 @@ Baseado em probabilidade × impacto em níveis de prioridade
 - **Impacto:** Médio
 - **Prioridade:** Alta
 - **Estratégia de mitigação:** Incluir testes unitários no TransacaoService e ContaService como critério de aceite nas próximas issues, começando pelos fluxos já implementados.
+- **Status no Release Candidate:** Risco mitigado parcialmente. O projeto passou a ter testes automatizados no backend e frontend, com medição de cobertura por JaCoCo e Vitest. Ainda permanece atenção para fluxos críticos como importação de extratos reais, dashboard e regras financeiras.
 - **Responsável:** Lucas de Leon Rodrigues (Engenheiro de Qualidade)
+
+---
+
+### R09 — Release Candidate não contemplar 100% do MVP planejado no inception
+
+- **Natureza:** Escopo / Produto
+- **Descrição:** O Release Candidate pode não entregar todas as funcionalidades essenciais planejadas no inception, reduzindo a aderência ao MVP originalmente previsto.
+- **Causa:** Complexidade técnica maior que a prevista em importação de extratos reais, dashboard, regras financeiras, parcelamentos e extrato futuro.
+- **Consequência:** O produto entrega parte relevante do fluxo de controle financeiro, mas não contempla integralmente diferenciais planejados, como extrato futuro e dashboard visual completo.
+- **Probabilidade:** Média
+- **Impacto:** Alto
+- **Prioridade:** Alta
+- **Estratégia de mitigação:** Registrar claramente no README e nas métricas quais funcionalidades foram concluídas, quais possuem ressalvas e quais ficaram fora do RC. Priorizar validação do fluxo de autenticação, contas, transações, importação e categorização.
+- **Plano de contingência:** Replanejar funcionalidades não concluídas para evolução posterior, mantendo o RC como versão funcional e transparente quanto às limitações.
+- **Status no Release Candidate:** Concretizado parcialmente. O extrato futuro não foi entregue, o dashboard visual completo não foi entregue e a importação de extratos reais ainda possui ressalvas.
+- **Responsável:** Victor Gabriel Lacerda (Scrum Master)
 
 ---
 
 ## 4. Riscos críticos no momento
 
-Os riscos **R01**, **R03** e **R08** são os mais críticos no estado atual do projeto (Pós-Sprint 2):
+Os riscos **R01**, **R04** e **R09** são os mais relevantes no estado do Release Candidate:
 
-- **R01** porque o parser de extratos é o diferencial central do produto e sua viabilidade técnica ainda é uma incógnita — nenhuma linha de código foi escrita para validá-la.
-- **R03** porque a sobrecarga da equipe já gerou bugs de desatenção.
-- **R08** porque a ausência de testes permite que bugs críticos passem despercebidos.
+- **R01** porque o parser de extratos é o diferencial central do produto e, apesar de implementado, ainda pode falhar com layouts bancários reais não testados.
+- **R04** porque o crescimento e a complexidade do escopo contribuíram para deixar funcionalidades planejadas fora do RC.
+- **R09** porque o RC não contempla 100% do MVP planejado no inception: extrato futuro, dashboard visual completo e suporte amplo a extratos reais permanecem como evolução.
 
-O risco **R02** foi mitigado e não é mais um bloqueio imediato.
+Os riscos **R02**, **R05** e **R08** foram mitigados ou mitigados parcialmente e não são bloqueios imediatos, embora sigam exigindo monitoramento em regressões.
 
 ## 5. Relação entre Riscos e Atributos de Qualidade
 
@@ -277,23 +295,37 @@ A falta de testes unitários permite que regressões passem despercebidas e dese
 
 ---
 
-## 6. Atualização de Riscos - Fim da Sprint 2
+### R09 — Release Candidate não contemplar 100% do MVP planejado no inception
+
+Atributos afetados: Adequação funcional, Confiabilidade percebida
+
+Quando funcionalidades essenciais planejadas ficam fora do RC ou entram com ressalva, o produto entrega valor parcial e pode não atender completamente à expectativa do usuário. Registrar as limitações, replanejar as pendências e manter testes de regressão nos fluxos entregues reduz o risco de interpretação incorreta do escopo e orienta a evolução posterior.
+
+---
+
+## 6. Atualização de Riscos - Release Candidate
 
 **a) Riscos que permanecem ativos:**
-* **R01 (Parser de extratos):** Continua sendo a maior ameaça ativa à funcionalidade core. O plano de contingência (cadastro manual) já começou a ser implementado.
-* **R04, R05, R06:** Permanecem ativos conforme detalhamento original.
+* **R01 (Parser de extratos):** Concretizado parcialmente e ainda ativo para layouts bancários reais não testados.
+* **R04 (Escopo crescendo além da capacidade):** Permanece ativo porque parte do MVP planejado não entrou no RC.
+* **R09 (RC não contemplar 100% do MVP planejado):** Concretizado parcialmente, com extrato futuro, dashboard visual completo e importação real ampla fora do escopo concluído.
 
 **b) Riscos que foram mitigados ou reduzidos:**
 * **R02 (Atraso no setup do ambiente):** Mitigado. Ambiente funcional com Spring Boot + PostgreSQL integrado.
-* **R07 (Segurança):** Reduzido drasticamente graças à implementação efetiva do JWT, BCrypt e filtro de autenticação.
+* **R05 (Integração frontend/backend):** Concretizado parcialmente durante a estabilização e mitigado com correções de CORS e envio `multipart/form-data`.
+* **R07 (Segurança):** Reduzido graças à implementação efetiva do JWT, BCrypt, filtro de autenticação e validação de posse de recursos.
+* **R08 (Ausência de testes automatizados):** Mitigado parcialmente com testes backend/frontend e medição de cobertura por JaCoCo e Vitest.
 
 **c) Riscos que se concretizaram:**
 * **R03 (Sobrecarga dos membros):** Concretizou-se parcialmente. Bugs encontrados nas implementações (`NPE`, importação errada, `@RequestBody` ausente) demonstram sinais claros de código escrito com pressa devido a sobrecarga acadêmica.
+* **R05 (Falha na integração frontend/backend):** Concretizou-se parcialmente com problemas de CORS em produção e configuração incorreta de `Content-Type` global no Axios.
+* **R09 (RC não contemplar 100% do MVP planejado):** Concretizou-se parcialmente porque o extrato futuro não foi entregue, o dashboard visual completo não foi entregue e a importação real ainda tem ressalvas.
 
 **d) Novos riscos identificados:**
-* **R08 (Ausência de testes automatizados):** O surgimento de bugs em tempo de execução via Postman acendeu o alerta para a total ausência de testes cobrindo os fluxos desenvolvidos.
+* **R09 (Release Candidate não contemplar 100% do MVP planejado no inception):** Identificado no fechamento do RC a partir das funcionalidades essenciais não concluídas ou concluídas com ressalva.
 
-**e) Ações de mitigação para a próxima sprint (Sprint 3):**
-* Incluir testes unitários no `TransacaoService` e `ContaService` como critério de aceite (DoD).
-* Reduzir a carga de *story points* da Sprint 3 para acomodar o repouso da equipe e a inserção da cultura de testes.
-* Validar a integração final do JWT validado no back-end com a aplicação Front-end.
+**e) Ações de mitigação para evolução posterior:**
+* Ampliar a base de arquivos reais de extrato para testar novos layouts bancários.
+* Completar o dashboard visual mensal no frontend.
+* Implementar extrato futuro, projeção de saldo, parcelas e vencimentos.
+* Manter testes de regressão para importação, resumo mensal, autenticação e regras financeiras.
