@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -212,6 +213,12 @@ public class ImportacaoService {
             List<Transacao> transacoes =
                     resultado.getTransacoes();
 
+            // Regras globais + aprendidas pelo usuário, carregadas uma vez para o arquivo inteiro
+            Function<String, Categoria> sugerirCategoria =
+                    sugestaoCategoriaService.sugestorPara(
+                            usuarioAutenticado.getId()
+                    );
+
             for (int i = 0; i < transacoes.size(); i++) {
                 Transacao transacao =
                         transacoes.get(i);
@@ -236,10 +243,9 @@ public class ImportacaoService {
                     }
 
                     Categoria categoria =
-                            sugestaoCategoriaService
-                                    .sugerirCategoria(
-                                            transacao.getDescricao()
-                                    );
+                            sugerirCategoria.apply(
+                                    transacao.getDescricao()
+                            );
 
                     if (categoria != null) {
                         transacao.setCategoria(
