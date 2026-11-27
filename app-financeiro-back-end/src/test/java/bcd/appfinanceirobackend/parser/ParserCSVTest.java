@@ -504,4 +504,77 @@ class ParserCSVTest {
             );
         }
     }
+
+    @Nested
+    @DisplayName("parsear() - extrato Santander")
+    class ExtratoSantander {
+
+        @Test
+        @DisplayName("ignora o preâmbulo e junta a descrição quebrada em duas linhas")
+        void importaLancamentosComDescricaoEmDuasLinhas() throws IOException {
+            ResultadoParser resultado = parser.parsear(fromFixture("extrato-santander.csv"), conta);
+
+            assertAll(
+                    () -> assertEquals(3, resultado.getTransacoes().size()),
+                    () -> assertEquals(3, resultado.getTotalLinhas()),
+                    () -> assertTrue(resultado.getErros().isEmpty()),
+                    () -> assertEquals(
+                            "Debito visa electron brasil - 30/10 padaria exemplo",
+                            resultado.getTransacoes().get(0).getDescricao()
+                    ),
+                    () -> assertEquals("Pix enviado - Maria exemplo da silva", resultado.getTransacoes().get(1).getDescricao())
+            );
+        }
+
+        @Test
+        @DisplayName("usa o sinal do valor para o tipo e entende milhar e vírgula decimal")
+        void resolveTipoEValorPeloSinal() throws IOException {
+            ResultadoParser resultado = parser.parsear(fromFixture("extrato-santander.csv"), conta);
+
+            assertAll(
+                    () -> assertEquals(new BigDecimal("12.50"), resultado.getTransacoes().get(0).getValor()),
+                    () -> assertEquals(TipoTransacao.DEBITO, resultado.getTransacoes().get(0).getTipo()),
+                    () -> assertEquals(new BigDecimal("1000.00"), resultado.getTransacoes().get(1).getValor()),
+                    () -> assertEquals(new BigDecimal("2500.00"), resultado.getTransacoes().get(2).getValor()),
+                    () -> assertEquals(TipoTransacao.CREDITO, resultado.getTransacoes().get(2).getTipo()),
+                    () -> assertEquals(java.time.LocalDate.of(2026, 10, 30), resultado.getTransacoes().get(0).getData())
+            );
+        }
+
+        @Test
+        @DisplayName("aponta a linha física de início do registro com erro")
+        void registroInvalido_apontaLinhaFisica() {
+            String conteudo = """
+                    Extrato de conta corrente
+                    Nome;Fulano
+                    Lançamentos:
+                    Data;Descrição;Valor;Saldo
+                    01/10/2026;"Pix enviado
+                    Fulano";-10,00;90,00
+                    data-ruim;"Pix enviado
+                    Ciclano";-5,00;85,00
+                    """;
+
+            ResultadoParser resultado = parser.parsear(fromString("santander.csv", conteudo), conta);
+
+            assertAll(
+                    () -> assertEquals(1, resultado.getTransacoes().size()),
+                    () -> assertEquals(2, resultado.getTotalLinhas()),
+                    () -> assertEquals(1, resultado.getErros().size()),
+                    () -> assertEquals(7, resultado.getErros().get(0).getNumeroRegistro()),
+                    () -> assertEquals("data", resultado.getErros().get(0).getCampo())
+            );
+        }
+
+        @Test
+        @DisplayName("preâmbulo sem a tabela de lançamentos gera erro estrutural")
+        void semCabecalho_lancaErroEstrutural() {
+            String conteudo = "Extrato de conta corrente\nNome;Fulano\n";
+
+            assertThrows(
+                    bcd.appfinanceirobackend.exception.ErroEstruturalImportacaoException.class,
+                    () -> parser.parsear(fromString("santander.csv", conteudo), conta)
+            );
+        }
+    }
 }

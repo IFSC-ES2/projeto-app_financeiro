@@ -1,0 +1,14 @@
+﻿Extrato de conta corrente
+Nome;Fulano de Tal
+Agência;0001
+Conta;01.234567.8
+Período do extrato;01/10/2026 a 31/10/2026
+
+Lançamentos:
+Data;Descrição;Valor;Saldo
+30/10/2026;"Debito visa electron brasil
+30/10 padaria exemplo";-12,50;1.487,50
+29/10/2026;"Pix enviado
+Maria exemplo da silva";-1.000,00;1.500,00
+28/10/2026;"Pix recebido
+Empresa ficticia ltda";2.500,00;2.500,00
