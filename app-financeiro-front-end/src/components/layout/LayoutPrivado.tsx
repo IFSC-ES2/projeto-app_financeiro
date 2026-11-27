@@ -207,6 +207,9 @@ const LayoutPrivado = ({
                   </p>
                   <div role="menu" aria-label="Menu do perfil">
                     <button type="button" role="menuitem" onClick={sairDaConta}>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M16 17l5-5-5-5M21 12H9" />
+                      </svg>
                       Sair
                     </button>
                   </div>
