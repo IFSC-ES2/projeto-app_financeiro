@@ -7,6 +7,7 @@
   --sb-bg: #F7F8FA;
   --sb-surface: #FFFFFF;
   --sb-surface-soft: #F1F5F7;
+  --sb-surface-muted: #FAFCFB;
   --sb-text: #0E1624;
   --sb-text-muted: #607080;
   --sb-border: #E4E8EE;
@@ -22,6 +23,41 @@
   --sb-shadow: 0 20px 45px rgba(14, 22, 36, 0.08);
   --sb-font-texto: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --sb-font-titulo: 'Bricolage Grotesque', var(--sb-font-texto);
+  color-scheme: light;
+}
+
+/* Tema escuro: superfícies em azul-noite (não preto puro), com elevação clareando a cada nível,
+   e cores de estado dessaturadas para manter contraste AA sobre o fundo escuro. */
+:root[data-tema='escuro'] {
+  --sb-primary: #3DBEA2;
+  --sb-primary-dark: #E7EDF3;
+  --sb-primary-light: #7AD3C0;
+  --sb-bg: #0B1118;
+  --sb-surface: #131C26;
+  --sb-surface-soft: #1B2632;
+  --sb-surface-muted: #16202B;
+  --sb-text: #E7EDF3;
+  --sb-text-muted: #9AA8B6;
+  --sb-border: #26323F;
+  --sb-danger: #F07A7A;
+  --sb-danger-soft: rgba(240, 122, 122, 0.14);
+  --sb-success: #4CCB9A;
+  --sb-success-soft: rgba(76, 203, 154, 0.14);
+  --sb-warning: #E8B84A;
+  --sb-warning-soft: rgba(232, 184, 74, 0.14);
+  --sb-info: #7AA7FF;
+  --sb-info-soft: rgba(122, 167, 255, 0.14);
+  --sb-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+  --sb-gradient: linear-gradient(135deg, #1F3A57, #2FA98F);
+  color-scheme: dark;
+}
+
+:root[data-tema='escuro'] .sb-button-primary {
+  color: #0B1118 !important;
+}
+
+:root[data-tema='escuro'] .account-icon {
+  background: linear-gradient(135deg, #1F3A57, var(--sb-primary));
 }
 
 * {
@@ -142,7 +178,7 @@ h3 {
   top: 0;
   height: 100vh;
   padding: 28px 20px;
-  background: rgba(255, 255, 255, 0.92);
+  background: color-mix(in srgb, var(--sb-surface) 92%, transparent);
   border-right: 1px solid var(--sb-border);
   backdrop-filter: blur(16px);
 }
@@ -384,7 +420,7 @@ h3 {
   position: absolute;
   right: 0;
   top: calc(100% + 10px);
-  min-width: 200px;
+  min-width: 220px;
   padding: 6px;
   border-radius: 14px;
   border: 1px solid var(--sb-border);
@@ -436,6 +472,48 @@ h3 {
 .profile-dropdown button:hover,
 .profile-dropdown button:focus-visible {
   background: var(--sb-danger-soft);
+}
+
+.profile-dropdown .profile-theme-toggle {
+  color: var(--sb-text);
+}
+
+.profile-dropdown .profile-theme-toggle:hover,
+.profile-dropdown .profile-theme-toggle:focus-visible {
+  background: var(--sb-surface-soft);
+}
+
+/* Interruptor visual; o estado real é o aria-checked do botão */
+.profile-switch {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  margin-left: auto;
+  flex: 0 0 34px;
+  border-radius: 999px;
+  background: var(--sb-border);
+  transition: background-color 160ms ease;
+}
+
+.profile-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(14, 22, 36, 0.25);
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.profile-theme-toggle[aria-checked='true'] .profile-switch {
+  background: var(--sb-primary);
+}
+
+.profile-theme-toggle[aria-checked='true'] .profile-switch::after {
+  transform: translateX(14px);
 }
 
 @keyframes profile-dropdown-entrada {
@@ -686,7 +764,7 @@ button:disabled {
   padding: 16px;
   border: 1px solid var(--sb-border);
   border-radius: 18px;
-  background: #FAFCFB;
+  background: var(--sb-surface-muted);
 }
 
 .payment-summary-item-header {
@@ -833,7 +911,7 @@ button:disabled {
   font-weight: 850;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  background: #FAFBFC;
+  background: var(--sb-surface-muted);
 }
 
 .transactions-table td {
@@ -841,7 +919,7 @@ button:disabled {
 }
 
 .transactions-table tbody tr:hover {
-  background: #FAFCFB;
+  background: var(--sb-surface-muted);
 }
 
 .text-end {
@@ -898,7 +976,7 @@ button:disabled {
   gap: 16px;
   padding: 16px 22px;
   border-top: 1px solid var(--sb-border);
-  background: #FAFBFC;
+  background: var(--sb-surface-muted);
 }
 
 .pagination-info {
@@ -1255,7 +1333,7 @@ button:disabled {
 
 .category-trigger:hover,
 .category-item.is-expanded .category-trigger {
-  background: #FAFCFB;
+  background: var(--sb-surface-muted);
 }
 
 .category-trigger:focus-visible {
@@ -1334,7 +1412,7 @@ button:disabled {
 
 .category-content {
   padding: 0 24px 20px 84px;
-  background: #FAFCFB;
+  background: var(--sb-surface-muted);
 }
 
 .category-transactions {
@@ -2006,7 +2084,7 @@ button:disabled {
 
 .category-expense-toggle:hover,
 .category-expense-toggle:focus-visible {
-  background: #FAFCFB;
+  background: var(--sb-surface-muted);
   outline: none;
 }
 
@@ -2060,7 +2138,7 @@ button:disabled {
 
 .category-expense-transactions {
   padding: 0 22px 20px 100px;
-  background: #FAFBFC;
+  background: var(--sb-surface-muted);
 }
 
 .category-expense-transactions .empty-state {
@@ -2146,7 +2224,7 @@ button:disabled {
   border: 1px solid var(--sb-border);
   border-radius: 16px;
   padding: 1rem;
-  background: #fff;
+  background: var(--sb-surface);
 }
 
 .account-card h3 {
@@ -2164,7 +2242,7 @@ button:disabled {
   text-align: center;
   border: 1px dashed var(--sb-border);
   border-radius: 16px;
-  background: #fff;
+  background: var(--sb-surface);
 }
 
 .empty-state h3 {
@@ -2185,7 +2263,7 @@ button:disabled {
   border: 1px solid var(--sb-border);
   border-radius: 16px;
   padding: 1rem;
-  background: #fff;
+  background: var(--sb-surface);
 }
 
 .account-card h3 {
@@ -2204,7 +2282,7 @@ button:disabled {
   text-align: center;
   border: 1px dashed var(--sb-border);
   border-radius: 16px;
-  background: #fff;
+  background: var(--sb-surface);
 }
 
 .empty-state h3 {
@@ -2232,7 +2310,7 @@ button:disabled {
   max-height: 90vh;
   overflow: auto;
   border-radius: 20px;
-  background: #fff;
+  background: var(--sb-surface);
   box-shadow: 0 24px 80px rgba(15, 23, 42, 0.22);
   padding: 1.75rem;
 }
@@ -2321,7 +2399,7 @@ button:disabled {
   border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 14px;
   padding: 0.95rem 1rem;
-  background: #fff;
+  background: var(--sb-surface);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
@@ -3292,5 +3370,155 @@ button:disabled {
   .dashboard-month-selector .categories-month-button,
   .categories-month-control .categories-month-button {
     flex: 1;
+  }
+}
+
+.import-panel {
+  max-width: 760px;
+}
+
+.import-panel-body {
+  padding: 28px;
+}
+
+@media (max-width: 720px) {
+  .import-panel-body {
+    padding: 18px;
+  }
+}
+
+/* Safari do iPhone: campos de data e mês ignoram width: 100% (estouram o card) e,
+   vazios, perdem a altura. appearance: none devolve o controle de tamanho ao CSS. */
+input[type='date'],
+input[type='month'] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 2.75rem;
+}
+
+.form-control[type='date']::-webkit-date-and-time-value,
+.form-control[type='month']::-webkit-date-and-time-value {
+  text-align: left;
+}
+
+/* Barra de abas e filtros recolhíveis: só no celular */
+.app-tabbar,
+.filters-toggle,
+.texto-toque {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .texto-ponteiro-fino {
+    display: none;
+  }
+
+  .texto-toque {
+    display: inline;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-sidebar,
+  .sidebar-backdrop,
+  .mobile-sidebar-button {
+    display: none !important;
+  }
+
+  .app-content {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+
+  .app-tabbar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--sb-border);
+    background: color-mix(in srgb, var(--sb-surface) 92%, transparent);
+    backdrop-filter: blur(16px) saturate(160%);
+  }
+
+  .app-tabbar-link {
+    min-height: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 12px;
+    color: var(--sb-text-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .app-tabbar-link span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-tabbar-link svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .app-tabbar-link.active {
+    color: var(--sb-primary);
+  }
+
+  .app-tabbar-link:active {
+    background: var(--sb-surface-soft);
+  }
+
+  .filters-toggle {
+    display: flex;
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  .filters-panel[data-aberto='false'] {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) and (prefers-reduced-transparency: reduce) {
+  .app-tabbar {
+    background: var(--sb-surface);
+    backdrop-filter: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-topbar {
+    align-items: center;
+  }
+
+  .app-topbar h1 {
+    font-size: 1.75rem;
+    text-wrap: balance;
+  }
+}
+
+/* Em 320px cada aba tem 64px: "Transações" só cabe com a fonte um pouco menor */
+@media (max-width: 359px) {
+  .app-tabbar {
+    padding-inline: 0;
+  }
+
+  .app-tabbar-link {
+    font-size: 0.64rem;
   }
 }
