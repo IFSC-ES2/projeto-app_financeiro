@@ -1497,7 +1497,7 @@ button:disabled {
 
 @media (max-width: 720px) {
   .app-content {
-    padding: 22px 14px 32px;
+    padding: 20px 18px 40px;
   }
 
   /* O perfil fica no canto superior direito, ao lado do título; a ação da página desce para a linha de baixo */
@@ -3206,5 +3206,91 @@ button:disabled {
   .form-control,
   .form-select {
     font-size: 16px !important;
+  }
+}
+
+/* Celular: respiro uniforme de 18px dentro dos cards e só o essencial de texto.
+   O título da página e o conteúdo já dizem onde a pessoa está; as frases de apoio
+   viram ruído numa tela de 375px e empurram o conteúdo para baixo. */
+@media (max-width: 720px) {
+  .app-eyebrow,
+  .app-title-group p,
+  .dashboard-payment-card-header p,
+  .payment-summary-header p,
+  .transactions-header p,
+  .accounts-header-title p {
+    display: none;
+  }
+
+  .app-topbar h1 {
+    margin: 0;
+  }
+
+  .app-title-group {
+    align-items: center;
+  }
+
+  .form-panel-header,
+  .payment-summary-header,
+  .transactions-header,
+  .dashboard-payment-card-header,
+  .categories-list-header,
+  .filters-panel,
+  .summary-card {
+    padding: 18px;
+  }
+
+  .dashboard-header-card,
+  .categories-summary-card {
+    padding: 20px 18px;
+  }
+
+  .empty-state {
+    padding: 28px 18px;
+  }
+
+  .app-content > .empty-state {
+    margin-bottom: 18px;
+  }
+
+  /* Com os campos em 16px, "novembro de 2026" + o ícone precisam de ~180px; menos folga lateral evita o corte */
+  .dashboard-month-selector,
+  .categories-month-control {
+    gap: 8px;
+  }
+
+  .dashboard-month-selector input,
+  .categories-month-control input {
+    padding: 0 10px;
+  }
+
+  /* O mês já aparece no título do card e dentro do campo; o rótulo fica só para leitores de tela */
+  .dashboard-month-selector label > span,
+  .categories-month-control label > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* Abaixo de 360px não cabe campo de mês + duas setas numa linha: o campo ocupa a linha e as setas descem */
+@media (max-width: 359px) {
+  .dashboard-month-selector,
+  .categories-month-control {
+    flex-wrap: wrap;
+  }
+
+  .dashboard-month-selector label,
+  .categories-month-control label {
+    order: -1;
+    flex: 1 0 100%;
+  }
+
+  .dashboard-month-selector .categories-month-button,
+  .categories-month-control .categories-month-button {
+    flex: 1;
   }
 }
