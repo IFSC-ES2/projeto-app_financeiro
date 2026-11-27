@@ -4,5 +4,6 @@ public enum FormatoArquivo {
     CSV,
     XML,
     TXT,
-    NFE
+    NFE,
+    OFX
 }

@@ -450,6 +450,10 @@ public class ImportacaoService {
             return FormatoArquivo.TXT;
         }
 
+        if (extensaoArquivo.endsWith(".ofx")) {
+            return FormatoArquivo.OFX;
+        }
+
         if (extensaoArquivo.endsWith(".xml")) {
             return verificaNFe
                     ? FormatoArquivo.NFE
