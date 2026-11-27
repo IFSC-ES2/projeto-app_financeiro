@@ -3,6 +3,7 @@ import {
   descartarSessaoPersistida,
   limparSessao,
   obterAccessToken,
+  obterPrimeiroNome,
   recuperarSessaoValida,
   salvarSessao,
 } from './authStorage';
@@ -93,5 +94,28 @@ describe('authStorage', () => {
     expect(sessionStorage.getItem('smartbudget.auth')).toBeNull();
     expect(localStorage.getItem('token')).toBeNull();
     expect(recuperarSessaoValida()).toBeNull();
+  });
+});
+
+describe('obterPrimeiroNome', () => {
+  const criarToken = (payload: object) => {
+    const bytes = new TextEncoder().encode(JSON.stringify(payload));
+    const base64Url = btoa(String.fromCharCode(...bytes))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    return `cabecalho.${base64Url}.assinatura`;
+  };
+
+  it('retorna o primeiro nome da claim nome, inclusive com acentos', () => {
+    expect(obterPrimeiroNome(criarToken({ nome: '  Joao Lacerda ' }))).toBe('Joao');
+    expect(obterPrimeiroNome(criarToken({ nome: 'Ângela Sá' }))).toBe('Ângela');
+  });
+
+  it('retorna null sem token, sem claim nome ou com token malformado', () => {
+    expect(obterPrimeiroNome(null)).toBeNull();
+    expect(obterPrimeiroNome(criarToken({ sub: 'a@b.com' }))).toBeNull();
+    expect(obterPrimeiroNome(criarToken({ nome: '   ' }))).toBeNull();
+    expect(obterPrimeiroNome('token-invalido')).toBeNull();
   });
 });
