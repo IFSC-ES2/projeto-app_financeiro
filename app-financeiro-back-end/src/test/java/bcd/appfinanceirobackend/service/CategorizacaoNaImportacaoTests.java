@@ -104,7 +104,8 @@ class CategorizacaoNaImportacaoTests {
         when(parser.aceita(any())).thenReturn(true);
         when(parser.parsear(any(), eq(conta))).thenReturn(umaTransacao("Mercado Central"));
         when(importacaoRepository.save(any(Importacao.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(sugestaoCategoriaService.sugerirCategoria("Mercado Central")).thenReturn(alimentacao);
+        when(sugestaoCategoriaService.sugestorPara(usuario.getId()))
+                .thenReturn(descricao -> "Mercado Central".equals(descricao) ? alimentacao : null);
 
         importacaoService.processar(csv("linha"), conta.getId(), usuario);
 
@@ -121,7 +122,7 @@ class CategorizacaoNaImportacaoTests {
         when(parser.aceita(any())).thenReturn(true);
         when(parser.parsear(any(), eq(conta))).thenReturn(umaTransacao("Transferência avulsa"));
         when(importacaoRepository.save(any(Importacao.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(sugestaoCategoriaService.sugerirCategoria("Transferência avulsa")).thenReturn(null);
+        when(sugestaoCategoriaService.sugestorPara(usuario.getId())).thenReturn(descricao -> null);
 
         importacaoService.processar(csv("linha"), conta.getId(), usuario);
 

@@ -36,6 +36,9 @@ import static org.mockito.Mockito.when;
 class CategorizarTransacaoTests {
 
     @Mock
+    private SugestaoCategoriaService sugestaoCategoriaService;
+
+    @Mock
     private TransacaoRepository transacaoRepository;
 
     @Mock
@@ -62,7 +65,8 @@ class CategorizarTransacaoTests {
                 transacaoRepository,
                 contaUsuarioService,
                 transacaoMapper,
-                categoriaService
+                categoriaService,
+                sugestaoCategoriaService
         );
 
         dono = usuario("dono@email.com");
@@ -109,6 +113,20 @@ class CategorizarTransacaoTests {
             assertThat(transacao.getCategoria()).isEqualTo(categoriaPadrao);
             assertThat(transacao.getCategorizada()).isTrue();
             assertThat(response.getCategoriaId()).isEqualTo(categoriaPadrao.getId());
+        }
+
+        @Test
+        @DisplayName("Ensina a categoria escolhida para as próximas importações do usuário")
+        void deveAprenderACategorizacaoManual() {
+            when(transacaoRepository.findById(transacao.getId())).thenReturn(Optional.of(transacao));
+            when(categoriaService.buscarCategoriaPermitida(categoriaPadrao.getId(), dono))
+                    .thenReturn(categoriaPadrao);
+            when(transacaoRepository.save(any(Transacao.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            transacaoService.categorizar(transacao.getId(), categoriaPadrao.getId(), dono);
+
+            verify(sugestaoCategoriaService)
+                    .aprenderCategorizacao(transacao.getDescricao(), categoriaPadrao, dono);
         }
 
         @Test
