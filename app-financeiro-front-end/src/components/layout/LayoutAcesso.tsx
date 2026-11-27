@@ -27,7 +27,9 @@ const LayoutAcesso: React.FC<PropsLayoutAcesso> = ({
   children,
 }) => {
   return (
-    <div className="acesso-page">
+    // As telas de acesso têm visual próprio e não acompanham o modo escuro:
+    // data-bs-theme="light" mantém os campos do Bootstrap claros mesmo com o app no escuro.
+    <div className="acesso-page" data-bs-theme="light">
       <aside className="acesso-vitrine" aria-hidden="true">
         <div className="acesso-marca">
           <img src="/smartbudget-logo.png" alt="" width="36" height="36" />
