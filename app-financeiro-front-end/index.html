@@ -2,7 +2,23 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F7F8FA" />
+    <script>
+      // Aplica o tema antes do primeiro paint para não piscar o tema errado.
+      // Sem escolha salva, segue o tema do sistema. A chave é a mesma de src/hooks/useTema.ts.
+      (function () {
+        var tema;
+        try { tema = localStorage.getItem('smartbudget.tema'); } catch (e) {}
+        if (tema !== 'claro' && tema !== 'escuro') {
+          tema = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+        }
+        var raiz = document.documentElement;
+        raiz.dataset.tema = tema;
+        raiz.dataset.bsTheme = tema === 'escuro' ? 'dark' : 'light';
+        if (tema === 'escuro') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0B1118');
+      })();
+    </script>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/smartbudget-logo.png" />
     <title>SmartBudget</title>
