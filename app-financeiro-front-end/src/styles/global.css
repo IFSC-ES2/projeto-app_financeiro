@@ -393,6 +393,15 @@ h3 {
   z-index: 30;
 }
 
+.profile-greeting {
+  margin: 0 0 6px;
+  padding: 6px 12px 10px;
+  border-bottom: 1px solid var(--sb-border);
+  color: var(--sb-text);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .profile-dropdown button {
   width: 100%;
   padding: 10px 12px;
