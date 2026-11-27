@@ -40,6 +40,9 @@ import static org.mockito.Mockito.when;
 class TransacaoEdicaoExclusaoServiceTest {
 
     @Mock
+    private SugestaoCategoriaService sugestaoCategoriaService;
+
+    @Mock
     private TransacaoRepository transacaoRepository;
 
     @Mock
@@ -67,7 +70,8 @@ class TransacaoEdicaoExclusaoServiceTest {
                 transacaoRepository,
                 contaUsuarioService,
                 transacaoMapper,
-                categoriaService
+                categoriaService,
+                sugestaoCategoriaService
         );
         usuarioDono = new Usuario();
         usuarioDono.setId(UUID.randomUUID());

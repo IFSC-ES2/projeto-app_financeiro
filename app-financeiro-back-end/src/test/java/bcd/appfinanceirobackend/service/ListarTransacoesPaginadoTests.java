@@ -42,6 +42,9 @@ import static org.mockito.Mockito.when;
 class ListarTransacoesPaginadoTests {
 
     @Mock
+    private SugestaoCategoriaService sugestaoCategoriaService;
+
+    @Mock
     private TransacaoRepository transacaoRepository;
 
     @Mock
@@ -65,7 +68,8 @@ class ListarTransacoesPaginadoTests {
                 transacaoRepository,
                 contaUsuarioService,
                 transacaoMapper,
-                categoriaService
+                categoriaService,
+                sugestaoCategoriaService
         );
         usuario = new Usuario();
         usuario.setId(UUID.randomUUID());

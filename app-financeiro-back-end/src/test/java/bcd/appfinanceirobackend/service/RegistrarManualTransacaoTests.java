@@ -37,6 +37,9 @@ import static org.mockito.Mockito.*;
 class RegistrarManualTransacaoTests {
 
     @Mock
+    private SugestaoCategoriaService sugestaoCategoriaService;
+
+    @Mock
     private TransacaoRepository transacaoRepository;
 
     @Mock
@@ -62,7 +65,8 @@ class RegistrarManualTransacaoTests {
                 transacaoRepository,
                 contaUsuarioService,
                 transacaoMapper,
-                categoriaService
+                categoriaService,
+                sugestaoCategoriaService
         );
         usuarioDono = new Usuario();
         usuarioDono.setId(UUID.randomUUID());

@@ -43,10 +43,14 @@ class CategoriaSeedIntegrationTests {
             .withPassword("1234");
 
     private static final List<String> CATEGORIAS_PADRAO = List.of(
-            "Alimentação", "Transporte", "Saúde", "Lazer", "Habitação", "Serviços", "Manutenção");
+            "Alimentação", "Transporte", "Saúde", "Lazer", "Habitação", "Serviços", "Manutenção",
+            "Receitas", "Assinaturas");
 
     @Autowired
     private CategoriaService categoriaService;
+
+    @Autowired
+    private SugestaoCategoriaService sugestaoCategoriaService;
 
     @Autowired
     private CategoriaRepository categoriaRepository;
@@ -58,7 +62,7 @@ class CategoriaSeedIntegrationTests {
     private MockMvc mockMvc;
 
     @Test
-    @DisplayName("As 7 categorias padrão estão disponíveis após subir o projeto")
+    @DisplayName("As 9 categorias padrão estão disponíveis após subir o projeto")
     void categoriasPadraoDisponiveisAposSubir() {
         for (String nome : CATEGORIAS_PADRAO) {
             assertThat(categoriaRepository.findByNomeAndPadraoTrue(nome))
@@ -67,6 +71,21 @@ class CategoriaSeedIntegrationTests {
                     .get()
                     .satisfies(categoria -> assertThat(categoria.isPadrao()).isTrue());
         }
+    }
+
+    @Test
+    @DisplayName("Regras globais da migration categorizam descrições reais de extrato")
+    void regrasGlobaisCategorizamDescricoesDeExtrato() {
+        java.util.function.Function<String, bcd.appfinanceirobackend.model.Categoria> sugerir =
+                sugestaoCategoriaService.sugestorPara(UUID.randomUUID());
+
+        assertThat(sugerir.apply("Debito visa electron brasil - 26/11 + natural").getNome()).isEqualTo("Alimentação");
+        assertThat(sugerir.apply("Debito visa electron brasil - 26/11 dl*99 99").getNome()).isEqualTo("Transporte");
+        assertThat(sugerir.apply("Debito visa electron brasil - 24/11 ifd*ifood club").getNome()).isEqualTo("Assinaturas");
+        assertThat(sugerir.apply("Debito visa electron brasil - 18/11 raia440").getNome()).isEqualTo("Saúde");
+        assertThat(sugerir.apply("Debito visa electron brasil - 10/11 espaco recanto").getNome()).isEqualTo("Lazer");
+        assertThat(sugerir.apply("Liquido de vencimento").getNome()).isEqualTo("Receitas");
+        assertThat(sugerir.apply("Pix enviado - Fulano de Tal")).isNull();
     }
 
     @Test
@@ -79,7 +98,7 @@ class CategoriaSeedIntegrationTests {
         List<CategoriaTransacaoDTO> categorias = categoriaService.listarParaUsuario(usuario);
 
         assertThat(categorias).extracting(CategoriaTransacaoDTO::getNome).containsAll(CATEGORIAS_PADRAO);
-        assertThat(categorias).filteredOn(CategoriaTransacaoDTO::isPadrao).hasSize(7);
+        assertThat(categorias).filteredOn(CategoriaTransacaoDTO::isPadrao).hasSize(CATEGORIAS_PADRAO.size());
     }
 
     @Test

@@ -72,6 +72,9 @@ class ImportacaoServiceTest {
                 sugestaoCategoriaService
         );
 
+        // Sem regras de categorização: nenhuma sugestão
+        lenient().when(sugestaoCategoriaService.sugestorPara(any())).thenReturn(descricao -> null);
+
         usuarioDono = new Usuario();
         usuarioDono.setId(
                 UUID.randomUUID()
