@@ -24,12 +24,19 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
 public class ParserCSV implements ParserExtrato {
 
     private static final String BOM = "\uFEFF";
+
+    private static final String PREAMBULO_SANTANDER = "extrato de conta corrente";
+
+    private static final String CABECALHO_SANTANDER = "data;descricao;valor;saldo";
+
+    private static final int TAMANHO_MAXIMO_DESCRICAO = 255;
 
     private static final List<DateTimeFormatter> FORMATADORES = List.of(
             DateTimeFormatter.ofPattern("yyyy-MM-dd"),
@@ -61,6 +68,13 @@ public class ParserCSV implements ParserExtrato {
             String conteudo = removerBom(
                     lerConteudoDoArquivo(arquivo)
             );
+
+            if (ehExtratoSantander(conteudo)) {
+                return processarCsvSantander(
+                        conteudo,
+                        conta
+                );
+            }
 
             List<LinhaFisica> linhas = quebrarEmLinhasUteis(conteudo);
 
@@ -455,6 +469,189 @@ public class ParserCSV implements ParserExtrato {
         resultado.setTotalLinhas(totalLinhas);
 
         return resultado;
+    }
+
+    /**
+     * Extrato de conta corrente do Santander: começa com um preâmbulo
+     * ("Extrato de conta corrente", nome, agência, conta, período), seguido de
+     * "Lançamentos:" e da tabela Data;Descrição;Valor;Saldo.
+     */
+    private boolean ehExtratoSantander(
+            String conteudo
+    ) {
+        return normalizarTexto(primeiraLinhaNaoVazia(conteudo))
+                .equals(PREAMBULO_SANTANDER);
+    }
+
+    private String primeiraLinhaNaoVazia(
+            String conteudo
+    ) {
+        for (String linha : conteudo.split("\\R")) {
+            if (!linha.isBlank()) {
+                return linha;
+            }
+        }
+
+        return "";
+    }
+
+    /**
+     * A descrição do Santander vem entre aspas e quebrada em duas linhas
+     * (ex.: "Pix enviado" + nome do recebedor). Por isso a tabela é lida de uma
+     * vez pelo OpenCSV, que entende campos com várias linhas, e não linha a linha
+     * como nos outros layouts. A coluna Saldo é ignorada.
+     */
+    private ResultadoParser processarCsvSantander(
+            String conteudo,
+            Conta conta
+    ) throws Exception {
+        String[] linhas = conteudo
+                .replace("\r\n", "\n")
+                .replace("\r", "\n")
+                .split("\n", -1);
+
+        int indiceCabecalho = -1;
+
+        for (int i = 0; i < linhas.length; i++) {
+            if (normalizarTexto(linhas[i]).equals(CABECALHO_SANTANDER)) {
+                indiceCabecalho = i;
+                break;
+            }
+        }
+
+        if (indiceCabecalho < 0) {
+            throw new ErroEstruturalImportacaoException(
+                    1,
+                    "cabecalho",
+                    "Extrato Santander sem a linha de cabeçalho Data;Descrição;Valor;Saldo."
+            );
+        }
+
+        String tabela = String.join(
+                "\n",
+                Arrays.copyOfRange(
+                        linhas,
+                        indiceCabecalho + 1,
+                        linhas.length
+                )
+        );
+
+        ResultadoParser resultado = new ResultadoParser();
+        int totalLinhas = 0;
+
+        try (
+                CSVReader reader = new CSVReaderBuilder(
+                        new StringReader(tabela)
+                )
+                        .withCSVParser(
+                                new CSVParserBuilder()
+                                        .withSeparator(';')
+                                        .build()
+                        )
+                        .build()
+        ) {
+            long linhasLidasAntes = 0;
+            String[] linha;
+
+            while ((linha = reader.readNext()) != null) {
+                // Linha física (no arquivo original) onde o registro começa, para as mensagens de erro
+                int numeroRegistro = indiceCabecalho + 2 + (int) linhasLidasAntes;
+                linhasLidasAntes = reader.getLinesRead();
+
+                if (linha.length == 1 && linha[0].isBlank()) {
+                    continue;
+                }
+
+                totalLinhas++;
+
+                if (linha.length < 3) {
+                    resultado.adicionarErro(
+                            numeroRegistro,
+                            "estrutura",
+                            "Registro deve possuir data, descrição e valor."
+                    );
+
+                    continue;
+                }
+
+                LocalDate data = parsearData(linha[0]);
+
+                if (data == null) {
+                    resultado.adicionarErro(
+                            numeroRegistro,
+                            "data",
+                            "Data inválida. Verifique o formato informado."
+                    );
+
+                    continue;
+                }
+
+                BigDecimal valor = parsearValor(linha[2]);
+
+                if (valor == null) {
+                    resultado.adicionarErro(
+                            numeroRegistro,
+                            "valor",
+                            "Valor monetário inválido."
+                    );
+
+                    continue;
+                }
+
+                if (valor.compareTo(BigDecimal.ZERO) == 0) {
+                    resultado.adicionarErro(
+                            numeroRegistro,
+                            "valor",
+                            "O valor da transação não pode ser zero."
+                    );
+
+                    continue;
+                }
+
+                Transacao transacao = criarTransacao(
+                        conta,
+                        data,
+                        montarDescricaoSantander(linha[1]),
+                        valor.abs(),
+                        resolverTipoNubankConta(valor)
+                );
+
+                resultado.adicionarTransacao(
+                        transacao,
+                        numeroRegistro
+                );
+            }
+        }
+
+        resultado.setTotalLinhas(totalLinhas);
+
+        return resultado;
+    }
+
+    /**
+     * Junta as linhas da descrição do Santander em uma só, separadas por " - ":
+     * "Pix enviado" + "Fulano" vira "Pix enviado - Fulano".
+     */
+    private String montarDescricaoSantander(
+            String descricao
+    ) {
+        String unica = String.join(
+                        " - ",
+                        Arrays.stream(
+                                        limparDescricao(descricao).split("\\R")
+                                )
+                                .map(parte -> parte.trim().replaceAll("\\s+", " "))
+                                .filter(parte -> !parte.isBlank())
+                                .toList()
+                );
+
+        if (unica.isBlank()) {
+            return "Transação importada";
+        }
+
+        return unica.length() > TAMANHO_MAXIMO_DESCRICAO
+                ? unica.substring(0, TAMANHO_MAXIMO_DESCRICAO)
+                : unica;
     }
 
     private ResultadoParser processarCsvLegado(
