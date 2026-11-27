@@ -302,11 +302,7 @@ const NovaTransacao = () => {
             Dados da transação
           </h2>
 
-          <p>
-            Campos marcados com asterisco são
-            obrigatórios pelo contrato atual do
-            backend.
-          </p>
+          <p>Campos com * são obrigatórios.</p>
         </div>
 
         {carregandoDados ? (

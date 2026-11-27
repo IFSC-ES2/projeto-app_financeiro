@@ -73,3 +73,17 @@ export const recuperarSessaoValida = (): SessaoAutenticacao | null => {
 };
 
 export const obterAccessToken = () => recuperarSessaoValida()?.accessToken ?? null;
+
+// O backend assina o nome do usuario na claim "nome" do JWT; ler daqui evita uma chamada extra.
+export const obterPrimeiroNome = (token: string | null): string | null => {
+  if (!token) return null;
+
+  try {
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const bytes = Uint8Array.from(atob(base64), (caractere) => caractere.charCodeAt(0));
+    const { nome } = JSON.parse(new TextDecoder().decode(bytes)) as { nome?: unknown };
+    return typeof nome === 'string' ? nome.trim().split(/\s+/)[0] || null : null;
+  } catch {
+    return null;
+  }
+};

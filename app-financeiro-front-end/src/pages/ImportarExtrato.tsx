@@ -723,18 +723,10 @@ const ImportarExtrato:
                     {semContas && (
                       <p className="text-muted small mt-2 mb-0">
                         Você precisa{' '}
-
-                        <Link
-                          to="/contas"
-                          className="sb-button sb-button-primary"
-                        >
-                          Cadastrar
-                          conta
+                        <Link to="/contas" className="fw-semibold">
+                          cadastrar uma conta
                         </Link>{' '}
-
-                        antes de
-                        importar
-                        transações.
+                        antes de importar transações.
                       </p>
                     )}
                   </div>
