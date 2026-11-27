@@ -30,14 +30,17 @@ public class TransacaoService {
     private final ContaUsuarioService contaUsuarioService;
     private final TransacaoMapper transacaoMapper;
     private final CategoriaService categoriaService;
+    private final SugestaoCategoriaService sugestaoCategoriaService;
 
     public TransacaoService(TransacaoRepository transacaoRepository,
                             ContaUsuarioService contaUsuarioService,
-                            TransacaoMapper transacaoMapper, CategoriaService categoriaService) {
+                            TransacaoMapper transacaoMapper, CategoriaService categoriaService,
+                            SugestaoCategoriaService sugestaoCategoriaService) {
         this.transacaoRepository = transacaoRepository;
         this.contaUsuarioService = contaUsuarioService;
         this.transacaoMapper = transacaoMapper;
         this.categoriaService = categoriaService;
+        this.sugestaoCategoriaService = sugestaoCategoriaService;
     }
 
     public TransacaoResponseDTO registrarManual (TransacaoRequestDTO dto, Usuario usuarioAutenticado) {
@@ -60,6 +63,7 @@ public class TransacaoService {
 
             transacao.setCategoria(categoria);
             transacao.setCategorizada(true);
+            sugestaoCategoriaService.aprenderCategorizacao(transacao.getDescricao(), categoria, usuarioAutenticado);
         } else {
             transacao.setCategorizada(false);
         }
@@ -87,6 +91,7 @@ public class TransacaoService {
 
             transacao.setCategoria(categoria);
             transacao.setCategorizada(true);
+            sugestaoCategoriaService.aprenderCategorizacao(transacao.getDescricao(), categoria, usuarioAutenticado);
         } else {
             transacao.setCategoria(null);
             transacao.setCategorizada(false);
@@ -136,6 +141,8 @@ public class TransacaoService {
         transacao.setCategoria(categoria);
         transacao.setCategorizada(true);
         transacaoRepository.save(transacao);
+        // A escolha manual vira regra do usuário: a próxima importação do mesmo estabelecimento já vem categorizada
+        sugestaoCategoriaService.aprenderCategorizacao(transacao.getDescricao(), categoria, usuarioAutenticado);
         return transacaoMapper.toResponse(transacao);
     }
 
