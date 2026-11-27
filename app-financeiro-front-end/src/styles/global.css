@@ -3427,62 +3427,6 @@ input[type='month'] {
     display: none !important;
   }
 
-  .app-content {
-    padding-bottom: calc(96px + env(safe-area-inset-bottom));
-  }
-
-  .app-tabbar {
-    position: fixed;
-    inset: auto 0 0;
-    z-index: 30;
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
-    border-top: 1px solid var(--sb-border);
-    background: color-mix(in srgb, var(--sb-surface) 92%, transparent);
-    backdrop-filter: blur(16px) saturate(160%);
-  }
-
-  .app-tabbar-link {
-    min-height: 52px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    border-radius: 12px;
-    color: var(--sb-text-muted);
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-decoration: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .app-tabbar-link span {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .app-tabbar-link svg {
-    width: 22px;
-    height: 22px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .app-tabbar-link.active {
-    color: var(--sb-primary);
-  }
-
-  .app-tabbar-link:active {
-    background: var(--sb-surface-soft);
-  }
-
   .filters-toggle {
     display: flex;
     width: 100%;
@@ -3494,12 +3438,6 @@ input[type='month'] {
   }
 }
 
-@media (max-width: 720px) and (prefers-reduced-transparency: reduce) {
-  .app-tabbar {
-    background: var(--sb-surface);
-    backdrop-filter: none;
-  }
-}
 
 @media (max-width: 720px) {
   .app-topbar {
@@ -3512,13 +3450,129 @@ input[type='month'] {
   }
 }
 
-/* Em 320px cada aba tem 64px: "Transações" só cabe com a fonte um pouco menor */
-@media (max-width: 359px) {
+/* Barra de abas flutuante do celular, inspirada na BarraAbas do app mobile da equipe:
+   pílula escura sobre o app claro (e clara sobre o app escuro); as abas inativas mostram só
+   o ícone e a ativa abre uma pílula em verde-água com o nome. */
+:root {
+  --sb-tabbar-fundo: #0E1624;
+  --sb-tabbar-icone: #C9D3DD;
+  --sb-tabbar-ativa: #6CC5B2;
+  --sb-tabbar-sobre-ativa: #0E1624;
+  --sb-tabbar-altura: 64px;
+  --sb-tabbar-margem: 16px;
+}
+
+:root[data-tema='escuro'] {
+  --sb-tabbar-fundo: #E7EDF3;
+  --sb-tabbar-icone: #3A4856;
+  --sb-tabbar-ativa: #2FA98F;
+  --sb-tabbar-sobre-ativa: #0B1118;
+}
+
+@media (max-width: 720px) {
+  .app-content {
+    padding-bottom: calc(var(--sb-tabbar-altura) + var(--sb-tabbar-margem) * 2 + env(safe-area-inset-bottom));
+  }
+
   .app-tabbar {
-    padding-inline: 0;
+    position: fixed;
+    left: 50%;
+    bottom: calc(var(--sb-tabbar-margem) + env(safe-area-inset-bottom));
+    z-index: 30;
+    width: min(400px, calc(100vw - 24px));
+    height: var(--sb-tabbar-altura);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: var(--sb-tabbar-fundo);
+    box-shadow:
+      0 1px 2px rgba(14, 22, 36, 0.12),
+      0 16px 36px -10px rgba(14, 22, 36, 0.45);
+    transform: translateX(-50%);
   }
 
   .app-tabbar-link {
-    font-size: 0.64rem;
+    height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 11px;
+    border-radius: 999px;
+    color: var(--sb-tabbar-icone);
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color 220ms cubic-bezier(0.23, 1, 0.32, 1),
+      color 220ms cubic-bezier(0.23, 1, 0.32, 1),
+      transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .app-tabbar-link svg {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* O nome fica recolhido nas abas inativas; a largura da pílula cresce junto com ele,
+     o que faz as vizinhas abrirem espaço, como na barra do app mobile */
+  .app-tabbar-link span {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    white-space: nowrap;
+    font-size: 0.86rem;
+    font-weight: 750;
+    transition:
+      max-width 220ms cubic-bezier(0.23, 1, 0.32, 1),
+      margin 220ms cubic-bezier(0.23, 1, 0.32, 1),
+      opacity 160ms ease;
+  }
+
+  .app-tabbar-link.active {
+    background: var(--sb-tabbar-ativa);
+    color: var(--sb-tabbar-sobre-ativa);
+  }
+
+  .app-tabbar-link.active span {
+    max-width: 120px;
+    margin-left: 8px;
+    opacity: 1;
+  }
+
+  .app-tabbar-link:active {
+    transform: scale(0.95);
+  }
+
+  .app-tabbar-link:focus-visible {
+    outline: 2px solid var(--sb-tabbar-ativa);
+    outline-offset: 2px;
+  }
+}
+
+/* Em telas muito estreitas o nome da aba ativa não cabe ao lado dos outros quatro ícones */
+@media (max-width: 359px) {
+  .app-tabbar {
+    padding: 0 6px;
+  }
+
+  .app-tabbar-link.active span {
+    max-width: 0;
+    margin-left: 0;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-tabbar-link,
+  .app-tabbar-link span {
+    transition: none;
   }
 }
