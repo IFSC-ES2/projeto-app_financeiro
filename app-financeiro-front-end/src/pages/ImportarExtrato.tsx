@@ -8,6 +8,7 @@ import {
   Link,
   Navigate,
 } from 'react-router-dom';
+import LayoutPrivado from '../components/layout/LayoutPrivado';
 import BotaoCarregando from '../components/ui/BotaoCarregando';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
 import { useAutenticacao } from '../contexts/ContextoAutenticacao';
@@ -559,76 +560,28 @@ const ImportarExtrato:
       finalizada;
 
     return (
-      <main
-        className="min-vh-100 py-4"
-        style={{
-          background:
-            'var(--sb-bg)',
-        }}
-      >
-        <div
-          className="container"
-          style={{
-            maxWidth: 920,
-          }}
-        >
-          <div className="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4">
-            <div>
-              <span
-                className="badge rounded-pill mb-2"
-                style={{
-                  background:
-                    'var(--sb-primary)',
-                }}
-              >
-                SmartBudget
-              </span>
-
-              <h1
-                className="fw-bold mb-1"
-                style={{
-                  color:
-                    'var(--sb-text)',
-                }}
-              >
-                Importar
-                extrato ou NF-e
-              </h1>
-
-              <p className="text-muted mb-0">
-                Envie um
-                arquivo CSV,
-                XML ou TXT e
-                nós cadastramos
-                suas transações
-                automaticamente.
-              </p>
-            </div>
-
-            <Link
-              to="/transacoes"
-              className="btn btn-outline-secondary align-self-start align-self-md-center"
-            >
-              Voltar para
-              transações
-            </Link>
-          </div>
-
-          <MensagemAlerta
-            mensagem={
-              erroGeral ||
-              erroContas
-            }
-            tipo="danger"
-          />
-
-          <div
-            className="card border-0 shadow-sm"
-            style={{
-              borderRadius: 18,
-            }}
+      <LayoutPrivado
+        titulo="Importar extrato ou NF-e"
+        subtitulo="Envie um arquivo CSV, XML ou TXT e nós cadastramos suas transações automaticamente."
+        acaoPrimaria={
+          <Link
+            to="/transacoes"
+            className="sb-button sb-button-secondary sb-button-sm"
           >
-            <div className="card-body p-4 p-md-5">
+            Voltar para transações
+          </Link>
+        }
+      >
+        <MensagemAlerta
+          mensagem={
+            erroGeral ||
+            erroContas
+          }
+          tipo="danger"
+        />
+
+        <section className="form-panel import-panel">
+            <div className="import-panel-body">
               {!finalizada && (
                 <form
                   onSubmit={
@@ -840,7 +793,16 @@ const ImportarExtrato:
                         >
                           {arrastando
                             ? 'Solte o arquivo aqui'
-                            : 'Arraste um arquivo ou clique para selecionar'}
+                            : (
+                              <>
+                                <span className="texto-ponteiro-fino">
+                                  Arraste um arquivo ou clique para selecionar
+                                </span>
+                                <span className="texto-toque">
+                                  Toque para escolher um arquivo
+                                </span>
+                              </>
+                            )}
                         </p>
 
                         <p className="text-muted small mb-0">
@@ -1040,9 +1002,8 @@ const ImportarExtrato:
                   />
                 )}
             </div>
-          </div>
-        </div>
-      </main>
+        </section>
+      </LayoutPrivado>
     );
   };
 

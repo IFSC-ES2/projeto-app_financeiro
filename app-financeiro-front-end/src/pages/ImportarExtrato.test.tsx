@@ -113,6 +113,10 @@ vi.mock(
   }),
 );
 
+vi.mock('../hooks/useAutenticacao', () => ({
+  useAutenticacao: () => ({ sair: vi.fn(), token: null }),
+}));
+
 vi.mock(
   '../services/contaService',
   () => ({
