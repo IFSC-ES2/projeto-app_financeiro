@@ -238,10 +238,16 @@ const LayoutPrivado = ({
         {children}
       </section>
 
-      {/* No celular a navegação vira barra de abas inferior, ao alcance do polegar, no lugar do menu escondido */}
+      {/* No celular a navegação vira uma barra de abas flutuante, ao alcance do polegar.
+          O aria-label mantém o nome de cada aba para leitores de tela, já que só a ativa mostra o texto. */}
       <nav className="app-tabbar" aria-label="Navegação por abas">
         {itensNavegacao.map((item) => (
-          <NavLink key={item.para} to={item.para} className="app-tabbar-link">
+          <NavLink
+            key={item.para}
+            to={item.para}
+            className="app-tabbar-link"
+            aria-label={item.rotulo}
+          >
             <IconeNavegacao nome={item.icone} />
             <span>{item.rotuloCurto}</span>
           </NavLink>
