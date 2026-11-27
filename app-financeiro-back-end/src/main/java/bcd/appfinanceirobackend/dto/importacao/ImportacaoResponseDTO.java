@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -14,6 +16,8 @@ public class ImportacaoResponseDTO {
     private StatusImportacao status;
     private int sucessos;
     private int falhas;
+    private int ignoradasPorDuplicidade;
     private LocalDateTime importadoEm;
     private String mensagemErro;
+    private List<ErroImportacaoDTO> erros = new ArrayList<>();
 }

@@ -8,8 +8,11 @@ const { mockRegistrarConta, mockNavigate } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
 }));
 
-vi.mock('../services/api', () => ({
+vi.mock('../services/contaService', () => ({
   registrarConta: mockRegistrarConta,
+}));
+
+vi.mock('../services/apiError', () => ({
   obterMensagemErroApi: vi.fn((_err: unknown, fallback: string) => fallback),
 }));
 
@@ -60,6 +63,42 @@ describe.sequential('Tela de Primeira Conta (onboarding)', () => {
 
     expect(screen.getByLabelText(/Banco/i)).toHaveValue('Nubank');
     expect(screen.getByLabelText(/Tipo de conta/i)).toHaveValue('CORRENTE');
+  });
+
+  it('deve exibir um único h1 e não oferecer o link de entrar ou cadastrar', () => {
+    renderizarComponente();
+
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Cadastre sua primeira conta');
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('deve focar o primeiro campo inválido ao submeter com erros', async () => {
+    renderizarComponente();
+
+    fireEvent.change(screen.getByLabelText(/Banco/i), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: /Finalizar cadastro/i }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Nome da conta/i)).toHaveFocus();
+    });
+    expect(screen.getByLabelText(/Nome da conta/i)).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText(/Banco/i)).toHaveAttribute('aria-describedby', 'banco-erro');
+  });
+
+  it('deve ligar o erro do tipo de conta ao select por aria-describedby', async () => {
+    renderizarComponente();
+    preencherCamposMinimos();
+
+    fireEvent.change(screen.getByLabelText(/Tipo de conta/i), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: /Finalizar cadastro/i }));
+
+    const select = screen.getByLabelText(/Tipo de conta/i);
+    await waitFor(() => {
+      expect(select).toHaveFocus();
+    });
+    expect(select).toHaveAttribute('aria-invalid', 'true');
+    expect(select).toHaveAccessibleDescription('Tipo de conta é obrigatório.');
   });
 
   it('deve exibir erro de validação ao tentar submeter com o nome em branco', async () => {
@@ -149,6 +188,38 @@ describe.sequential('Tela de Primeira Conta (onboarding)', () => {
 
     await aguardarRedirecionamentoPendente();
     mockNavigate.mockClear();
+  });
+
+  it('não deve enviar de novo enquanto aguarda o redirecionamento após o sucesso', async () => {
+    mockRegistrarConta.mockResolvedValueOnce({ contaId: 'conta-1' });
+
+    renderizarComponente();
+    preencherCamposMinimos();
+
+    const botao = screen.getByRole('button', { name: /Finalizar cadastro/i });
+    fireEvent.click(botao);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Conta bancária cadastrada com sucesso. Redirecionando para o Dashboard/i),
+      ).toBeInTheDocument();
+    });
+
+    expect(botao).toBeDisabled();
+    fireEvent.submit(botao.closest('form') as HTMLFormElement);
+    expect(mockRegistrarConta).toHaveBeenCalledTimes(1);
+
+    await aguardarRedirecionamentoPendente();
+    mockNavigate.mockClear();
+  });
+
+  it('não deve marcar como válido um campo obrigatório vazio ao perder o foco', () => {
+    renderizarComponente();
+
+    const nome = screen.getByLabelText(/Nome da conta/i);
+    fireEvent.blur(nome);
+
+    expect(nome).not.toHaveClass('is-valid');
   });
 
   it('deve chamar registrarConta com dados tratados e redirecionar para o dashboard', async () => {

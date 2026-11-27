@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAutenticacao } from "../../hooks/useAutenticacao";
+import { useTema } from "../../hooks/useTema";
+import { obterPrimeiroNome } from "../../utils/authStorage";
 
 interface PropsLayoutPrivado {
   titulo: string;
@@ -10,12 +12,13 @@ interface PropsLayoutPrivado {
   acaoPrimaria?: ReactNode;
 }
 
+// rotuloCurto: rótulo da barra de abas do celular, onde cada aba tem ~70px de largura
 const itensNavegacao = [
-  { para: "/dashboard", rotulo: "Dashboard", icone: "dashboard" },
-  { para: "/transacoes", rotulo: "Transações", icone: "transacoes" },
-  { para: "/categorias", rotulo: "Categorias", icone: "categorias" },
-  { para: "/parcelamentos", rotulo: "Parcelamentos", icone: "parcelamentos" },
-  { para: "/contas", rotulo: "Contas", icone: "contas" },
+  { para: "/dashboard", rotulo: "Dashboard", rotuloCurto: "Início", icone: "dashboard" },
+  { para: "/transacoes", rotulo: "Transações", rotuloCurto: "Transações", icone: "transacoes" },
+  { para: "/categorias", rotulo: "Categorias", rotuloCurto: "Categorias", icone: "categorias" },
+  { para: "/parcelamentos", rotulo: "Extrato futuro", rotuloCurto: "Futuro", icone: "parcelamentos" },
+  { para: "/contas", rotulo: "Contas", rotuloCurto: "Contas", icone: "contas" },
 ];
 
 const IconeNavegacao = ({ nome }: { nome: string }) => {
@@ -66,7 +69,9 @@ const LayoutPrivado = ({
   children,
   acaoPrimaria,
 }: PropsLayoutPrivado) => {
-  const { sair } = useAutenticacao();
+  const { sair, token } = useAutenticacao();
+  const primeiroNome = obterPrimeiroNome(token);
+  const { tema, alternarTema } = useTema();
   const navigate = useNavigate();
   const [menuAberto, setMenuAberto] = useState(false);
   const [menuLateralRecolhido, setMenuLateralRecolhido] = useState(false);
@@ -199,10 +204,31 @@ const LayoutPrivado = ({
               </button>
 
               {menuAberto && (
-                <div className="profile-dropdown" role="menu">
-                  <button type="button" role="menuitem" onClick={sairDaConta}>
-                    Sair
-                  </button>
+                <div className="profile-dropdown">
+                  <p className="profile-greeting">
+                    {primeiroNome ? `Olá, ${primeiroNome}!` : "Olá!"}
+                  </p>
+                  <div role="menu" aria-label="Menu do perfil">
+                    <button
+                      type="button"
+                      role="menuitemcheckbox"
+                      aria-checked={tema === "escuro"}
+                      className="profile-theme-toggle"
+                      onClick={alternarTema}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+                      </svg>
+                      Modo escuro
+                      <span className="profile-switch" aria-hidden="true" />
+                    </button>
+                    <button type="button" role="menuitem" onClick={sairDaConta}>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M16 17l5-5-5-5M21 12H9" />
+                      </svg>
+                      Sair
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -211,6 +237,22 @@ const LayoutPrivado = ({
 
         {children}
       </section>
+
+      {/* No celular a navegação vira uma barra de abas flutuante, ao alcance do polegar.
+          O aria-label mantém o nome de cada aba para leitores de tela, já que só a ativa mostra o texto. */}
+      <nav className="app-tabbar" aria-label="Navegação por abas">
+        {itensNavegacao.map((item) => (
+          <NavLink
+            key={item.para}
+            to={item.para}
+            className="app-tabbar-link"
+            aria-label={item.rotulo}
+          >
+            <IconeNavegacao nome={item.icone} />
+            <span>{item.rotuloCurto}</span>
+          </NavLink>
+        ))}
+      </nav>
     </main>
   );
 };

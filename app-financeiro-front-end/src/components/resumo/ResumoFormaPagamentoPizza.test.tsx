@@ -7,8 +7,11 @@ const { mockBuscarResumoPorPagamento, mockObterMensagemErroApi } = vi.hoisted(()
   mockObterMensagemErroApi: vi.fn((_erro: unknown, fallback: string) => fallback),
 }));
 
-vi.mock('../../services/api', () => ({
+vi.mock('../../services/resumoService', () => ({
   buscarResumoPorPagamento: mockBuscarResumoPorPagamento,
+}));
+
+vi.mock('../../services/apiError', () => ({
   obterMensagemErroApi: mockObterMensagemErroApi,
 }));
 

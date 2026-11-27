@@ -61,7 +61,7 @@ Endpoints integrados no front-end:
 - `GET /transacoes`
 - `POST /transacoes/manual`
 
-A URL base permanece `http://localhost:8080`, centralizada em `src/services/api.ts`.
+A URL base permanece `http://localhost:8080`, centralizada em `src/services/httpClient.ts`.
 
 ## Transações
 

@@ -59,16 +59,14 @@ public class ResumoService {
                 calcularVariacaoPercentualGastos(totalGastoMesAtual, totalGastoMesAnterior);
         List<GrupoCategoriaDTO> gruposCategoria = montarGruposCategoria(transacoesMesAtual);
         ResumoMensalDTO resumoMensalDTO = new ResumoMensalDTO();
-        if(gruposCategoria.isEmpty()){
+        resumoMensalDTO.setPossuiTransacoes(!transacoesMesAtual.isEmpty());
+        if (gruposCategoria.isEmpty()) {
             resumoMensalDTO.setCategoriaMaiorGastoTotal(BigDecimal.ZERO);
-            resumoMensalDTO.setPossuiTransacoes(false);
-        }
-        else {
+        } else {
             GrupoCategoriaDTO maiorLista = gruposCategoria.getFirst();
             resumoMensalDTO.setCategoriaMaiorGastoId(maiorLista.getCategoriaID());
             resumoMensalDTO.setCategoriaMaiorGastoNome(maiorLista.getNome());
             resumoMensalDTO.setCategoriaMaiorGastoTotal(maiorLista.getTotal());
-            resumoMensalDTO.setPossuiTransacoes(true);
         }
         resumoMensalDTO.setAno(periodoResumoAtual.ano());
         resumoMensalDTO.setMes(periodoResumoAtual.mes());

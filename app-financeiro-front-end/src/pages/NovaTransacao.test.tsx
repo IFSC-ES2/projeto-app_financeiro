@@ -13,17 +13,18 @@ vi.mock('../hooks/useAutenticacao', () => ({
   }),
 }));
 
-vi.mock('../services/api', async (importOriginal) => {
-  const original = await importOriginal<typeof import('../services/api')>();
-  return {
-    ...original,
-    listarContas: vi.fn(),
-    listarCategorias: vi.fn(),
-    listarTransacoes: vi.fn(),
-    registrarTransacaoManual: vi.fn(),
-    obterMensagemErroApi: vi.fn((_err: unknown, fallback: string) => fallback),
-  };
-});
+vi.mock('../services/contaService', () => ({ listarContas: vi.fn() }));
+
+vi.mock('../services/categoriaService', () => ({ listarCategorias: vi.fn() }));
+
+vi.mock('../services/transacaoService', () => ({
+  listarTransacoes: vi.fn(),
+  registrarTransacaoManual: vi.fn(),
+}));
+
+vi.mock('../services/apiError', () => ({
+  obterMensagemErroApi: vi.fn((_err: unknown, fallback: string) => fallback),
+}));
 
 const mockNavigate = vi.fn();
 

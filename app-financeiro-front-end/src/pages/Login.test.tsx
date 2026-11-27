@@ -39,8 +39,8 @@ describe('Tela de Login', () => {
   it('deve renderizar os campos de e-mail, senha e o botão de entrar', () => {
     renderizarComponente();
 
-    expect(screen.getByLabelText(/Usuário ou e-mail/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Senha/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('E-mail')).toBeInTheDocument();
+    expect(screen.getByLabelText('Senha')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /entrar/i })).toBeInTheDocument();
   });
 
@@ -65,8 +65,8 @@ describe('Tela de Login', () => {
 
     const user = userEvent.setup();
 
-    await user.type(screen.getByLabelText(/Usuário ou e-mail/i), 'teste@email.com');
-    await user.type(screen.getByLabelText(/Senha/i), 'senha123');
+    await user.type(screen.getByLabelText('E-mail'), 'teste@email.com');
+    await user.type(screen.getByLabelText('Senha'), 'senha123');
     await user.click(screen.getByRole('button', { name: /entrar/i }));
 
     await waitFor(() => {
@@ -77,9 +77,11 @@ describe('Tela de Login', () => {
 
   it('deve exibir mensagem de alerta na tela caso a API de login retorne erro', async () => {
     mockLogin.mockRejectedValueOnce({
+      isAxiosError: true,
       response: {
+        status: 401,
         data: {
-          erro: 'Credenciais inválidas. Verifique seu e-mail e senha.',
+          erro: 'Credenciais inválidas.',
         },
       },
     });
@@ -88,14 +90,66 @@ describe('Tela de Login', () => {
 
     const user = userEvent.setup();
 
-    await user.type(screen.getByLabelText(/Usuário ou e-mail/i), 'errado@email.com');
-    await user.type(screen.getByLabelText(/Senha/i), 'senhaerrada');
+    await user.type(screen.getByLabelText('E-mail'), 'errado@email.com');
+    await user.type(screen.getByLabelText('Senha'), 'senhaerrada');
     await user.click(screen.getByRole('button', { name: /entrar/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('Credenciais inválidas. Verifique seu e-mail e senha.')).toBeInTheDocument();
+      expect(screen.getByText('E-mail ou senha incorretos. Confira os dados e tente de novo.')).toBeInTheDocument();
     });
 
     expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('deve focar o primeiro campo inválido ao enviar o formulário', async () => {
+    renderizarComponente();
+
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText('E-mail'), 'teste@email.com');
+    await user.click(screen.getByRole('button', { name: /entrar/i }));
+
+    expect(screen.getByLabelText('Senha')).toHaveFocus();
+  });
+
+  it('deve alternar a visibilidade da senha', async () => {
+    renderizarComponente();
+
+    const user = userEvent.setup();
+    const campoSenha = screen.getByLabelText('Senha');
+
+    expect(campoSenha).toHaveAttribute('type', 'password');
+
+    await user.click(screen.getByRole('button', { name: 'Mostrar senha' }));
+    expect(campoSenha).toHaveAttribute('type', 'text');
+
+    await user.click(screen.getByRole('button', { name: 'Ocultar senha' }));
+    expect(campoSenha).toHaveAttribute('type', 'password');
+  });
+
+  it('não deve pintar a senha de verde depois de preenchida', async () => {
+    renderizarComponente();
+
+    const user = userEvent.setup();
+    const campoSenha = screen.getByLabelText('Senha');
+
+    await user.type(campoSenha, 'senha123');
+    await user.tab();
+
+    expect(campoSenha).not.toHaveClass('is-valid');
+  });
+
+  it('deve exibir mensagem genérica quando a falha não for de credenciais', async () => {
+    mockLogin.mockRejectedValueOnce(new Error('Network Error'));
+
+    renderizarComponente();
+
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText('E-mail'), 'teste@email.com');
+    await user.type(screen.getByLabelText('Senha'), 'senha123');
+    await user.click(screen.getByRole('button', { name: /entrar/i }));
+
+    expect(await screen.findByText('Não foi possível entrar. Tente de novo em instantes.')).toBeInTheDocument();
   });
 });

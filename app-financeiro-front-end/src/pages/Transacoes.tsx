@@ -4,22 +4,14 @@ import LayoutPrivado from '../components/layout/LayoutPrivado';
 import EstadoVazio from '../components/ui/EstadoVazio';
 import MensagemAlerta from '../components/ui/MensagemAlerta';
 import ResumoFormaPagamento from '../components/resumo/ResumoFormaPagamento';
-import {
-  categorizarTransacao,
-  excluirTransacao,
-  listarCategorias,
-  listarContas,
-  listarTransacoes,
-  obterMensagemErroApi,
-} from '../services/api';
-import type {
-  CategoriaResponse,
-  ContaResponse,
-  PaginaResponse,
-  TransacaoResponse,
-} from '../services/api';
+import { obterMensagemErroApi } from '../services/apiError';
+import { categorizarTransacao, excluirTransacao } from '../services/transacaoService';
+import type { TransacaoResponse } from '../types/transacao';
 import { formatarData, formatarMoeda } from '../utils/formatacao';
 import { calcularResumoTransacoes } from '../utils/transacoes';
+import { useCategorias } from '../hooks/useCategorias';
+import { useContas } from '../hooks/useContas';
+import { useTransacoes } from '../hooks/useTransacoes';
 
 interface EstadoNavegacaoTransacoes {
   mensagem?: string;
@@ -74,19 +66,61 @@ const Transacoes = () => {
   const location = useLocation();
   const estado = location.state as EstadoNavegacaoTransacoes | null;
 
-  const [pagina, setPagina] = useState<PaginaResponse<TransacaoResponse> | null>(null);
-  const [contas, setContas] = useState<ContaResponse[]>([]);
-  const [categorias, setCategorias] = useState<CategoriaResponse[]>([]);
   const [filtros, setFiltros] = useState<FiltrosTransacao>(filtrosIniciais);
   const [paginaAtual, setPaginaAtual] = useState(0);
+  const [filtrosAbertos, setFiltrosAbertos] = useState(false);
   const [tamanho, setTamanho] = useState(20);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState('');
   const [mensagemSucesso, setMensagemSucesso] = useState(estado?.mensagem ?? '');
   const [transacaoAtualizandoId, setTransacaoAtualizandoId] = useState<string | null>(null);
   const [transacaoExcluindoId, setTransacaoExcluindoId] = useState<string | null>(null);
   const [mensagemCategoria, setMensagemCategoria] = useState('');
-  const [atualizacaoLista, setAtualizacaoLista] = useState(0);
+  const [
+  erroOperacao,
+  setErroOperacao,
+] = useState('');
+
+const {
+  contas,
+  erro: erroContas,
+} = useContas({
+  mensagemErro:
+    'Não foi possível carregar contas e categorias.',
+});
+
+const {
+  categorias,
+  erro: erroCategorias,
+} = useCategorias({
+  mensagemErro:
+    'Não foi possível carregar contas e categorias.',
+});
+
+const {
+  pagina,
+  carregando,
+  erro: erroTransacoes,
+  recarregar,
+  setPagina,
+} = useTransacoes({
+  page: paginaAtual,
+  size: tamanho,
+  dataInicio:
+    filtros.dataInicio || undefined,
+  dataFim:
+    filtros.dataFim || undefined,
+  categoriaId:
+    filtros.categoriaId || undefined,
+  contaId:
+    filtros.contaId || undefined,
+  tipo:
+    filtros.tipo || undefined,
+});
+
+const erro =
+  erroOperacao ||
+  erroTransacoes ||
+  erroContas ||
+  erroCategorias;
 
   useEffect(() => {
     if (estado?.mensagem) {
@@ -122,62 +156,6 @@ const Transacoes = () => {
     };
   }, [mensagemSucesso]);
 
-  useEffect(() => {
-    let ativo = true;
-
-    const carregarApoio = async () => {
-      try {
-        const [contasCarregadas, categoriasCarregadas] = await Promise.all([listarContas(), listarCategorias()]);
-
-        if (!ativo) return;
-        setContas(contasCarregadas);
-        setCategorias(categoriasCarregadas);
-      } catch (erroCapturado) {
-        if (!ativo) return;
-        setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível carregar contas e categorias.'));
-      }
-    };
-
-    carregarApoio();
-
-    return () => {
-      ativo = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let ativo = true;
-
-    const carregarTransacoes = async () => {
-      setCarregando(true);
-      setErro('');
-
-      try {
-        const resultado = await listarTransacoes({
-          page: paginaAtual,
-          size: tamanho,
-          dataInicio: filtros.dataInicio || undefined,
-          dataFim: filtros.dataFim || undefined,
-          categoriaId: filtros.categoriaId || undefined,
-          contaId: filtros.contaId || undefined,
-          tipo: filtros.tipo || undefined,
-        });
-        if (!ativo) return;
-        setPagina(resultado);
-      } catch (erroCapturado) {
-        if (!ativo) return;
-        setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível carregar as transações.'));
-      } finally {
-        if (ativo) setCarregando(false);
-      }
-    };
-
-    carregarTransacoes();
-
-    return () => {
-      ativo = false;
-    };
-  }, [filtros, paginaAtual, tamanho, atualizacaoLista]);
 
   const contaPorId = useMemo(() => new Map(contas.map((conta) => [conta.contaId, conta])), [contas]);
 
@@ -186,12 +164,21 @@ const Transacoes = () => {
   const totalPaginas = Math.max(pagina?.totalPaginas ?? 0, 1);
   const resumo = useMemo(() => calcularResumoTransacoes(transacoes), [transacoes]);
 
-  const alterarFiltro = (campo: keyof FiltrosTransacao, valor: string) => {
-    setMensagemCategoria('');
-    setMensagemSucesso('');
-    setFiltros((atuais) => ({ ...atuais, [campo]: valor }));
-    setPaginaAtual(0);
-  };
+  const alterarFiltro = (
+  campo: keyof FiltrosTransacao,
+  valor: string,
+) => {
+  setMensagemCategoria('');
+  setMensagemSucesso('');
+  setErroOperacao('');
+
+  setFiltros((atuais) => ({
+    ...atuais,
+    [campo]: valor,
+  }));
+
+  setPaginaAtual(0);
+};
 
   const alterarTamanho = (novoTamanho: number) => {
     setTamanho(novoTamanho);
@@ -202,7 +189,7 @@ const Transacoes = () => {
     if (!categoriaId) return;
 
     setTransacaoAtualizandoId(transacaoId);
-    setErro('');
+    setErroOperacao('');
     setMensagemCategoria('');
 
     try {
@@ -221,7 +208,7 @@ const Transacoes = () => {
 
       setMensagemCategoria('Categoria atualizada com sucesso.');
     } catch (erroCapturado) {
-      setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível atualizar a categoria da transação.'));
+      setErroOperacao(obterMensagemErroApi(erroCapturado, 'Não foi possível atualizar a categoria da transação.'));
     } finally {
       setTransacaoAtualizandoId(null);
     }
@@ -235,7 +222,7 @@ const Transacoes = () => {
     if (!confirmou) return;
 
     setTransacaoExcluindoId(transacao.transacaoId);
-    setErro('');
+    setErroOperacao('');
     setMensagemCategoria('');
     setMensagemSucesso('');
 
@@ -246,21 +233,38 @@ const Transacoes = () => {
       if (transacoes.length === 1 && paginaAtual > 0) {
         setPaginaAtual((atual) => Math.max(atual - 1, 0));
       } else {
-        setAtualizacaoLista((atual) => atual + 1);
+        recarregar();
       }
     } catch (erroCapturado) {
-      setErro(obterMensagemErroApi(erroCapturado, 'Não foi possível excluir a transação.'));
+      setErroOperacao(obterMensagemErroApi(erroCapturado, 'Não foi possível excluir a transação.'));
     } finally {
       setTransacaoExcluindoId(null);
     }
   };
+
+  const totalFiltrosAtivos = Object.values(filtros).filter(Boolean).length;
 
   return (
     <LayoutPrivado titulo="Transações" subtitulo="Visualize e registre movimentações financeiras da sua conta.">
       <MensagemAlerta mensagem={mensagemSucesso} tipo="success" />
       <MensagemAlerta mensagem={mensagemCategoria} tipo="success" />
       <MensagemAlerta mensagem={erro} tipo="danger" />
-      <section className="filters-panel" aria-label="Filtros de transações">
+      {/* No celular os filtros ficam atrás de um botão, para a lista aparecer na primeira tela */}
+      <button
+        type="button"
+        className="sb-button sb-button-secondary filters-toggle"
+        aria-expanded={filtrosAbertos}
+        aria-controls="filtros-transacoes"
+        onClick={() => setFiltrosAbertos((atual) => !atual)}
+      >
+        {totalFiltrosAtivos > 0 ? `Filtros (${totalFiltrosAtivos})` : 'Filtros'}
+      </button>
+      <section
+        id="filtros-transacoes"
+        className="filters-panel"
+        data-aberto={filtrosAbertos}
+        aria-label="Filtros de transações"
+      >
         <label>
           <span>Início</span>
           <input

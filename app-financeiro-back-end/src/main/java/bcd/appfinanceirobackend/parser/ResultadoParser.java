@@ -1,5 +1,6 @@
 package bcd.appfinanceirobackend.parser;
 
+import bcd.appfinanceirobackend.dto.importacao.ErroImportacaoDTO;
 import bcd.appfinanceirobackend.model.Transacao;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,50 +11,80 @@ import java.util.List;
 /**
  * Resultado padronizado produzido por qualquer implementação de ParserExtrato.
  *
- * Este objeto permite que o ImportacaoService trate todos os parsers da mesma
- * forma, independentemente do formato original do arquivo.
- *
  * Regras do contrato:
  * - transacoes contém apenas registros convertidos com sucesso;
- * - linhasInvalidas representa registros encontrados, mas descartados por erro;
- * - totalLinhas representa a quantidade de registros avaliados pelo parser.
+ * - erros contém detalhes dos registros rejeitados;
+ * - linhasInvalidas representa registros encontrados, mas descartados;
+ * - totalLinhas representa a quantidade de registros avaliados;
+ * - numerosRegistroTransacoes preserva a origem de cada transação válida.
  *
- * Em um sucesso parcial:
- * - transacoes pode conter uma ou mais transações válidas;
- * - linhasInvalidas deve ser maior que zero;
- * - o parser não deve lançar exceção apenas por existirem registros inválidos.
- *
- * Exceções devem ser reservadas para falhas estruturais do arquivo, como XML
- * malformado, arquivo ilegível ou ausência completa de estrutura reconhecível.
+ * Em sucesso parcial, registros inválidos não interrompem o processamento
+ * dos registros válidos.
  */
 @Getter
 @Setter
 public class ResultadoParser {
 
-    /**
-     * Transações válidas extraídas do arquivo.
-     *
-     * Cada transação deve conter os campos de domínio interpretados pelo parser,
-     * mas não deve conter Importacao nem Categoria definida pelo parser.
-     */
     private List<Transacao> transacoes = new ArrayList<>();
 
     /**
-     * Quantidade de registros ignorados por inconsistência de dados.
+     * Mantém a correspondência por índice com a lista transacoes.
      *
-     * Exemplos:
-     * - data inválida;
-     * - valor monetário inválido;
-     * - campos obrigatórios ausentes;
-     * - linha/registro em estrutura não reconhecida.
+     * Exemplo:
+     * transacoes[0] veio da linha física 3
+     * numerosRegistroTransacoes[0] = 3
      */
+    private List<Integer> numerosRegistroTransacoes = new ArrayList<>();
+
+    private List<ErroImportacaoDTO> erros = new ArrayList<>();
+
     private int linhasInvalidas;
 
-    /**
-     * Quantidade total de registros avaliados pelo parser.
-     *
-     * Para CSV/TXT, normalmente representa linhas não vazias avaliadas.
-     * Para XML/NF-e, representa elementos de transação/item encontrados.
-     */
     private int totalLinhas;
+
+    /**
+     * Deve ser utilizado pelos parsers para preservar a origem da transação.
+     */
+    public void adicionarTransacao(
+            Transacao transacao,
+            Integer numeroRegistro
+    ) {
+        transacoes.add(transacao);
+        numerosRegistroTransacoes.add(numeroRegistro);
+    }
+
+    /**
+     * Retorna o registro de origem da transação de determinado índice.
+     *
+     * Retorna null para resultados antigos/montados manualmente que não
+     * possuam a informação de origem.
+     */
+    public Integer getNumeroRegistroTransacao(int indice) {
+        if (
+                indice < 0 ||
+                indice >= numerosRegistroTransacoes.size()
+        ) {
+            return null;
+        }
+
+        return numerosRegistroTransacoes.get(indice);
+    }
+
+    /**
+     * Adiciona um registro rejeitado e mantém o contador sincronizado.
+     */
+    public void adicionarErro(
+            Integer numeroRegistro,
+            String campo,
+            String mensagem
+    ) {
+        ErroImportacaoDTO erro = new ErroImportacaoDTO();
+
+        erro.setNumeroRegistro(numeroRegistro);
+        erro.setCampo(campo);
+        erro.setMensagem(mensagem);
+
+        erros.add(erro);
+        linhasInvalidas++;
+    }
 }

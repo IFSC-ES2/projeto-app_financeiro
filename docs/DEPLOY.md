@@ -17,7 +17,19 @@ O frontend é uma SPA estática que chama a API pelo **navegador**, então a URL
 Ambientes publicados atuais:
 
 - Web: `https://smartbudget-web-0sic.onrender.com`
-- API: `https://smartbudget-api-kbze.onrender.com`
+- API: `https://smartbudget-api-kbze.onrender.com` (`/health` para checar)
+
+Onde cada parte roda:
+
+| Parte    | Onde                                   | Plano | Branch |
+|----------|----------------------------------------|-------|--------|
+| Frontend | Render, static site `smartbudget-web`  | free  | `dev`  |
+| Backend  | Render, web service `smartbudget-api`  | free  | `dev`  |
+| Banco    | Neon (criado pela Vercel), `us-west-2` | free  | —      |
+
+O banco saiu do Render porque o Postgres free de lá é apagado 30 dias depois de criado; quando isso aconteceu, a API parou de subir (`UnknownHostException` no Flyway). O Neon free não expira: suspende após alguns minutos sem uso e volta em menos de 1 s na primeira consulta. A conexão vai em `SPRING_DATASOURCE_URL`/`_USERNAME`/`_PASSWORD` no painel do Render, usando a connection string **unpooled** (o host sem `-pooler`).
+
+O web service free do Render hiberna após 15 min sem requisições e leva cerca de 1 min para acordar. Antes de uma demonstração, abra o `/health` alguns minutos antes, ou configure um monitor externo (cron-job.org, UptimeRobot) chamando o `/health` a cada 10 min.
 
 ## Pré-requisitos
 

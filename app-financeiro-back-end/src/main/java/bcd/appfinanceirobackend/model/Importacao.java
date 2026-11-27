@@ -49,6 +49,9 @@ public class Importacao {
     @Column
     private int falhas;
 
+    @Column(name = "ignoradas_por_duplicidade", nullable = false)
+    private int ignoradasPorDuplicidade;
+
     @Column
     private String mensagemErro;
 }

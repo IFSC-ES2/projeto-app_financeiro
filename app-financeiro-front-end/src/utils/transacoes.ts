@@ -1,4 +1,4 @@
-import type { TransacaoResponse } from '../services/api';
+import type { TransacaoResponse } from '../types/transacao';
 
 export interface ResumoTransacoes {
   total: number;
