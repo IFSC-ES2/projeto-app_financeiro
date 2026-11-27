@@ -28,12 +28,13 @@ import type {
 
 const EXTENSOES_ACEITAS = [
   'csv',
+  'ofx',
   'xml',
   'txt',
 ];
 
 const ACCEPT_INPUT =
-  '.csv,.xml,.txt';
+  '.csv,.ofx,.xml,.txt';
 const INTERVALO_POLLING_MS =
   1500;
 const TIMEOUT_POLLING_MS =
@@ -367,7 +368,7 @@ const ImportarExtrato:
           ext,
         )
       ) {
-        return 'Formato não suportado. Use arquivos .csv, .xml ou .txt.';
+        return 'Formato não suportado. Use arquivos .csv, .ofx, .xml ou .txt.';
       }
 
       if (
@@ -562,7 +563,7 @@ const ImportarExtrato:
     return (
       <LayoutPrivado
         titulo="Importar extrato ou NF-e"
-        subtitulo="Envie um arquivo CSV, XML ou TXT e nós cadastramos suas transações automaticamente."
+        subtitulo="Envie um arquivo CSV, OFX, XML ou TXT e nós cadastramos suas transações automaticamente."
         acaoPrimaria={
           <Link
             to="/transacoes"
@@ -808,8 +809,8 @@ const ImportarExtrato:
                         <p className="text-muted small mb-0">
                           Formatos
                           suportados:
-                          .csv, .xml,
-                          .txt
+                          .csv, .ofx,
+                          .xml, .txt
                         </p>
                       </div>
                     ) : (

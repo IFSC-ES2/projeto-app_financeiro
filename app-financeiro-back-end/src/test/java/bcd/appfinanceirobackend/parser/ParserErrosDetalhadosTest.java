@@ -94,6 +94,92 @@ class ParserErrosDetalhadosTest {
 
     @Test
     @DisplayName(
+            "CSV Santander detalha registro inválido pela linha física e continua importando"
+    )
+    void csvSantanderDetalhaErroEContinuaImportacao() {
+        String conteudo = """
+                Extrato de conta corrente
+                Nome;Fulano de Tal
+                Lançamentos:
+                Data;Descrição;Valor;Saldo
+                08/06/2026;"Pix enviado
+                Fulano";valor-ruim;100,00
+                09/06/2026;"Pix recebido
+                Ciclano";50,00;150,00
+                """;
+
+        ResultadoParser resultado =
+                new ParserCSV().parsear(
+                        arquivo(
+                                "extrato.csv",
+                                "text/csv",
+                                conteudo
+                        ),
+                        conta
+                );
+
+        ErroImportacaoDTO erro =
+                resultado
+                        .getErros()
+                        .getFirst();
+
+        assertAll(
+                () -> assertEquals(1, resultado.getErros().size()),
+                () -> assertEquals(1, resultado.getTransacoes().size()),
+                // O registro com erro começa na linha 5 do arquivo; o válido, na 7
+                () -> assertEquals(5, erro.getNumeroRegistro()),
+                () -> assertEquals("valor", erro.getCampo()),
+                () -> assertFalse(erro.getMensagem().isBlank()),
+                () -> assertEquals(
+                        "Pix recebido - Ciclano",
+                        resultado.getTransacoes().getFirst().getDescricao()
+                ),
+                () -> assertEquals(7, resultado.getNumeroRegistroTransacao(0))
+        );
+    }
+
+    @Test
+    @DisplayName(
+            "OFX detalha lançamento inválido pela linha do <STMTTRN> e continua importando"
+    )
+    void ofxDetalhaErroEContinuaImportacao() {
+        String conteudo = """
+                <OFX>
+                <BANKTRANLIST>
+                <STMTTRN>
+                <DTPOSTED>20260608</DTPOSTED>
+                <TRNAMT>valor-ruim</TRNAMT>
+                </STMTTRN>
+                <STMTTRN>
+                <DTPOSTED>20260609</DTPOSTED>
+                <TRNAMT>-50.00</TRNAMT>
+                <NAME>Registro válido</NAME>
+                </STMTTRN>
+                </BANKTRANLIST>
+                </OFX>
+                """;
+
+        ResultadoParser resultado =
+                new ParserOFX().parsear(
+                        arquivo("extrato.ofx", "application/x-ofx", conteudo),
+                        conta
+                );
+
+        ErroImportacaoDTO erro = resultado.getErros().getFirst();
+
+        assertAll(
+                () -> assertEquals(1, resultado.getErros().size()),
+                () -> assertEquals(1, resultado.getTransacoes().size()),
+                () -> assertEquals(3, erro.getNumeroRegistro()),
+                () -> assertEquals("valor", erro.getCampo()),
+                () -> assertFalse(erro.getMensagem().isBlank()),
+                () -> assertEquals("Registro válido", resultado.getTransacoes().getFirst().getDescricao()),
+                () -> assertEquals(7, resultado.getNumeroRegistroTransacao(0))
+        );
+    }
+
+    @Test
+    @DisplayName(
             "TXT detalha registro inválido e continua importando o registro seguinte"
     )
     void txtDetalhaErroEContinuaImportacao() {

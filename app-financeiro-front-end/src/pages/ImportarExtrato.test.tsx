@@ -406,6 +406,45 @@ describe(
     );
 
     it(
+      'aceita extrato bancário em .ofx',
+      async () => {
+        mockCriarImportacao.mockResolvedValueOnce(
+          importacaoConcluida,
+        );
+
+        renderizarComponente();
+
+        await aguardarContas();
+
+        expect(
+          document.querySelector(
+            'input[type="file"]',
+          ),
+        ).toHaveAttribute(
+          'accept',
+          expect.stringContaining('.ofx'),
+        );
+
+        await preencherEEnviar(
+          criarArquivo(
+            'extrato.ofx',
+            'application/x-ofx',
+          ),
+        );
+
+        expect(
+          await screen.findByText(
+            'Importação concluída',
+          ),
+        ).toBeInTheDocument();
+
+        expect(
+          mockCriarImportacao,
+        ).toHaveBeenCalled();
+      },
+    );
+
+    it(
       'deve detalhar uma importação parcial',
       async () => {
         mockCriarImportacao.mockResolvedValueOnce(
